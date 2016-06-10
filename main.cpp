@@ -1,6 +1,12 @@
 #include <iostream>
 
+#include "App.hpp"
+
 int main(int argc, char* argv[]) {
-	std::cout << "Hello world!" << std::endl;
+	App* a = new App();
+	a->run();
+
+	delete a;
+
 	return 0;
 }

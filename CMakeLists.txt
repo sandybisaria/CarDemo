@@ -20,9 +20,15 @@ set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_BINARY_DIR})
 # Update as needed
 find_package(OGRE REQUIRED)
 
+# Header files
+set(HDRS
+	./App.hpp
+)
+
 # Source files
 set(SRCS
 	./main.cpp
+	./App.cpp
 )
 
 # Update as needed
@@ -30,7 +36,7 @@ include_directories(
 	${OGRE_INCLUDE_DIRS}
 )
 
-add_executable(CarDemo ${SRCS})
+add_executable(CarDemo ${HDRS} ${SRCS})
 set_target_properties(CarDemo PROPERTIES DEBUG_POSTFIX _d)
 
 # Update as needed
