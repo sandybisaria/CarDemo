@@ -14,8 +14,7 @@ endif ()
 
 set(CMAKE_DEBUG_POSTFIX "_d")
 
-# As of now, not using any special "dist" directory
-set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_BINARY_DIR})
+set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/dist")
 
 # Update as needed
 find_package(OGRE REQUIRED)
@@ -44,5 +43,19 @@ target_link_libraries(CarDemo
 	${OGRE_LIBRARIES}
 )
 
-# Output executables in a subdirectory
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
+# Make binary directories
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/dist/bin)
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/dist/media)
+
+# Execute in the binary directory
+set(EXECUTABLE_OUTPUT_PATH "${PROJECT_BINARY_DIR}/dist/bin")
+
+install(TARGETS CarDemo
+	RUNTIME DESTINATION bin
+	CONFIGURATIONS ALL
+)
+
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/media
+	DESTINATION ./
+	CONFIGURATIONS Release RelWithDebInfo Debug
+)

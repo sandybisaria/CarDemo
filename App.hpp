@@ -20,6 +20,8 @@ private:
 	Ogre::Camera* mCamera;
 
 	bool setupPlugins();
+	void setupResources();
+	bool setupRenderSystem();
 };
 
 #endif

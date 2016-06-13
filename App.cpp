@@ -53,6 +53,25 @@ bool App::setupPlugins() {
 	return true;
 }
 
+void App::setupResources() {
+	Ogre::ResourceGroupManager::getSingleton().addResourceLocation("../media/materials", "FileSystem");
+
+	Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
+}
+
+bool App::setupRenderSystem() {
+	// Set up the rendering system
+	Ogre::RenderSystem* rs = mRoot->getRenderSystemByName("OpenGL Rendering Subsystem");
+	if (rs->getName() != "OpenGL Rendering Subsystem")
+		return false;
+
+	rs->setConfigOption("Full Screen", "No");
+	rs->setConfigOption("Video Mode", "800 x 600 @ 32-bit");
+
+	mRoot->setRenderSystem(rs);
+
+	return true;
+}
 void App::run() {
 	// Set up the root without a plugin or config file
 	mRoot = new Ogre::Root("", "");
@@ -60,15 +79,10 @@ void App::run() {
 	if (!setupPlugins())
 		return;
 
-	// Set up the rendering system
-	Ogre::RenderSystem* rs = mRoot->getRenderSystemByName("OpenGL Rendering Subsystem");
-	if (rs->getName() != "OpenGL Rendering Subsystem")
+	setupResources();
+
+	if (!setupRenderSystem())
 		return;
-
-	rs->setConfigOption("Full Screen", "No");
-	rs->setConfigOption("Video Mode", "800 x 600 @ 32-bit");
-
-	mRoot->setRenderSystem(rs);
 
 	// Set up window
 	mWindow = mRoot->initialise(true, "CarDemo");
@@ -78,6 +92,7 @@ void App::run() {
 
 	// Set up the camera
 	mCamera = mSceneMgr->createCamera("MainCam");
+	mSceneMgr->setSkyDome(true, "CloudySky");
 
 	// Set up the viewport
 	Ogre::Viewport* vp = mWindow->addViewport(mCamera);
