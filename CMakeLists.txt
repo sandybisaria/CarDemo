@@ -18,6 +18,7 @@ set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/dist")
 
 # Update as needed
 find_package(OGRE REQUIRED)
+find_package(OIS REQUIRED)
 
 # Header files
 set(HDRS
@@ -33,6 +34,7 @@ set(SRCS
 # Update as needed
 include_directories(
 	${OGRE_INCLUDE_DIRS}
+	${OIS_INCLUDE_DIRS}
 )
 
 add_executable(CarDemo ${HDRS} ${SRCS})
@@ -40,6 +42,7 @@ set_target_properties(CarDemo PROPERTIES DEBUG_POSTFIX _d)
 
 # Update as needed
 target_link_libraries(CarDemo
+	${OIS_LIBRARIES}
 	${OGRE_LIBRARIES}
 )
 

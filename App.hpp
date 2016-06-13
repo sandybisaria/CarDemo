@@ -6,7 +6,7 @@
 #include <OgreSceneManager.h>
 #include <OgreCamera.h>
 
-class App {
+class App : public Ogre::FrameListener {
 public:
 	App();
 	~App();
@@ -14,14 +14,16 @@ public:
 	void run();
 
 private:
+	bool setupPlugins();
+	void setupResources();
+	bool setupRenderSystem();
+
+	virtual bool frameRenderingQueued(const Ogre::FrameEvent& evt);
+
 	Ogre::Root* mRoot;
 	Ogre::RenderWindow* mWindow;
 	Ogre::SceneManager* mSceneMgr;
 	Ogre::Camera* mCamera;
-
-	bool setupPlugins();
-	void setupResources();
-	bool setupRenderSystem();
 };
 
 #endif

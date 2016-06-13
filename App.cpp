@@ -88,6 +88,14 @@ bool App::setupRenderSystem() {
 
 	return true;
 }
+
+bool App::frameRenderingQueued(const Ogre::FrameEvent& evt) {
+	if (mWindow->isClosed())
+		return false;
+
+	return true;
+}
+
 void App::run() {
 	// Set up the root without a plugin or config file
 	mRoot = new Ogre::Root("", "");
@@ -121,15 +129,14 @@ void App::run() {
 	mCamera->setAspectRatio(Ogre::Real(vp->getActualWidth()) /
 							Ogre::Real(vp->getActualHeight()));
 
+	mRoot->addFrameListener(this);
+
 	// Start the render loop
 	while (true) {
 		// Listen to window events (e.g. window closing)
 		Ogre::WindowEventUtilities::messagePump();
 
 		if (!mRoot->renderOneFrame())
-			return;
-
-		if (mWindow->isClosed())
 			return;
 	}
 }
