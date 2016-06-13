@@ -10,7 +10,9 @@ App::App()
 	: mRoot(0),
 	  mWindow(0),
 	  mSceneMgr(0),
-	  mCamera(0) {
+	  mCamera(0),
+	  mInputMgr(0),
+	  mKeyboard(0) {
 }
 
 App::~App() {
@@ -91,9 +93,34 @@ bool App::setupRenderSystem() {
 	return true;
 }
 
+void App::setupInput() {
+	Ogre::LogManager::getSingleton().logMessage("*** Initializing OIS ***");
+
+	OIS::ParamList pl;
+	size_t windowHnd = 0;
+	std::ostringstream windowHndStr;
+
+	mWindow->getCustomAttribute("WINDOW", &windowHnd);
+	windowHndStr << windowHnd;
+	pl.insert(std::make_pair(std::string("WINDOW"), windowHndStr.str()));
+
+	mInputMgr = OIS::InputManager::createInputSystem(pl);
+
+	mKeyboard = static_cast<OIS::Keyboard*>(
+	mInputMgr->createInputObject(OIS::OISKeyboard, true));
+
+	mKeyboard->setEventCallback(this);
+
+	windowResized(mWindow);
+
+	Ogre::LogManager::getSingletonPtr()->logMessage("Finished");
+}
+
 bool App::frameRenderingQueued(const Ogre::FrameEvent& evt) {
 	if (mWindow->isClosed())
 		return false;
+
+	mKeyboard->capture();
 
 	return true;
 }
@@ -103,7 +130,31 @@ void App::windowResized(Ogre::RenderWindow* rw) {
 }
 
 void App::windowClosed(Ogre::RenderWindow* rw) {
+	if (rw == mWindow) {
+		if (mInputMgr) {
+			mInputMgr->destroyInputObject(mKeyboard);
 
+			OIS::InputManager::destroyInputSystem(mInputMgr);
+			mInputMgr = 0;
+		}
+	}
+}
+
+bool App::keyPressed(const OIS::KeyEvent& ke) {
+	switch (ke.key) {
+	case OIS::KC_W:
+		std::cout << "W" << std::endl;
+		break;
+
+	default:
+		break;
+	}
+
+	return true;
+}
+
+bool App::keyReleased(const OIS::KeyEvent& ke) {
+	return true;
 }
 
 void App::run() {
@@ -138,6 +189,8 @@ void App::run() {
 
 	mCamera->setAspectRatio(Ogre::Real(vp->getActualWidth()) /
 							Ogre::Real(vp->getActualHeight()));
+
+	setupInput();
 
 	mRoot->addFrameListener(this);
 	Ogre::WindowEventUtilities::addWindowEventListener(mWindow, this);
