@@ -11,6 +11,8 @@ App::App()
 	  mWindow(0),
 	  mSceneMgr(0),
 	  mCamera(0),
+	  mTerrainGlobals(0),
+	  mTerrainGroup(0),
 	  mInputMgr(0),
 	  mKeyboard(0) {
 }
@@ -80,7 +82,6 @@ void App::setupResources() {
 }
 
 bool App::setupRenderSystem() {
-	// Set up the rendering system
 	Ogre::RenderSystem* rs = mRoot->getRenderSystemByName("OpenGL Rendering Subsystem");
 	if (rs->getName() != "OpenGL Rendering Subsystem")
 		return false;
@@ -91,6 +92,44 @@ bool App::setupRenderSystem() {
 	mRoot->setRenderSystem(rs);
 
 	return true;
+}
+
+void App::setupScene() {
+	Ogre::TextureManager::getSingleton().setDefaultNumMipmaps(5);
+
+	mSceneMgr = mRoot->createSceneManager(Ogre::ST_EXTERIOR_FAR);
+	mSceneMgr->setSkyDome(true, "CloudySky");
+
+	mSceneMgr->setAmbientLight(Ogre::ColourValue(0.5, 0.5, 0.5));
+
+	Ogre::Light* sun = mSceneMgr->createLight("SunLight");
+	sun->setType(Ogre::Light::LT_DIRECTIONAL);
+	sun->setDirection(Ogre::Vector3::NEGATIVE_UNIT_Y);
+	sun->setDiffuseColour(Ogre::ColourValue::White);
+	sun->setSpecularColour(Ogre::ColourValue(0.4, 0.4, 0.4));
+}
+
+void App::setupCamera() {
+	mCamera = mSceneMgr->createCamera("MainCam");
+
+	mCamera->setPosition(0, 0, 0);
+	mCamera->setDirection(Ogre::Vector3::UNIT_Z);
+
+	mCamera->setNearClipDistance(5);
+	if (mRoot->getRenderSystem()->getCapabilities()->hasCapability(
+			Ogre::RSC_INFINITE_FAR_PLANE))
+		mCamera->setFarClipDistance(0);
+	else
+		mCamera->setFarClipDistance(50000);
+}
+
+void App::setupViewport() {
+	// Set up the viewport
+	Ogre::Viewport* vp = mWindow->addViewport(mCamera);
+	vp->setBackgroundColour(Ogre::ColourValue::Black);
+
+	mCamera->setAspectRatio(Ogre::Real(vp->getActualWidth()) /
+							Ogre::Real(vp->getActualHeight()));
 }
 
 void App::setupInput() {
@@ -114,6 +153,12 @@ void App::setupInput() {
 	windowResized(mWindow);
 
 	Ogre::LogManager::getSingletonPtr()->logMessage("Finished");
+}
+
+void App::setupTerrain() {
+	mTerrainGlobals = new Ogre::TerrainGlobalOptions();
+
+	mTerrainGroup = new Ogre::TerrainGroup(mSceneMgr, Ogre::Terrain::ALIGN_X_Z, 513, 12000.0);
 }
 
 bool App::frameRenderingQueued(const Ogre::FrameEvent& evt) {
@@ -142,10 +187,6 @@ void App::windowClosed(Ogre::RenderWindow* rw) {
 
 bool App::keyPressed(const OIS::KeyEvent& ke) {
 	switch (ke.key) {
-	case OIS::KC_W:
-		std::cout << "W" << std::endl;
-		break;
-
 	default:
 		break;
 	}
@@ -163,48 +204,22 @@ void App::run() {
 
 	if (!setupPlugins())
 		return;
-
 	setupResources();
-
 	if (!setupRenderSystem())
 		return;
 
 	// Set up window
 	mWindow = mRoot->initialise(true, "CarDemo");
 
-	// Set up scene manager
-	mSceneMgr = mRoot->createSceneManager(Ogre::ST_EXTERIOR_FAR);
-	mSceneMgr->setSkyDome(true, "CloudySky");
-
-	Ogre::TextureManager::getSingleton().setDefaultNumMipmaps(5);
-
-	// Set up the camera
-	mCamera = mSceneMgr->createCamera("MainCam");
-	mCamera->setPosition(0, 0, 0);
-	mCamera->setNearClipDistance(5);
-
-	// Set up the viewport
-	Ogre::Viewport* vp = mWindow->addViewport(mCamera);
-	vp->setBackgroundColour(Ogre::ColourValue::Black);
-
-	mCamera->setAspectRatio(Ogre::Real(vp->getActualWidth()) /
-							Ogre::Real(vp->getActualHeight()));
-
+	setupScene();
+	setupCamera();
+	setupViewport();
 	setupInput();
+
+	setupTerrain();
 
 	mRoot->addFrameListener(this);
 	Ogre::WindowEventUtilities::addWindowEventListener(mWindow, this);
 
-	loop();
-}
-
-void App::loop() {
-	// Start the render loop
-	while (true) {
-		// Listen to window events (e.g. window closing)
-		Ogre::WindowEventUtilities::messagePump();
-
-		if (!mRoot->renderOneFrame())
-			return;
-	}
+	mRoot->startRendering();
 }

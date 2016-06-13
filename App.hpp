@@ -7,6 +7,9 @@
 #include <OgreCamera.h>
 #include <OgreWindowEventUtilities.h>
 
+#include <Terrain/OgreTerrain.h>
+#include <Terrain/OgreTerrainGroup.h>
+
 #include <OISInputManager.h>
 #include <OISKeyboard.h>
 
@@ -23,9 +26,12 @@ private:
 	bool setupPlugins();
 	void setupResources();
 	bool setupRenderSystem();
+	void setupScene();
+	void setupCamera();
+	void setupViewport();
 	void setupInput();
 
-	void loop();
+	void setupTerrain();
 
 	virtual bool frameRenderingQueued(const Ogre::FrameEvent& evt);
 
@@ -39,6 +45,9 @@ private:
 	Ogre::RenderWindow* mWindow;
 	Ogre::SceneManager* mSceneMgr;
 	Ogre::Camera* mCamera;
+
+	Ogre::TerrainGlobalOptions* mTerrainGlobals;
+	Ogre::TerrainGroup* mTerrainGroup;
 
 	OIS::InputManager* mInputMgr;
 	OIS::Keyboard* mKeyboard;

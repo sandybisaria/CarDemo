@@ -44,6 +44,7 @@ set_target_properties(CarDemo PROPERTIES DEBUG_POSTFIX _d)
 target_link_libraries(CarDemo
 	${OIS_LIBRARIES}
 	${OGRE_LIBRARIES}
+	${OGRE_Terrain_LIBRARIES}
 )
 
 # Make binary directories
