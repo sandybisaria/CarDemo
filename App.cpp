@@ -3,7 +3,6 @@
 #include <OgreConfigFile.h>
 #include <OgrePlugin.h>
 #include <OgreViewport.h>
-#include <OgreWindowEventUtilities.h>
 
 #include "App.hpp"
 
@@ -15,6 +14,9 @@ App::App()
 }
 
 App::~App() {
+	Ogre::WindowEventUtilities::removeWindowEventListener(mWindow, this);
+	windowClosed(mWindow);
+
 	delete mRoot;
 }
 
@@ -96,6 +98,14 @@ bool App::frameRenderingQueued(const Ogre::FrameEvent& evt) {
 	return true;
 }
 
+void App::windowResized(Ogre::RenderWindow* rw) {
+
+}
+
+void App::windowClosed(Ogre::RenderWindow* rw) {
+
+}
+
 void App::run() {
 	// Set up the root without a plugin or config file
 	mRoot = new Ogre::Root("", "");
@@ -130,7 +140,12 @@ void App::run() {
 							Ogre::Real(vp->getActualHeight()));
 
 	mRoot->addFrameListener(this);
+	Ogre::WindowEventUtilities::addWindowEventListener(mWindow, this);
 
+	loop();
+}
+
+void App::loop() {
 	// Start the render loop
 	while (true) {
 		// Listen to window events (e.g. window closing)
