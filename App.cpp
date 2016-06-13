@@ -1,5 +1,6 @@
 #include <iostream>
 
+#include <OgreConfigFile.h>
 #include <OgrePlugin.h>
 #include <OgreViewport.h>
 #include <OgreWindowEventUtilities.h>
@@ -54,7 +55,22 @@ bool App::setupPlugins() {
 }
 
 void App::setupResources() {
-	Ogre::ResourceGroupManager::getSingleton().addResourceLocation("../media/materials", "FileSystem");
+	Ogre::ConfigFile resourcesFile;
+	resourcesFile.load("../config/resources.cfg");
+	Ogre::String name, locType;
+	Ogre::ConfigFile::SectionIterator secIt = resourcesFile.getSectionIterator();
+
+	while (secIt.hasMoreElements())	{
+		Ogre::ConfigFile::SettingsMultiMap* settings = secIt.getNext();
+		Ogre::ConfigFile::SettingsMultiMap::iterator it;
+
+		for (it = settings->begin(); it != settings->end(); ++it) {
+			locType = it->first;
+			name = it->second;
+
+			Ogre::ResourceGroupManager::getSingleton().addResourceLocation(name, locType);
+		}
+	}
 
 	Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
 }
@@ -89,10 +105,14 @@ void App::run() {
 
 	// Set up scene manager
 	mSceneMgr = mRoot->createSceneManager(Ogre::ST_EXTERIOR_FAR);
+	mSceneMgr->setSkyDome(true, "CloudySky");
+
+	Ogre::TextureManager::getSingleton().setDefaultNumMipmaps(5);
 
 	// Set up the camera
 	mCamera = mSceneMgr->createCamera("MainCam");
-	mSceneMgr->setSkyDome(true, "CloudySky");
+	mCamera->setPosition(0, 0, 0);
+	mCamera->setNearClipDistance(5);
 
 	// Set up the viewport
 	Ogre::Viewport* vp = mWindow->addViewport(mCamera);

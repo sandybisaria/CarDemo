@@ -45,7 +45,8 @@ target_link_libraries(CarDemo
 
 # Make binary directories
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/dist/bin)
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/dist/media)
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/dist/data)
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/dist/config)
 
 # Execute in the binary directory
 set(EXECUTABLE_OUTPUT_PATH "${PROJECT_BINARY_DIR}/dist/bin")
@@ -55,7 +56,12 @@ install(TARGETS CarDemo
 	CONFIGURATIONS ALL
 )
 
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/media
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/data
+	DESTINATION ./
+	CONFIGURATIONS Release RelWithDebInfo Debug
+)
+
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/config
 	DESTINATION ./
 	CONFIGURATIONS Release RelWithDebInfo Debug
 )
