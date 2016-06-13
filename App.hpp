@@ -18,6 +18,8 @@ private:
 	Ogre::RenderWindow* mWindow;
 	Ogre::SceneManager* mSceneMgr;
 	Ogre::Camera* mCamera;
+
+	bool setupPlugins();
 };
 
 #endif
