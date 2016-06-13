@@ -2,6 +2,9 @@
 #define APP_HPP
 
 #include <OgreRoot.h>
+#include <OgreRenderWindow.h>
+#include <OgreSceneManager.h>
+#include <OgreCamera.h>
 
 class App {
 public:
@@ -12,6 +15,9 @@ public:
 
 private:
 	Ogre::Root* mRoot;
+	Ogre::RenderWindow* mWindow;
+	Ogre::SceneManager* mSceneMgr;
+	Ogre::Camera* mCamera;
 };
 
 #endif
