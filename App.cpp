@@ -4,9 +4,11 @@
 #include <OgreRenderWindow.h>
 
 #include "App.hpp"
+#include "Scene.hpp"
 
 App::App(Ogre::Root* root)
-	: mShutDown(false), mRoot(root), mWindow(0), mSceneMgr(0), mCamera(0),
+	: mShutDown(false), mScene(0),
+	  mRoot(root), mWindow(0), mSceneMgr(0), mCamera(0),
 	  mInputMgr(0), mKeyboard(0) {
 }
 
@@ -15,6 +17,8 @@ App::~App() {
 	Ogre::WindowEventUtilities::removeWindowEventListener(mWindow, this);
 
 	windowClosed(mWindow);
+
+	delete mScene;
 }
 
 void App::run() {
@@ -49,6 +53,7 @@ bool App::setup() {
 	setupInputSystem();
 
 	mSceneMgr = mRoot->createSceneManager(Ogre::ST_EXTERIOR_FAR);
+	mScene = new Scene(mSceneMgr);
 
 	//TODO Explore multiple viewports for split-screen effects
 	//Would entail managing cameras in separate class
@@ -62,6 +67,8 @@ bool App::setup() {
 
 	setupListeners();
 	setupScene();
+
+	//TODO Setup compositors for rendering effects?
 
 	//TODO Setup material factory?
 
@@ -141,16 +148,9 @@ void App::setupListeners() {
 }
 
 void App::setupScene() {
-	//TODO Set up GUI
-	mSceneMgr->setAmbientLight(Ogre::ColourValue(0.5, 0.5, 0.5));
+	//TODO Set up GUI?
 
-	mSceneMgr->setSkyDome(true, "CloudySky");
-
-	Ogre::Light* sun = mSceneMgr->createLight("SunLight");
-	sun->setType(Ogre::Light::LT_DIRECTIONAL);
-	sun->setDirection(Ogre::Vector3::NEGATIVE_UNIT_Y);
-	sun->setDiffuseColour(Ogre::ColourValue::White);
-	sun->setSpecularColour(Ogre::ColourValue(0.4, 0.4, 0.4));
+	mScene->setupTerrain();
 }
 
 bool App::frameRenderingQueued(const Ogre::FrameEvent& evt) {

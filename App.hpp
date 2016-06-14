@@ -1,5 +1,6 @@
-#ifndef APP_HPP
-#define APP_HPP
+#pragma once
+
+#include "Scene.hpp"
 
 #include <OgreRoot.h>
 #include <OgreFrameListener.h>
@@ -36,6 +37,8 @@ private:
 
 	bool mShutDown;
 
+	Scene* mScene;
+
 	Ogre::Root* mRoot;
 	Ogre::RenderWindow* mWindow;
 	Ogre::SceneManager* mSceneMgr;
@@ -44,5 +47,3 @@ private:
 	OIS::InputManager* mInputMgr;
 	OIS::Keyboard* mKeyboard;
 };
-
-#endif

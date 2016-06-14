@@ -23,12 +23,14 @@ find_package(OIS REQUIRED)
 # Header files
 set(HDRS
 	./App.hpp
+	./Scene.hpp
 )
 
 # Source files
 set(SRCS
 	./main.cpp
 	./App.cpp
+	./Scene.cpp
 )
 
 # Update as needed
