@@ -21,6 +21,8 @@ App::~App() {
 	Ogre::WindowEventUtilities::removeWindowEventListener(mWindow, this);
 	windowClosed(mWindow);
 
+	delete mTerrainGroup;
+	delete mTerrainGlobals;
 	delete mRoot;
 }
 
@@ -156,9 +158,39 @@ void App::setupInput() {
 }
 
 void App::setupTerrain() {
-	mTerrainGlobals = new Ogre::TerrainGlobalOptions();
-
-	mTerrainGroup = new Ogre::TerrainGroup(mSceneMgr, Ogre::Terrain::ALIGN_X_Z, 513, 12000.0);
+//	mTerrainGlobals = new Ogre::TerrainGlobalOptions();
+//
+//	// Terrain lies on the x-z plane (perp to y axis)
+//	const int TERRAIN_SIZE = 513;
+//	const float WORLD_SIZE = 12000.0;
+//	mTerrainGroup = new Ogre::TerrainGroup(mSceneMgr, Ogre::Terrain::ALIGN_X_Z, TERRAIN_SIZE, WORLD_SIZE);
+//	mTerrainGroup->setOrigin(Ogre::Vector3::ZERO);
+//
+//	mTerrainGlobals->setMaxPixelError(8);
+//	mTerrainGlobals->setCompositeMapDistance(3000);
+//	mTerrainGlobals->setLightMapDirection(mSceneMgr->getLight("SunLight")->getDerivedDirection());
+//	mTerrainGlobals->setCompositeMapAmbient(mSceneMgr->getAmbientLight());
+//	mTerrainGlobals->setCompositeMapDiffuse(mSceneMgr->getLight("SunLight")->getDiffuseColour());
+//
+//	Ogre::Terrain::ImportData& importData = mTerrainGroup->getDefaultImportSettings();
+//	importData.terrainSize = TERRAIN_SIZE;
+//	importData.worldSize = WORLD_SIZE;
+//	importData.inputScale = 600;
+//	importData.minBatchSize = 33;
+//	importData.maxBatchSize = 65;
+//
+//	importData.layerList.resize(1); // For now, only using one terrain
+//	importData.layerList[0].worldSize = 100; // Size of each splat
+//	importData.layerList[0].textureNames.push_back("grass_green_diffusespecular.dds");
+//	importData.layerList[0].textureNames.push_back("grass_green_normalheight.dds");
+//
+//	Ogre::Image img;
+//	img.load("terrain.png", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+//	mTerrainGroup->defineTerrain(0, 0, &img);
+//
+//	mTerrainGroup->loadAllTerrains(true);
+//
+//	mTerrainGroup->freeTemporaryResources();
 }
 
 bool App::frameRenderingQueued(const Ogre::FrameEvent& evt) {
@@ -216,7 +248,7 @@ void App::run() {
 	setupViewport();
 	setupInput();
 
-	setupTerrain();
+//	setupTerrain();
 
 	mRoot->addFrameListener(this);
 	Ogre::WindowEventUtilities::addWindowEventListener(mWindow, this);
