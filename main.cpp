@@ -5,14 +5,18 @@
 #include "App.hpp"
 
 int main(int argc, char* argv[]) {
-	App* a = new App();
+
+	Ogre::Root* root = OGRE_NEW Ogre::Root("", "../config/resources.cfg");
+	App* app = new App(root);
+
 	try {
-		a->run();
+		app->run();
 	} catch (Ogre::Exception& e) {
 		std::cerr << e.getFullDescription() << std::endl;
 	}
 
-	delete a;
+	delete app;
+	OGRE_DELETE root;
 
 	return 0;
 }
