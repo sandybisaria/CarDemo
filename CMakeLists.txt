@@ -21,16 +21,15 @@ find_package(OGRE REQUIRED)
 find_package(OIS REQUIRED)
 
 # Header files
-set(HDRS
-	./App.hpp
-	./Scene.hpp
+file(GLOB HDRS
+	*.hpp
+	vdrift/*.hpp
 )
 
 # Source files
-set(SRCS
-	./main.cpp
-	./App.cpp
-	./Scene.cpp
+file(GLOB SRCS
+	*.cpp
+	vdrift/*.cpp
 )
 
 # Update as needed

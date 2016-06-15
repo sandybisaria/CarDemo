@@ -4,10 +4,9 @@
 #include <OgreRenderWindow.h>
 
 #include "App.hpp"
-#include "Scene.hpp"
 
 App::App(Ogre::Root* root)
-	: mShutDown(false), mScene(0),
+	: mShutDown(false), mScene(0), mSim(0),
 	  mRoot(root), mWindow(0), mSceneMgr(0), mCamera(0), mCameraNode(0),
 	  mInputMgr(0), mKeyboard(0) {
 }
@@ -18,6 +17,7 @@ App::~App() {
 
 	windowClosed(mWindow);
 
+	delete mSim;
 	delete mScene;
 }
 
@@ -26,7 +26,7 @@ void App::run() {
 		return;
 	}
 
-	mRoot->startRendering(); //TODO Manual loop for locked fps
+	mRoot->startRendering(); //TODO Allow for manual loop (locked fps)
 }
 
 bool App::setup() {
@@ -53,6 +53,9 @@ bool App::setup() {
 	setupInputSystem();
 
 	mSceneMgr = mRoot->createSceneManager(Ogre::ST_EXTERIOR_FAR);
+
+	setupSim();
+
 	mScene = new Scene(mSceneMgr);
 
 	//TODO Explore multiple viewports for split-screen effects
@@ -70,7 +73,7 @@ bool App::setup() {
 
 	//TODO Setup compositors for rendering effects?
 
-	//TODO Setup material factory?
+	//TODO Setup material factory? Using shiny?
 
 	return true;
 }
@@ -124,6 +127,11 @@ void App::setupInputSystem() {
 	mKeyboard = static_cast<OIS::Keyboard*>(mInputMgr->createInputObject(OIS::OISKeyboard, true));
 }
 
+void App::setupSim() {
+	mSim = new Sim();
+	mSim->setup();
+}
+
 void App::setupViewSystem() {
 	mCamera = mSceneMgr->createCamera("MainCamera");
 
@@ -151,7 +159,6 @@ void App::setupListeners() {
 
 void App::setupScene() {
 	//TODO Set up GUI?
-
 	mScene->setupTerrain();
 }
 
@@ -165,12 +172,14 @@ bool App::frameRenderingQueued(const Ogre::FrameEvent& evt) {
 	}
 
 	mKeyboard->capture();
-	moveCamera(evt);
+	updateCamera(evt);
+
+	mSim->update(evt.timeSinceLastFrame);
 
 	return true;
 }
 
-void App::moveCamera(const Ogre::FrameEvent& evt) {
+void App::updateCamera(const Ogre::FrameEvent& evt) {
 	Ogre::Vector3 translation(Ogre::Vector3::ZERO);
 	if (mKeyboard->isKeyDown(OIS::KC_W)) {
 		translation += Ogre::Vector3::NEGATIVE_UNIT_Z;

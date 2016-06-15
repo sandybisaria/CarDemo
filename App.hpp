@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Scene.hpp"
+#include "Sim.hpp"
 
 #include <OgreRoot.h>
 #include <OgreFrameListener.h>
@@ -24,12 +25,13 @@ private:
 	void setupResources();
 	bool setupRenderSystem();
 	void setupInputSystem();
+	void setupSim();
 	void setupViewSystem();
 	void setupListeners();
 	void setupScene();
 
 	virtual bool frameRenderingQueued(const Ogre::FrameEvent& evt);
-	void moveCamera(const Ogre::FrameEvent& evt);
+	void updateCamera(const Ogre::FrameEvent& evt);
 
 	virtual void windowClosed(Ogre::RenderWindow* rw);
 
@@ -38,6 +40,7 @@ private:
 
 	bool mShutDown;
 
+	Sim* mSim;
 	Scene* mScene;
 
 	Ogre::Root* mRoot;

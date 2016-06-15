@@ -25,7 +25,7 @@ void Scene::setupTerrain() {
 	mTerrainGlobals = OGRE_NEW Ogre::TerrainGlobalOptions();
 
 	mTerrainGroup = OGRE_NEW Ogre::TerrainGroup(mSceneMgr,
-			Ogre::Terrain::ALIGN_X_Z, 513, 12000.0);
+			Ogre::Terrain::ALIGN_X_Z, 513, 10000.0);
 
 	configureTerrainDefaults();
 	defineTerrain();
@@ -47,13 +47,13 @@ void Scene::configureTerrainDefaults() {
 
 	Ogre::Terrain::ImportData& importData = mTerrainGroup->getDefaultImportSettings();
 	importData.terrainSize = 513;
-	importData.worldSize = 12000.0;
+	importData.worldSize = 10000.0;
 	importData.inputScale = 600;
 	importData.minBatchSize = 33;
 	importData.maxBatchSize = 65;
 
 	importData.layerList.resize(1);
-	importData.layerList[0].worldSize = 100;
+	importData.layerList[0].worldSize = 30;
 	importData.layerList[0].textureNames.push_back("grass_green_diffusespecular.dds");
 	importData.layerList[0].textureNames.push_back("grass_green_normalheight.dds");
 }
