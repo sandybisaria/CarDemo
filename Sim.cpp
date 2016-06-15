@@ -10,6 +10,8 @@ Sim::~Sim() {
 
 void Sim::setup() {
 	mCar = new Car();
+	// Right now, will be using the Ferrari 360 Modena
+	mCar->setup("360");
 }
 
 void Sim::update(float dt) {

@@ -1,14 +1,17 @@
 #pragma once
 
+#include <string>
+
 class Car {
 public:
 	Car();
 	~Car();
 
-	void setup();
+	void setup(std::string carName);
 
 private:
 	void setNumWheels(int n);
 
+	std::string mCarName;
 	int numWheels;
 };

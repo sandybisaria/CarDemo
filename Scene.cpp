@@ -11,7 +11,7 @@ Scene::~Scene() {
 }
 
 void Scene::setupTerrain() {
-	mSceneMgr->setAmbientLight(Ogre::ColourValue(0.2, 0.2, 0.2));
+	mSceneMgr->setAmbientLight(Ogre::ColourValue(0.4, 0.4, 0.4));
 
 	Ogre::Vector3 lightDir(0.55, -0.3, 0.75);
 	lightDir.normalise();
@@ -53,9 +53,9 @@ void Scene::configureTerrainDefaults() {
 	importData.maxBatchSize = 65;
 
 	importData.layerList.resize(1);
-	importData.layerList[0].worldSize = 30;
-	importData.layerList[0].textureNames.push_back("grass_green_diffusespecular.dds");
-	importData.layerList[0].textureNames.push_back("grass_green_normalheight.dds");
+	importData.layerList[0].worldSize = 100;
+	importData.layerList[0].textureNames.push_back("asphalt_ds.dds");
+	importData.layerList[0].textureNames.push_back("asphalt_nh.dds");
 }
 
 void Scene::defineTerrain() {
