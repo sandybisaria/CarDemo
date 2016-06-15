@@ -127,7 +127,7 @@ void App::setupInputSystem() {
 void App::setupViewSystem() {
 	mCamera = mSceneMgr->createCamera("MainCamera");
 
-	mCamera->setPosition(Ogre::Vector3::ZERO);
+	mCamera->setPosition(Ogre::Vector3(0, 300, 0));
 	mCamera->setDirection(Ogre::Vector3::UNIT_Z);
 
 	//TODO Make configurable a la Stuntrally
