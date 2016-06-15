@@ -1,5 +1,7 @@
 #include "Car.hpp"
 
+#include "../util/ConfigFile.hpp"
+
 Car::Car() {
 	setNumWheels(4); // Default to four wheels
 }
@@ -11,7 +13,16 @@ Car::~Car() {
 void Car::setup(std::string carName) {
 	mCarName = carName;
 
-	std::string carPath = "../data/cars/" + mCarName + "/";
+	// Top-level directory for all car data
+	std::string carPath = "../data/cars/" + mCarName;
+	std::string carSimPath = carPath + "/sim/" + mCarName + ".car";
+
+	ConfigFile cf;
+	if (!cf.load(carSimPath)) {
+		return; //TODO Error if car not found
+	}
+
+	std::cout << "Found .car file" << std::endl;
 }
 
 void Car::setNumWheels(int n) {

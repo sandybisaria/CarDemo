@@ -24,12 +24,14 @@ find_package(OIS REQUIRED)
 file(GLOB HDRS
 	*.hpp
 	vdrift/*.hpp
+	util/*.hpp
 )
 
 # Source files
 file(GLOB SRCS
 	*.cpp
 	vdrift/*.cpp
+	util/*.cpp
 )
 
 # Update as needed
