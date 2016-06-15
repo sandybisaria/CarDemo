@@ -29,6 +29,7 @@ private:
 	void setupScene();
 
 	virtual bool frameRenderingQueued(const Ogre::FrameEvent& evt);
+	void moveCamera(const Ogre::FrameEvent& evt);
 
 	virtual void windowClosed(Ogre::RenderWindow* rw);
 
@@ -43,6 +44,7 @@ private:
 	Ogre::RenderWindow* mWindow;
 	Ogre::SceneManager* mSceneMgr;
 	Ogre::Camera* mCamera;
+	Ogre::SceneNode* mCameraNode;
 
 	OIS::InputManager* mInputMgr;
 	OIS::Keyboard* mKeyboard;

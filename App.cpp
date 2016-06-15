@@ -8,7 +8,7 @@
 
 App::App(Ogre::Root* root)
 	: mShutDown(false), mScene(0),
-	  mRoot(root), mWindow(0), mSceneMgr(0), mCamera(0),
+	  mRoot(root), mWindow(0), mSceneMgr(0), mCamera(0), mCameraNode(0),
 	  mInputMgr(0), mKeyboard(0) {
 }
 
@@ -127,8 +127,10 @@ void App::setupInputSystem() {
 void App::setupViewSystem() {
 	mCamera = mSceneMgr->createCamera("MainCamera");
 
-	mCamera->setPosition(Ogre::Vector3(0, 300, 0));
-	mCamera->setDirection(Ogre::Vector3::UNIT_Z);
+	mCameraNode = mSceneMgr->getRootSceneNode()->createChildSceneNode("MainCameraNode");
+	mCameraNode->setPosition(Ogre::Vector3(0, 300, 0));
+	mCameraNode->setDirection(Ogre::Vector3::ZERO);
+	mCameraNode->attachObject(mCamera);
 
 	//TODO Make configurable a la Stuntrally
 	mCamera->setNearClipDistance(0.2);
@@ -163,8 +165,29 @@ bool App::frameRenderingQueued(const Ogre::FrameEvent& evt) {
 	}
 
 	mKeyboard->capture();
+	moveCamera(evt);
 
 	return true;
+}
+
+void App::moveCamera(const Ogre::FrameEvent& evt) {
+	Ogre::Vector3 translation(Ogre::Vector3::ZERO);
+	if (mKeyboard->isKeyDown(OIS::KC_W)) {
+		translation += Ogre::Vector3::NEGATIVE_UNIT_Z;
+	} if (mKeyboard->isKeyDown(OIS::KC_S)) {
+		translation += Ogre::Vector3::UNIT_Z;
+	} if (mKeyboard->isKeyDown(OIS::KC_E)) {
+		translation += Ogre::Vector3::UNIT_Y;
+	} if (mKeyboard->isKeyDown(OIS::KC_Q)) {
+		translation += Ogre::Vector3::NEGATIVE_UNIT_Y;
+	}
+	mCameraNode->translate(translation, Ogre::Node::TS_LOCAL);
+
+	if (mKeyboard->isKeyDown(OIS::KC_A)) {
+		mCameraNode->yaw(Ogre::Radian(0.005), Ogre::Node::TS_LOCAL);
+	} if (mKeyboard->isKeyDown(OIS::KC_D)) {
+		mCameraNode->yaw(Ogre::Radian(-0.005), Ogre::Node::TS_LOCAL);
+	}
 }
 
 void App::windowClosed(Ogre::RenderWindow* rw) {
@@ -179,8 +202,13 @@ void App::windowClosed(Ogre::RenderWindow* rw) {
 }
 
 bool App::keyPressed(const OIS::KeyEvent& ke) {
-	if (ke.key == OIS::KC_ESCAPE) {
+	switch (ke.key) {
+	case OIS::KC_ESCAPE:
 		mShutDown = true;
+		break;
+
+	default:
+		break;
 	}
 
 	return true;
