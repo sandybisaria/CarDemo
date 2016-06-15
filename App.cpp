@@ -128,7 +128,7 @@ void App::setupViewSystem() {
 	mCamera = mSceneMgr->createCamera("MainCamera");
 
 	mCameraNode = mSceneMgr->getRootSceneNode()->createChildSceneNode("MainCameraNode");
-	mCameraNode->setPosition(Ogre::Vector3(0, 300, 0));
+	mCameraNode->setPosition(Ogre::Vector3(0, 80, 0));
 	mCameraNode->setDirection(Ogre::Vector3::ZERO);
 	mCameraNode->attachObject(mCamera);
 

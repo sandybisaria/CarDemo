@@ -13,7 +13,6 @@ public:
 	void setupTerrain();
 	void configureTerrainDefaults();
 	void defineTerrain();
-	void initBlendMaps(Ogre::Terrain* terrain);
 
 private:
 	Ogre::SceneManager* mSceneMgr;
