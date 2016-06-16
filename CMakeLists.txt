@@ -20,6 +20,21 @@ set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/dist")
 find_package(OGRE REQUIRED)
 find_package(OIS REQUIRED)
 
+set(BOOST_COMPONENTS system thread filesystem wave)
+find_package(Boost COMPONENTS ${BOOST_COMPONENTS} REQUIRED QUIET)
+
+include_directories(
+	${OGRE_INCLUDE_DIRS}
+	${OIS_INCLUDE_DIRS}
+	${Boost_INCLUDE_DIRS}
+)
+
+link_directories(
+	${Boost_INCLUDE_DIRS}
+)
+
+list(APPEND EXTLIBS ${Boost_LIBRARIES})
+
 # External libraries
 add_subdirectory(shiny)
 list(APPEND EXTLIBS "shiny")
@@ -37,12 +52,6 @@ file(GLOB SRCS
 	*.cpp
 	vdrift/*.cpp
 	util/*.cpp
-)
-
-# Update as needed
-include_directories(
-	${OGRE_INCLUDE_DIRS}
-	${OIS_INCLUDE_DIRS}
 )
 
 add_executable(CarDemo ${HDRS} ${SRCS})

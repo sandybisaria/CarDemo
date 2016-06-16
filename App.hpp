@@ -3,6 +3,8 @@
 #include "Scene.hpp"
 #include "Sim.hpp"
 
+#include "shiny/Main/Factory.hpp"
+
 #include <OgreRoot.h>
 #include <OgreFrameListener.h>
 #include <OgreWindowEventUtilities.h>
@@ -42,6 +44,8 @@ private:
 
 	Sim* mSim;
 	Scene* mScene;
+
+	sh::Factory* mFactory;
 
 	Ogre::Root* mRoot;
 	Ogre::RenderWindow* mWindow;

@@ -1,5 +1,7 @@
 #include <iostream>
 
+#include "shiny/Platforms/Ogre/OgrePlatform.hpp"
+
 #include <OgreConfigFile.h>
 #include <OgreRenderWindow.h>
 
@@ -19,6 +21,8 @@ App::~App() {
 
 	delete mSim;
 	delete mScene;
+
+	delete mFactory;
 }
 
 void App::run() {
@@ -73,7 +77,8 @@ bool App::setup() {
 
 	//TODO Setup compositors for rendering effects?
 
-	//TODO Setup material factory? Using shiny?
+	sh::OgrePlatform* platform = new sh::OgrePlatform("General", "../data/materials");
+	mFactory = new sh::Factory(platform);
 
 	return true;
 }
