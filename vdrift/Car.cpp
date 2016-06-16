@@ -89,8 +89,6 @@ void Car::loadModel() {
 	//TODO Allow for camera to follow car (using FollowCamera class)?
 	//TODO Create car reflection (using CarReflection class)?
 
-	//FIXME Load the materials!
-
 	// Create car body
 	std::string bodyMesh = mCarName + "_body";
 	Ogre::Entity* body = mSceneMgr->createEntity(bodyMesh, bodyMesh + ".mesh", mCarName);
@@ -132,6 +130,8 @@ void Car::loadModel() {
 		forDeletion(brake);
 		brakeNodes[w]->attachObject(brake);
 	}
+
+	//TODO Load the materials!
 }
 
 void Car::forDeletion(Ogre::SceneNode* node) {

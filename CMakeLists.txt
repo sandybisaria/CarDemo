@@ -20,6 +20,11 @@ set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/dist")
 find_package(OGRE REQUIRED)
 find_package(OIS REQUIRED)
 
+# External libraries
+add_subdirectory(shiny)
+list(APPEND EXTLIBS "shiny")
+list(APPEND EXTLIBS "shiny.OgrePlatform")
+
 # Header files
 file(GLOB HDRS
 	*.hpp
@@ -45,6 +50,7 @@ set_target_properties(CarDemo PROPERTIES DEBUG_POSTFIX _d)
 
 # Update as needed
 target_link_libraries(CarDemo
+	${EXTLIBS}
 	${OIS_LIBRARIES}
 	${OGRE_LIBRARIES}
 	${OGRE_Terrain_LIBRARIES}
