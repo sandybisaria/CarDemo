@@ -4,6 +4,7 @@
 #include <fstream>
 #include <sys/stat.h>
 
+// -----------------------------------------------------------------------------
 // ConfigVariable methods
 
 ConfigVariable::ConfigVariable()
@@ -41,10 +42,11 @@ void ConfigVariable::set(std::string newVal) {
 	val_b = false;
 	if (val_i == 0)		val_b = false;
 	if (val_i == 1)		val_b = true;
-	if (strLCase(newVal) == "on")		val_b = true;
-	if (strLCase(newVal) == "off")		val_b = false;
-	if (strLCase(newVal) == "true")		val_b = true;
-	if (strLCase(newVal) == "false")	val_b = false;
+
+	if (ConfigFile::toLower(newVal) == "on")	val_b = true;
+	if (ConfigFile::toLower(newVal) == "off")	val_b = false;
+	if (ConfigFile::toLower(newVal) == "true")	val_b = true;
+	if (ConfigFile::toLower(newVal) == "false")	val_b = false;
 
 	// now process as vector information
 	int pos = 0;
@@ -70,6 +72,7 @@ void ConfigVariable::set(std::string newVal) {
 	}
 }
 
+// -----------------------------------------------------------------------------
 // ConfigFile methods
 
 ConfigFile::ConfigFile() {
@@ -88,6 +91,11 @@ bool ConfigFile::load(std::string filename) {
 	this->filename = filename;
 
 	std::ifstream f;
+	f.open(filename.c_str());
+	if (!f) {
+		return false;
+	}
+
 	std::string curSection = "";
 	const int MAX_CHAR = 1024;
 	char trashChar[MAX_CHAR];
@@ -98,6 +106,103 @@ bool ConfigFile::load(std::string filename) {
 	}
 
 	return true;
+}
+
+bool ConfigFile::getParam(std::string param, std::string& outVar) const {
+	const ConfigVariable* v = getVariable(param);
+	if (!v)
+		return false;
+
+	outVar = v->val_s;
+	return true;
+}
+
+bool ConfigFile::getParam(std::string param, int& outVar) const {
+	const ConfigVariable* v = getVariable(param);
+	if (!v)
+		return false;
+
+	outVar = v->val_i;
+	return true;
+}
+
+bool ConfigFile::getParam(std::string param, float& outVar) const {
+	const ConfigVariable* v = getVariable(param);
+	if (!v)
+		return false;
+
+	outVar = v->val_f;
+	return true;
+}
+
+bool ConfigFile::getParam(std::string param, float* outVar) const {
+	const ConfigVariable* v = getVariable(param);
+	if (!v)
+		return false;
+
+	for (int i = 0; i < ConfigVariable::V_SIZE; ++i) {
+		outVar[i] = v->val_v[i];
+	}
+	return true;
+}
+
+bool ConfigFile::getParam(std::string param, bool& outVar) const {
+	const ConfigVariable* v = getVariable(param);
+	if (!v)
+		return false;
+
+	outVar = v->val_b;
+	return true;
+}
+
+std::string ConfigFile::trim(std::string s) {
+	if (s.find_last_not_of(" \t") != std::string::npos) {
+		s = s.erase(s.find_last_not_of(" \t") + 1);
+	}
+	return s.erase(0, s.find_first_not_of(" \t"));
+}
+
+std::string ConfigFile::strip(std::string s, char strip) {
+	std::string::size_type pos = 0;
+	std::string res = "";
+
+	int length = s.length();
+	while (pos < length) {
+		if (s.c_str()[pos] == strip)
+			break;
+		pos++;
+	}
+
+	if (pos > 0) {
+		res = s.substr(0, pos);
+	}
+
+	if (pos + 1 < length) {
+		res = res + s.substr(pos+1, (length-pos)-1);
+	}
+
+	return res;
+}
+
+std::string ConfigFile::toLower(std::string s) {
+	char tc[2];
+	tc[1] = '\0';
+	std::string res = "";
+
+	std::string::size_type pos = 0;
+	while (pos < s.length()) {
+		// If an uppercase char
+		if (s.c_str()[pos] <= 90 && s.c_str()[pos] >= 65) {
+			tc[0] = s.c_str()[pos] + 32;
+			res = res + tc;
+		} else {
+			res = res + s.substr(pos, 1);
+		}
+
+		pos++;
+	}
+
+	return res;
 }
 
 void ConfigFile::processLine(std::string& curSection, std::string lineStr) {
@@ -133,7 +238,7 @@ void ConfigFile::processLine(std::string& curSection, std::string lineStr) {
 				if (!curSection.empty())
 					paramName = curSection + "." + paramName;
 
-//				add(paramName, newVar);
+				add(paramName, newVar);
 			}
 		}
 		else {
@@ -146,31 +251,21 @@ void ConfigFile::processLine(std::string& curSection, std::string lineStr) {
 	}
 }
 
-std::string ConfigFile::trim(std::string s) {
-	if (s.find_last_not_of(" \t") != std::string::npos) {
-		s = s.erase(s.find_last_not_of(" \t") + 1);
-	}
-	return s.erase(0, s.find_first_not_of(" \t"));
+void ConfigFile::add(std::string& paramName, ConfigVariable& newVar) {
+	variables.Set(paramName, newVar);
 }
 
-std::string ConfigFile::strip(std::string s, char strip) {
-	std::string::size_type pos = 0;
-	std::string res = "";
-
-	int length = s.length();
-	while (pos < length) {
-		if (s.c_str()[pos] == strip)
-			break;
-		pos++;
+const ConfigVariable* ConfigFile::getVariable(std::string param) const {
+	std::string::size_type ppos;
+	ppos = param.find(".", 0);
+	if (ppos < param.length()) {
+		if (param.substr(0, ppos).empty())
+		{
+			++ppos;
+			param = param.substr(ppos, param.length() - ppos);
+		}
 	}
 
-	if (pos > 0) {
-		res = s.substr(0, pos);
-	}
-
-	if (pos + 1 < length) {
-		res = res + s.substr(pos+1, (length-pos)-1);
-	}
-
-	return res;
+	const ConfigVariable* v = variables.Get(param);
+	return v;
 }

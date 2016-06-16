@@ -21,8 +21,6 @@ void Car::setup(std::string carName) {
 	if (!cf.load(carSimPath)) {
 		return; //TODO Error if car not found
 	}
-
-	std::cout << "Found .car file" << std::endl;
 }
 
 void Car::setNumWheels(int n) {

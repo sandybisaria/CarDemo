@@ -1,8 +1,12 @@
 #pragma once
 
-#include <string>
+#include "bucketed_hashmap.h"
+
+#include <iostream>
 
 class ConfigVariable {
+	friend class ConfigFile;
+
 public:
 	ConfigVariable();
 	ConfigVariable(std::string section, std::string name);
@@ -10,11 +14,12 @@ public:
 
 	void set(std::string newVal);
 
+	static const int V_SIZE = 3;
+
 private:
 	std::string mSection;
 	std::string mName;
 
-	static const int V_SIZE = 3;
 	void initVals();
 
 	// Possible value types
@@ -32,11 +37,23 @@ public:
 
 	bool load(std::string filename);
 
-private:
-	void processLine(std::string& curSection, std::string lineStr);
+	// getParam methods return true if param was found
+	bool getParam(std::string param, std::string& outVar) const;
+	bool getParam(std::string param, int& outVar) const;
+	bool getParam(std::string param, float& outVar) const;
+	bool getParam(std::string param, float* outVar) const; // For float[V_SIZE]
+	bool getParam(std::string param, bool& outVar) const;
 
+	//TODO Use C++ library functions rather than our own...
 	static std::string trim(std::string s);
 	static std::string strip(std::string s, char strip);
+	static std::string toLower(std::string s);
+
+private:
+	void processLine(std::string& curSection, std::string lineStr);
+	void add(std::string& paramName, ConfigVariable& newVar);
+	const ConfigVariable* getVariable(std::string param) const;
 
 	std::string filename;
+	bucketed_hashmap<std::string, ConfigVariable> variables;
 };
