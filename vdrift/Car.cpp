@@ -1,5 +1,6 @@
 #include "Car.hpp"
 
+#include "../shiny/Main/Factory.hpp"
 #include "../util/ConfigFile.hpp"
 
 #include <OgreRoot.h>
@@ -32,6 +33,15 @@ void Car::setup(std::string carName, Ogre::SceneManager* sceneMgr) {
 
 	mSceneMgr = sceneMgr;
 	loadModel();
+}
+
+void Car::requestedConfiguration(sh::MaterialInstance* m, const std::string& configuration) {
+
+}
+
+void Car::createdConfiguration(sh::MaterialInstance* m, const std::string& configuration) {
+//	ChangeClr();
+//	UpdateLightMap();
 }
 
 void Car::setNumWheels(int nw) {
@@ -77,7 +87,6 @@ void Car::loadModel() {
 	Ogre::ResourceGroupManager::getSingleton().createResourceGroup(mCarName);
 	Ogre::Root::getSingleton().addResourceLocation(carPath + "/mesh", "FileSystem", mCarName);
 	Ogre::Root::getSingleton().addResourceLocation(carPath + "/textures", "FileSystem", mCarName);
-	Ogre::ResourceGroupManager::getSingleton().initialiseResourceGroup(mCarName);
 
 	mainNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
 	forDeletion(mainNode);
@@ -131,7 +140,48 @@ void Car::loadModel() {
 		brakeNodes[w]->attachObject(brake);
 	}
 
-	//TODO Load the materials!
+	loadMaterials();
+
+	Ogre::ResourceGroupManager::getSingleton().initialiseResourceGroup(mCarName);
+	Ogre::ResourceGroupManager::getSingleton().loadResourceGroup(mCarName);
+}
+
+void Car::loadMaterials() {
+	std::string carBodyMtr = "car_body";
+	if (Ogre::MaterialManager::getSingleton().resourceExists(carBodyMtr + "_" + mCarName)) {
+		carBodyMtr += "_" + mCarName;
+	}
+	mtrNames[mtrCarBody] = carBodyMtr;
+
+	std::string carBrakeMtr = "car_glass";
+	if (Ogre::MaterialManager::getSingleton().resourceExists(carBrakeMtr + "_" + mCarName)) {
+		carBrakeMtr += "_" + mCarName;
+	}
+	mtrNames[mtrCarBrake] = carBrakeMtr;
+
+	for (int i=0; i < 1; ++i) {
+		//FIXME Currently altering "global" instance of material; refer to CarModel::RecreateMaterials
+		sh::MaterialInstance* m = sh::Factory::getInstance().getMaterialInstance(mtrNames[i]);
+
+		m->setListener(this);
+
+		// Change textures for the car
+		if (m->hasProperty("diffuseMap")) {
+			std::string v = sh::retrieveValue<sh::StringValue>(m->getProperty("diffuseMap"), 0).get();
+			m->setProperty("diffuseMap", sh::makeProperty<sh::StringValue>(new sh::StringValue(mCarName + "_" + v)));
+		}
+		if (m->hasProperty("carPaintMap")) {
+			std::string v = sh::retrieveValue<sh::StringValue>(m->getProperty("carPaintMap"), 0).get();
+			m->setProperty("carPaintMap", sh::makeProperty<sh::StringValue>(new sh::StringValue(mCarName + "_" + v)));
+		}
+		if (m->hasProperty("reflMap")) {
+			std::string v = sh::retrieveValue<sh::StringValue>(m->getProperty("reflMap"), 0).get();
+			m->setProperty("reflMap", sh::makeProperty<sh::StringValue>(new sh::StringValue(mCarName + "_" + v)));
+		}
+	}
+
+	//ChangeClr();
+//	UpdateLightMap();
 }
 
 void Car::forDeletion(Ogre::SceneNode* node) {

@@ -13,7 +13,8 @@
 #include <OISKeyboard.h>
 
 class App
-	: public Ogre::FrameListener,
+	: public sh::MaterialListener,
+	  public Ogre::FrameListener,
 	  public Ogre::WindowEventListener,
 	  public OIS::KeyListener {
 public:
@@ -31,6 +32,10 @@ private:
 	void setupViewSystem();
 	void setupListeners();
 	void setupScene();
+	void setupMaterials();
+	void setMaterialFactoryDefaults();
+
+	virtual void materialCreated(sh::MaterialInstance* m, const std::string& configuration, unsigned short lodIndex);
 
 	virtual bool frameRenderingQueued(const Ogre::FrameEvent& evt);
 	void updateCamera(const Ogre::FrameEvent& evt);

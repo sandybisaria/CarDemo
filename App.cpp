@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "shiny/Platforms/Ogre/OgrePlatform.hpp"
+#include "shiny/Platforms/Ogre/OgreMaterial.hpp"
 
 #include <OgreConfigFile.h>
 #include <OgreRenderWindow.h>
@@ -58,6 +59,7 @@ bool App::setup() {
 
 	mSceneMgr = mRoot->createSceneManager(Ogre::ST_EXTERIOR_FAR);
 
+	setupMaterials();
 	setupSim();
 
 	mScene = new Scene(mSceneMgr);
@@ -70,15 +72,10 @@ bool App::setup() {
 
 	//TODO Init GUI system
 
-	Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
-
 	setupListeners();
 	setupScene();
 
 	//TODO Setup compositors for rendering effects?
-
-	sh::OgrePlatform* platform = new sh::OgrePlatform("General", "../data/materials");
-	mFactory = new sh::Factory(platform);
 
 	return true;
 }
@@ -101,6 +98,7 @@ void App::setupResources() {
 					name, locType);
 		}
 	}
+	Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
 }
 
 bool App::setupRenderSystem() {
@@ -130,6 +128,44 @@ void App::setupInputSystem() {
 	mInputMgr = OIS::InputManager::createInputSystem(pl);
 
 	mKeyboard = static_cast<OIS::Keyboard*>(mInputMgr->createInputObject(OIS::OISKeyboard, true));
+}
+
+void App::setupMaterials() {
+	sh::OgrePlatform* platform = new sh::OgrePlatform("General", "../data/materials2");
+	mFactory = new sh::Factory(platform);
+
+	setMaterialFactoryDefaults();
+
+	mFactory->setCurrentLanguage(sh::Language_GLSL); // Default, for Linux
+	mFactory->loadAllFiles();
+
+	mFactory->setMaterialListener(this);
+}
+
+void App::setMaterialFactoryDefaults() {
+	sh::Factory& fct = *mFactory;
+	fct.setReadSourceCache(true);
+	fct.setWriteSourceCache(true);
+	fct.setReadMicrocodeCache(true);
+	fct.setWriteMicrocodeCache(true);
+
+	fct.setGlobalSetting("fog", "true");
+	fct.setGlobalSetting("wind", "true");
+	fct.setGlobalSetting("mrt_output", "false");
+	fct.setGlobalSetting("shadows", "false");
+	fct.setGlobalSetting("shadows_pssm", "false");
+	fct.setGlobalSetting("shadows_depth", "true"); //Hard-coded
+	fct.setGlobalSetting("lighting", "true");
+	fct.setGlobalSetting("terrain_composite_map", "false");
+	fct.setGlobalSetting("soft_particles", "false");
+	fct.setGlobalSetting("editor", "false");
+	//TODO What other defaults are needed (from App::SetFactoryDefaults)?
+
+	//TODO NEED STUFF FROM CScene::UpdFog TOO??
+	fct.setSharedParameter("fogColorSun",  sh::makeProperty<sh::Vector4>(new sh::Vector4(0, 0, 0, 0))); //Hard-coded
+	fct.setSharedParameter("fogColorAway",  sh::makeProperty<sh::Vector4>(new sh::Vector4(0, 0, 0, 0))); //Hard-coded
+	fct.setSharedParameter("fogColorH",  sh::makeProperty<sh::Vector4>(new sh::Vector4(0, 0, 0, 0))); //Hard-coded
+	fct.setSharedParameter("fogParamsH",  sh::makeProperty<sh::Vector4>(new sh::Vector4(0, 0, 0, 0))); //Hard-coded
 }
 
 void App::setupSim() {
@@ -165,6 +201,22 @@ void App::setupListeners() {
 void App::setupScene() {
 	//TODO Set up GUI?
 	mScene->setupTerrain();
+}
+
+//TODO Investigate if required
+void App::materialCreated(sh::MaterialInstance* m, const std::string& configuration, unsigned short lodIndex) {
+	Ogre::Technique* t = static_cast<sh::OgreMaterial*>(m->getMaterial())->
+			getOgreTechniqueForConfiguration(configuration, lodIndex);
+
+	if (m->hasProperty("instancing") &&
+			sh::retrieveValue<sh::StringValue>(m->getProperty("instancing"), 0).get() == "true") {
+		t->setShadowCasterMaterial("shadowcaster_instancing");
+	}
+
+	if (!m->hasProperty("transparent") ||
+			!sh::retrieveValue<sh::BooleanValue>(m->getProperty("transparent"), 0).get()) {
+		t->setShadowCasterMaterial("shadowcaster_noalpha");
+	}
 }
 
 bool App::frameRenderingQueued(const Ogre::FrameEvent& evt) {
