@@ -1,7 +1,76 @@
 #include "ConfigFile.hpp"
 
+#include <cstdlib>
 #include <fstream>
 #include <sys/stat.h>
+
+// ConfigVariable methods
+
+ConfigVariable::ConfigVariable()
+	: mSection(""), mName("") {
+	initVals();
+}
+
+ConfigVariable::ConfigVariable(std::string section, std::string name)
+	: mSection(section), mName(name) {
+	initVals();
+}
+
+void ConfigVariable::initVals() {
+	val_s = "";
+	val_i = 0;
+	val_f = 0.f;
+	val_b = false;
+	for (int i = 0; i < V_SIZE; i++) {
+		val_v[i] = 0.f;
+	}
+}
+
+ConfigVariable::~ConfigVariable() {
+
+}
+
+void ConfigVariable::set(std::string newVal) {
+	// Parses string to determine appropriate data type
+	newVal = ConfigFile::trim(newVal);
+
+	val_i = atoi(newVal.c_str());
+	val_f = atof(newVal.c_str());
+	val_s = newVal;
+
+	val_b = false;
+	if (val_i == 0)		val_b = false;
+	if (val_i == 1)		val_b = true;
+	if (strLCase(newVal) == "on")		val_b = true;
+	if (strLCase(newVal) == "off")		val_b = false;
+	if (strLCase(newVal) == "true")		val_b = true;
+	if (strLCase(newVal) == "false")	val_b = false;
+
+	// now process as vector information
+	int pos = 0;
+	int arraypos = 0;
+	std::string::size_type nextpos = newVal.find(",", pos);
+	std::string frag;
+
+	while (nextpos < newVal.length() && arraypos < 3)
+	{
+		frag = newVal.substr(pos, nextpos - pos);
+		val_v[arraypos] = atof(frag.c_str());
+
+		pos = nextpos+1;
+		++arraypos;
+		nextpos = newVal.find(",", pos);
+	}
+
+	// don't forget the very last one
+	if (arraypos < 3)
+	{
+		frag = newVal.substr(pos, newVal.length() - pos);
+		val_v[arraypos] = atof(frag.c_str());
+	}
+}
+
+// ConfigFile methods
 
 ConfigFile::ConfigFile() {
 
@@ -57,16 +126,14 @@ void ConfigFile::processLine(std::string& curSection, std::string lineStr) {
 
 			// Only continue if valid
 			if (name.length() > 0 && val.length() > 0) {
-				CONFIGVARIABLE newVar;
-				newVar.section = curSection;
-				newVar.name = name;
-				newVar.Set(val);
+				ConfigVariable newVar(curSection, name);
+				newVar.set(val);
 
 				std::string paramName = name;
 				if (!curSection.empty())
 					paramName = curSection + "." + paramName;
 
-				add(paramName, newVar);
+//				add(paramName, newVar);
 			}
 		}
 		else {
@@ -106,8 +173,4 @@ std::string ConfigFile::strip(std::string s, char strip) {
 	}
 
 	return res;
-}
-
-void ConfigFile::add(std::string& paramName, CONFIGVARIABLE& newVar) {
-//	variables.Set(paramName, newVar);
 }
