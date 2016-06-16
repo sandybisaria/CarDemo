@@ -129,7 +129,7 @@ void App::setupInputSystem() {
 
 void App::setupSim() {
 	mSim = new Sim();
-	mSim->setup();
+	mSim->setup(mSceneMgr);
 }
 
 void App::setupViewSystem() {
