@@ -89,13 +89,15 @@ void Car::loadModel() {
 	//TODO Allow for camera to follow car (using FollowCamera class)?
 	//TODO Create car reflection (using CarReflection class)?
 
+	//FIXME Load the materials!
+
 	// Create car body
 	std::string bodyMesh = mCarName + "_body";
 	Ogre::Entity* body = mSceneMgr->createEntity(bodyMesh, bodyMesh + ".mesh", mCarName);
 	forDeletion(body);
 	carNode->attachObject(body);
 
-	Ogre::AxisAlignedBox* bodyBox = body->getBoundingBox();
+	Ogre::AxisAlignedBox bodyBox = body->getBoundingBox();
 
 	// Create interior
 	std::string interiorMesh = mCarName + "_interior";
@@ -110,10 +112,26 @@ void Car::loadModel() {
 	carNode->attachObject(glass);
 
 	// Create wheels and brakes
-//	for (int w = 0; w < numWheels; w++) {
-//		wheelNodes[w] = mainNode->createChildSceneNode();
-//		std::string
-//	}
+	for (int w = 0; w < numWheels; w++) {
+		// Wheels
+		wheelNodes[w] = mainNode->createChildSceneNode();
+		forDeletion(wheelNodes[w]);
+		std::string wheelMesh = mCarName + "_wheel";
+		//TODO Support vehicles with specific wheel meshes (i.e. wheel_front,...)
+		Ogre::Entity* wheel = mSceneMgr->createEntity(wheelMesh + Ogre::StringConverter::toString(w),
+													  wheelMesh + ".mesh", mCarName);
+		forDeletion(wheel);
+		wheelNodes[w]->attachObject(wheel);
+
+		// Brakes
+		brakeNodes[w] = mainNode->createChildSceneNode();
+		forDeletion(brakeNodes[w]);
+		std::string brakeMesh = mCarName + "_brake";
+		Ogre::Entity* brake = mSceneMgr->createEntity(brakeMesh + Ogre::StringConverter::toString(w),
+													  brakeMesh + ".mesh", mCarName);
+		forDeletion(brake);
+		brakeNodes[w]->attachObject(brake);
+	}
 }
 
 void Car::forDeletion(Ogre::SceneNode* node) {
