@@ -142,6 +142,9 @@ void Car::loadModel() {
 
 	loadMaterials();
 
+	// Set material of car body
+	body->setMaterialName(mtrNames[mtrCarBody]);
+
 	Ogre::ResourceGroupManager::getSingleton().initialiseResourceGroup(mCarName);
 	Ogre::ResourceGroupManager::getSingleton().loadResourceGroup(mCarName);
 }

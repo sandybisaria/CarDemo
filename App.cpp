@@ -2,6 +2,7 @@
 
 #include "shiny/Platforms/Ogre/OgrePlatform.hpp"
 #include "shiny/Platforms/Ogre/OgreMaterial.hpp"
+#include "shiny/Main/PropertyBase.hpp"
 
 #include <OgreConfigFile.h>
 #include <OgreRenderWindow.h>
@@ -149,23 +150,24 @@ void App::setMaterialFactoryDefaults() {
 	fct.setReadMicrocodeCache(true);
 	fct.setWriteMicrocodeCache(true);
 
-	fct.setGlobalSetting("fog", "true");
-	fct.setGlobalSetting("wind", "true");
+	fct.setGlobalSetting("fog", "false");
+	fct.setGlobalSetting("wind", "false");
 	fct.setGlobalSetting("mrt_output", "false");
 	fct.setGlobalSetting("shadows", "false");
 	fct.setGlobalSetting("shadows_pssm", "false");
-	fct.setGlobalSetting("shadows_depth", "true"); //Hard-coded
+	fct.setGlobalSetting("shadows_depth", "false"); //Hard-coded
 	fct.setGlobalSetting("lighting", "true");
-	fct.setGlobalSetting("terrain_composite_map", "false");
+//	fct.setGlobalSetting("terrain_composite_map", "false");
 	fct.setGlobalSetting("soft_particles", "false");
 	fct.setGlobalSetting("editor", "false");
+	fct.setSharedParameter("terrainWorldSize", sh::makeProperty<sh::FloatValue>(new sh::FloatValue(10000.0)));
 	//TODO What other defaults are needed (from App::SetFactoryDefaults)?
 
 	//TODO NEED STUFF FROM CScene::UpdFog TOO??
-	fct.setSharedParameter("fogColorSun",  sh::makeProperty<sh::Vector4>(new sh::Vector4(0, 0, 0, 0))); //Hard-coded
-	fct.setSharedParameter("fogColorAway",  sh::makeProperty<sh::Vector4>(new sh::Vector4(0, 0, 0, 0))); //Hard-coded
-	fct.setSharedParameter("fogColorH",  sh::makeProperty<sh::Vector4>(new sh::Vector4(0, 0, 0, 0))); //Hard-coded
-	fct.setSharedParameter("fogParamsH",  sh::makeProperty<sh::Vector4>(new sh::Vector4(0, 0, 0, 0))); //Hard-coded
+//	fct.setSharedParameter("fogColorSun",  sh::makeProperty<sh::Vector4>(new sh::Vector4(0, 0, 0, 0))); //Hard-coded
+//	fct.setSharedParameter("fogColorAway",  sh::makeProperty<sh::Vector4>(new sh::Vector4(0, 0, 0, 0))); //Hard-coded
+//	fct.setSharedParameter("fogColorH",  sh::makeProperty<sh::Vector4>(new sh::Vector4(0, 0, 0, 0))); //Hard-coded
+//	fct.setSharedParameter("fogParamsH",  sh::makeProperty<sh::Vector4>(new sh::Vector4(0, 0, 0, 0))); //Hard-coded
 }
 
 void App::setupSim() {
