@@ -1,5 +1,6 @@
 #pragma once
 
+#include "CarPosInfo.hpp"
 #include "../shiny/Main/MaterialInstance.hpp"
 
 #include <iostream>
@@ -15,17 +16,20 @@ public:
 
 	void setup(std::string carName, Ogre::SceneManager* sceneMgr);
 
+	void update(float dt);
+
 	virtual void requestedConfiguration(sh::MaterialInstance* m, const std::string& configuration);
 	virtual void createdConfiguration(sh::MaterialInstance* m, const std::string& configuration);
-
-	static const int MIN_WHEEL_COUNT = 2;
-	static const int MAX_WHEEL_COUNT = 8;
 
 private:
 	void setNumWheels(int nw);
 	void loadFromConfig();
 	void loadModel();
 	void loadMaterials();
+
+	void changeColor();
+
+	void updateLightMap();
 
 	int numWheels;
 	std::string mCarName;
@@ -42,8 +46,8 @@ private:
 
 	std::vector<Ogre::SceneNode*> nodesToDelete;
 	void forDeletion(Ogre::SceneNode* node);
-
 	std::vector<Ogre::Entity*> entitiesToDelete;
 	void forDeletion(Ogre::Entity* entity);
 
+	Ogre::ColourValue carColor;
 };

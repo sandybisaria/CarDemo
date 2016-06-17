@@ -18,5 +18,5 @@ void Sim::setup(Ogre::SceneManager* sceneMgr) {
 }
 
 void Sim::update(float dt) {
-
+	mCar->update(dt);
 }

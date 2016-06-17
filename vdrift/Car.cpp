@@ -1,5 +1,6 @@
 #include "Car.hpp"
 
+#include "CarConstants.hpp"
 #include "../shiny/Main/Factory.hpp"
 #include "../util/ConfigFile.hpp"
 
@@ -7,7 +8,8 @@
 #include <OgreEntity.h>
 
 Car::Car()
-	: mSceneMgr(0), mainNode(0) {
+	: mSceneMgr(0), mainNode(0),
+	  carColor(0, 1, 0) {
 	setNumWheels(4); // Default to four wheels
 }
 
@@ -35,13 +37,17 @@ void Car::setup(std::string carName, Ogre::SceneManager* sceneMgr) {
 	loadModel();
 }
 
+void Car::update(float dt) {
+	updateLightMap();
+}
+
 void Car::requestedConfiguration(sh::MaterialInstance* m, const std::string& configuration) {
 
 }
 
 void Car::createdConfiguration(sh::MaterialInstance* m, const std::string& configuration) {
-//	ChangeClr();
-//	UpdateLightMap();
+	changeColor();
+	updateLightMap();
 }
 
 void Car::setNumWheels(int nw) {
@@ -90,7 +96,7 @@ void Car::loadModel() {
 
 	mainNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
 	forDeletion(mainNode);
-	mainNode->setPosition(Ogre::Vector3(0, 80, 20));
+	mainNode->setPosition(Ogre::Vector3(0, 10, 0));
 
 	Ogre::SceneNode* carNode = mainNode->createChildSceneNode();
 	forDeletion(carNode);
@@ -103,8 +109,6 @@ void Car::loadModel() {
 	Ogre::Entity* body = mSceneMgr->createEntity(bodyMesh, bodyMesh + ".mesh", mCarName);
 	forDeletion(body);
 	carNode->attachObject(body);
-
-	Ogre::AxisAlignedBox bodyBox = body->getBoundingBox();
 
 	// Create interior
 	std::string interiorMesh = mCarName + "_interior";
@@ -183,8 +187,59 @@ void Car::loadMaterials() {
 		}
 	}
 
-	//ChangeClr();
-//	UpdateLightMap();
+	updateLightMap();
+}
+
+void Car::changeColor() {
+//	int i = iColor;
+//	float c_h = pSet->gui.car_hue[i], c_s = pSet->gui.car_sat[i],
+//		  c_v = pSet->gui.car_val[i], gloss = pSet->gui.car_gloss[i], refl = pSet->gui.car_refl[i];
+//	carColor.setHSB(1-c_h, c_s, c_v);  //set, mini pos clr
+
+	//Hard-coded color; will need to add setting later
+	Ogre::MaterialPtr mtr = Ogre::MaterialManager::getSingleton().getByName(mtrNames[mtrCarBody]);
+	if (!mtr.isNull()) {
+		Ogre::Material::TechniqueIterator techIt = mtr->getTechniqueIterator();
+		while (techIt.hasMoreElements()) {
+			Ogre::Technique* tech = techIt.getNext();
+			Ogre::Technique::PassIterator passIt = tech->getPassIterator();
+			while (passIt.hasMoreElements()) {
+				Ogre::Pass* pass = passIt.getNext();
+				if (pass->hasFragmentProgram()) {
+					Ogre::GpuProgramParametersSharedPtr params = pass->getFragmentProgramParameters();
+					params->setNamedConstant("carColour", carColor);
+//					params->setNamedConstant("glossiness", 1 - gloss);
+//					params->setNamedConstant("reflectiveness", refl);
+				}
+			}
+		}
+	}
+
+	//TODO Refer to CarModel::ChangeClr
+}
+
+void Car::updateLightMap() {
+	Ogre::MaterialPtr mtr;
+	for (int i = 0; i < numMaterials; ++i) {
+		mtr = Ogre::MaterialManager::getSingleton().getByName(mtrNames[i]);
+		if (!mtr.isNull()) {
+			Ogre::Material::TechniqueIterator techIt = mtr->getTechniqueIterator();
+			while (techIt.hasMoreElements()) {
+				Ogre::Technique* tech = techIt.getNext();
+				Ogre::Technique::PassIterator passIt = tech->getPassIterator();
+				while (passIt.hasMoreElements()) {
+					Ogre::Pass* pass = passIt.getNext();
+					if (pass->hasFragmentProgram())	{
+						Ogre::GpuProgramParametersSharedPtr params = pass->getFragmentProgramParameters();
+						params->setIgnoreMissingParams(true);  // Don't throw exception if material doesn't use lightmap
+						params->setNamedConstant("enableTerrainLightMap", true); //Hard-coded
+					}
+				}
+			}
+		}
+	}
+
+	//TODO Refer to CarModel::UpdateLightMap
 }
 
 void Car::forDeletion(Ogre::SceneNode* node) {
