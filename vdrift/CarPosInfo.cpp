@@ -10,4 +10,5 @@ void CarPosInfo::setSource(InfoSource* src) {
 
 void CarPosInfo::update() {
 	setPos(src->getPos());
+	setRot(src->getRot());
 }

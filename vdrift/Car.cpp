@@ -37,17 +37,23 @@ void Car::setup(std::string carName, Ogre::SceneManager* sceneMgr) {
 	mSceneMgr = sceneMgr;
 	loadModel();
 
-	//TODO Load starting position from somewhere...
+	//TODO Load starting position/rotation from somewhere...
 	Ogre::Vector3 startPos(0, 10, 0);
-	info.setPos(startPos);
 	dyn.setPos(startPos);
 
+	Ogre::Quaternion startRot(Ogre::Degree(180), Ogre::Vector3::UNIT_X);
+	dyn.setRot(startRot);
+
 	info.setSource(&dyn);
+	info.update();
 }
 
 void Car::update(float dt) {
 	info.update();
+
+	// Update model
 	mainNode->setPosition(info.getPos());
+	mainNode->setOrientation(info.getRot());
 
 	updateLightMap();
 }
@@ -199,12 +205,6 @@ void Car::setNumWheels(int nw) {
 	brakeNodes.resize(numWheels);
 
 	dyn.setNumWheels(nw);
-
-	/*TODO Keep track of the following in vectors:
-	 * Wheel position/radius/width/trail/temperature
-	 * SceneNodes* for "Wh" (Wheel), "WhE" (Wheel Emitter), "Brake"
-	 * Suspension bump detection, "Last bezier patch that each wheel hit"
-	 */
 }
 
 void Car::changeColor() {
