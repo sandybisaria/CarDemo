@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CarPosInfo.hpp"
+#include "CarDynamics.hpp"
 #include "../shiny/Main/MaterialInstance.hpp"
 
 #include <iostream>
@@ -22,11 +23,11 @@ public:
 	virtual void createdConfiguration(sh::MaterialInstance* m, const std::string& configuration);
 
 private:
-	void setNumWheels(int nw);
-	void loadFromConfig();
+	bool loadFromConfig();
 	void loadModel();
 	void loadMaterials();
 
+	void setNumWheels(int nw);
 	void changeColor();
 
 	void updateLightMap();
@@ -37,6 +38,9 @@ private:
 
 	enum eMaterials {mtrCarBody, mtrCarBrake, numMaterials};
 	std::string mtrNames[numMaterials];
+
+	CarPosInfo info;
+	CarDynamics dyn;
 
 	Ogre::SceneManager* mSceneMgr;
 

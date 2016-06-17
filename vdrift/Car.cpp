@@ -10,7 +10,7 @@
 Car::Car()
 	: mSceneMgr(0), mainNode(0),
 	  carColor(0, 1, 0) {
-	setNumWheels(4); // Default to four wheels
+	setNumWheels(DEF_WHEEL_COUNT);
 }
 
 Car::~Car() {
@@ -30,14 +30,25 @@ void Car::setup(std::string carName, Ogre::SceneManager* sceneMgr) {
 	mCarName = carName;
 	carPath = "../data/cars/" + mCarName;
 
-	loadFromConfig();
-	//TODO Determine/set starting position and rotation
+	if (!loadFromConfig()){
+		return; //TODO With error
+	}
 
 	mSceneMgr = sceneMgr;
 	loadModel();
+
+	//TODO Load starting position from somewhere...
+	Ogre::Vector3 startPos(0, 10, 0);
+	info.setPos(startPos);
+	dyn.setPos(startPos);
+
+	info.setSource(&dyn);
 }
 
 void Car::update(float dt) {
+	info.update();
+	mainNode->setPosition(info.getPos());
+
 	updateLightMap();
 }
 
@@ -50,25 +61,13 @@ void Car::createdConfiguration(sh::MaterialInstance* m, const std::string& confi
 	updateLightMap();
 }
 
-void Car::setNumWheels(int nw) {
-	numWheels = nw;
-	wheelNodes.resize(numWheels);
-	brakeNodes.resize(numWheels);
-
-	/*TODO Keep track of the following in vectors:
-	 * Wheel position/radius/width/trail/temperature
-	 * SceneNodes* for "Wh" (Wheel), "WhE" (Wheel Emitter), "Brake"
-	 * Suspension bump detection, "Last bezier patch that each wheel hit"
-	 */
-}
-
-void Car::loadFromConfig() {
+bool Car::loadFromConfig() {
 	// Top-level directory for all car data
 	std::string carSimPath = carPath + "/sim/" + mCarName + ".car";
 
 	ConfigFile cf;
 	if (!cf.load(carSimPath)) {
-		return; //TODO Error if car not found
+		return false; //TODO Error if car not found
 	}
 
 	int nw = 0;
@@ -86,6 +85,11 @@ void Car::loadFromConfig() {
 	 *
 	 * Refer to CAR::Load and CARDYNAMICS::Load
 	 */
+	if (!dyn.loadFromConfig(cf)) {
+		return false;
+	}
+
+	return true;
 }
 
 void Car::loadModel() {
@@ -96,7 +100,6 @@ void Car::loadModel() {
 
 	mainNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
 	forDeletion(mainNode);
-	mainNode->setPosition(Ogre::Vector3(0, 10, 0));
 
 	Ogre::SceneNode* carNode = mainNode->createChildSceneNode();
 	forDeletion(carNode);
@@ -188,6 +191,20 @@ void Car::loadMaterials() {
 	}
 
 	updateLightMap();
+}
+
+void Car::setNumWheels(int nw) {
+	numWheels = nw;
+	wheelNodes.resize(numWheels);
+	brakeNodes.resize(numWheels);
+
+	dyn.setNumWheels(nw);
+
+	/*TODO Keep track of the following in vectors:
+	 * Wheel position/radius/width/trail/temperature
+	 * SceneNodes* for "Wh" (Wheel), "WhE" (Wheel Emitter), "Brake"
+	 * Suspension bump detection, "Last bezier patch that each wheel hit"
+	 */
 }
 
 void Car::changeColor() {

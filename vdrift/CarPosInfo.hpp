@@ -4,17 +4,23 @@
 
 #include <OgreVector3.h>
 
+class InfoSource {
+public:
+	virtual Ogre::Vector3 getPos() = 0;
+};
+
 class CarPosInfo {
 public:
 	CarPosInfo();
+	void setSource(InfoSource* src);
 
-	// For code readability
-	inline bool hasNew() { return mNew; }
-	inline void markAsRead() { mNew = false; }
-	inline void onUpdate() { mNew = true; };
+	void update();
+
+	void setPos(Ogre::Vector3 newPos) { pos = newPos; }
+	Ogre::Vector3 getPos() { return pos; }
 
 private:
-	bool mNew; // True if updated with new info
+	InfoSource* src;
 
 	Ogre::Vector3 pos, carY;
 
