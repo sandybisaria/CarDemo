@@ -54,6 +54,9 @@ void Car::update(float dt) {
 	// Update model
 	mainNode->setPosition(info.getPos());
 	mainNode->setOrientation(info.getRot());
+	for (int w = 0; w < numWheels; w++) {
+		wheelNodes[w]->setPosition(info.getWheelPos()[w]);
+	}
 
 	updateLightMap();
 }
@@ -204,6 +207,7 @@ void Car::setNumWheels(int nw) {
 	wheelNodes.resize(numWheels);
 	brakeNodes.resize(numWheels);
 
+	info.setNumWheels(nw);
 	dyn.setNumWheels(nw);
 }
 

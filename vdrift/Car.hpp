@@ -33,6 +33,7 @@ private:
 	void updateLightMap();
 
 	int numWheels;
+
 	std::string mCarName;
 	std::string carPath;
 
