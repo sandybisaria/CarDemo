@@ -1,7 +1,5 @@
 #pragma once
 
-#include "vdrift/Car.hpp"
-
 #include "OgreSceneManager.h"
 
 class Sim {
@@ -13,7 +11,5 @@ public:
 	void update(float dt);
 
 private:
-	Car* mCar;
-
 	Ogre::SceneManager* mSceneMgr;
 };
