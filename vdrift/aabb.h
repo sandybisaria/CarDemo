@@ -1,11 +1,10 @@
 #pragma once
-//#include <ostream>
 
 #include "mathvector.h"
 #include "mathplane.h"
 
 template <typename T>
-class AABB
+class AABB // Axis-aligned minimum bounding box
 {
 private:
 	MATHVECTOR<T,3> pos; ///< minimum corner (center-size*0.5)

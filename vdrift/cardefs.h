@@ -7,6 +7,9 @@ enum WHEEL_POSITION
 	REAR2_LEFT, REAR2_RIGHT,
 	REAR3_LEFT, REAR3_RIGHT
 };
+
+const int MIN_WHEELS = 2;
+const int DEF_WHEELS = 4;
 const int MAX_WHEELS = 8;
 const int MAX_CARS = 16;
 const int CarPosCnt = 8;  // size of poses queue

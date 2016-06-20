@@ -1,11 +1,9 @@
 #pragma once
+
 #include "aabb.h"
 #include "mathvector.h"
 
-//#include <list>
-//#include <iostream>
-//#include <map>
-
+//TODO May not be necessary
 template <typename DATATYPE>
 class AABB_SPACE_PARTITIONING_NODE
 {

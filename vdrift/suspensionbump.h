@@ -1,6 +1,6 @@
 #pragma once
 
-class CAR;
+class Car;
 
 class SUSPENSIONBUMPDETECTION
 {
@@ -25,7 +25,7 @@ public:
 	}
 
 private:
-	friend class CAR;
+	friend class Car;
 	enum
 	{
 		DISPLACING,

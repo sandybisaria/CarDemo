@@ -6,6 +6,7 @@
 
 #include "bucketed_hashmap.h"
 
+const int CONF_VEC_SIZE = 3;
 
 class CONFIGVARIABLE
 {
@@ -25,7 +26,7 @@ public:
 	std::string val_s;
 	int val_i;
 	float val_f;
-	float val_v[3];
+	float val_v[CONF_VEC_SIZE];
 	bool val_b;
 
 	//CONFIGVARIABLE * next;
