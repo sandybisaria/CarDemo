@@ -1,6 +1,7 @@
 #include "Car.hpp"
 
-Car::Car() {
+Car::Car()
+	: mId(0) {
 	setNumWheels(DEF_WHEELS);
 }
 

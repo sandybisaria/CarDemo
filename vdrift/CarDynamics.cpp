@@ -654,6 +654,137 @@ void CarDynamics::addAerodynamicDevice(const MATHVECTOR<Dbl, 3>& newPos, Dbl dra
 	aerodynamics.back().Set(newPos, dragFrontArea, dragCoeff, liftSurfArea, liftCoeff, liftEff);
 }
 
+void CarDynamics::update() {
+	if (!chassis) return;
+
+	btTransform tr;
+	chassis->getMotionState()->getWorldTransform(tr);
+	chassisRotation = ToMathQuaternion<Dbl>(tr.getRotation());
+	chassisCenterOfMass = ToMathVector<Dbl>(tr.getOrigin());
+
+	MATHVECTOR<Dbl,3> com = centerOfMass;
+	chassisRotation.RotateVector(com);
+	chassisPosition = chassisCenterOfMass - com;
+
+	updateBuoyancy();
+}
+
+void CarDynamics::updateBuoyancy() {
+	//TODO Add fluid classes...
+//	if (!pScene || (pScene->fluids.size() == 0) || !poly || !pFluids)  return;
+//
+//	//float bc = /*sinf(chassisPosition[0]*20.3f)*cosf(chassisPosition[1]*30.4f) +*/
+//	//	sinf(chassisPosition[0]*0.3f)*cosf(chassisPosition[1]*0.32f);
+//	//LogO("pos " + toStr((float)chassisPosition[0]) + " " + toStr((float)chassisPosition[1]) + "  b " + toStr(bc));
+//
+//	for (std::list<FluidBox*>::const_iterator i = inFluids.begin();
+//		i != inFluids.end(); ++i)  // 0 or 1 is there
+//	{
+//		const FluidBox* fb = *i;
+//		if (fb->id >= 0)
+//		{
+//			const FluidParams& fp = pFluids->fls[fb->id];
+//
+//			WaterVolume water;
+//			//float bump = 1.f + 0.7f * sinf(chassisPosition[0]*fp.bumpFqX)*cosf(chassisPosition[1]*fp.bumpFqY);
+//			water.density = fp.density /* (1.f + 0.7f * bc)*/;  water.angularDrag = fp.angularDrag;
+//			water.linearDrag = fp.linearDrag;  water.linearDrag2 = 0.f;  //1.4f;//fp.linearDrag2;
+//			water.velocity.SetZero();
+//			water.plane.offset = fb->pos.y;  water.plane.normal = Vec3(0,0,1);
+//			//todo: fluid boxes rotation yaw, pitch ?-
+//
+//			RigidBody body;  body.mass = body_mass;
+//			body.inertia = Vec3(body_inertia.getX(),body_inertia.getY(),body_inertia.getZ());
+//
+//			///  body initial conditions
+//			//  pos & rot
+//			body.x.x = chassisPosition[0];  body.x.y = chassisPosition[1];  body.x.z = chassisPosition[2];
+//			if (vtype == V_Sphere)
+//			{	body.q.x = 0.f;  body.q.y = 0.f;  body.q.z = 0.f;  body.q.w = 1.f;  // no rot
+//			}else
+//			{	body.q.x = chassisRotation[0];  body.q.y = chassisRotation[1];  body.q.z = chassisRotation[2];  body.q.w = chassisRotation[3];
+//				body.q.Normalize();//
+//			}
+//			//LogO(fToStr(body.q.x,2,4)+" "+fToStr(body.q.y,2,4)+" "+fToStr(body.q.z,2,4)+" "+fToStr(body.q.w,2,4));
+//			//  vel, ang vel
+//			btVector3 v = chassis->getLinearVelocity();
+//			btVector3 a = chassis->getAngularVelocity();
+//			body.v.x = v.getX();  body.v.y = v.getY();  body.v.z = v.getZ();
+//			body.omega.x = a.getX();  body.omega.y = a.getY();  body.omega.z = a.getZ();
+//			body.F.SetZero();  body.T.SetZero();
+//
+//			//  damp from height vel
+//			body.F.z += fp.heightVelRes * -1000.f * body.v.z;
+//
+//			///  add buoyancy force
+//			if (ComputeBuoyancy(body, *poly, water, 9.8f))
+//			{
+//				if (vtype != V_Car)
+//				{	body.F.x *= 0.15f;  body.F.y *= 0.15f;  }
+//				chassis->applyCentralForce( btVector3(body.F.x,body.F.y,body.F.z) );
+//				chassis->applyTorque(       btVector3(body.T.x,body.T.y,body.T.z) );
+//			}
+//		}
+//	}
+//
+//	///  wheel spin force (for mud)
+//	//_______________________________________________________
+//	for (int w=0; w < numWheels; ++w)
+//	{
+//		if (inFluidsWh[w].size() > 0)  // 0 or 1 is there
+//		{
+//			MATHVECTOR<Dbl,3> up(0,0,1);
+//			Orientation().RotateVector(up);
+//			float upZ = std::max(0.f, (float)up[2]);
+//
+//			const FluidBox* fb = *inFluidsWh[w].begin();
+//			if (fb->id >= 0)
+//			{
+//				const FluidParams& fp = pFluids->fls[fb->id];
+//
+//				WHEEL_POSITION wp = WHEEL_POSITION(w);
+//				float whR = GetWheel(wp).GetRadius() * 1.2f;  //bigger par
+//				MATHVECTOR<float,3> wheelpos = GetWheelPosition(wp, 0);
+//				wheelpos[2] -= whR;
+//				whP[w] = fp.idParticles;
+//				whDmg[w] = fp.fDamage;
+//
+//				//  height in fluid:  0 just touching surface, 1 fully in fluid
+//				//  wheel plane distance  water.plane.normal.z = 1  water.plane.offset = fl.pos.y;
+//				whH[w] = (wheelpos[2] - fb->pos.y) * -0.5f / whR;
+//				whH[w] = std::max(0.f, std::min(1.f, whH[w]));
+//
+//				if (fp.bWhForce)
+//				{
+//					//bool inAir = GetWheelContact(wp).col == NULL;
+//
+//					//  bump, adds some noise
+//					MATHVECTOR<Dbl,3> whPos = GetWheelPosition(wp) - chassisPosition;
+//					float bump = sinf(whPos[0]*fp.bumpFqX)*cosf(whPos[1]*fp.bumpFqY);
+//
+//					float f = std::min(fp.whMaxAngVel, std::max(-fp.whMaxAngVel, (float)wheel[w].GetAngularVelocity() ));
+//					QUATERNION<Dbl> steer;
+//					float ba = numWheels==2 && w==0 ? 2.f : 1.f;  //bike
+//					float angle = -wheel[wp].GetSteerAngle() * fp.whSteerMul * ba  + bump * fp.bumpAng;
+//					steer.Rotate(angle * PI_d/180.f, 0, 0, 1);
+//
+//					//  forwards, side, up
+//					MATHVECTOR<Dbl,3> force(whH[w] * fp.whForceLong * f, 0, /*^ 0*/100.f * whH[w] * fp.whForceUp * upZ);
+//					(Orientation()*steer).RotateVector(force);
+//
+//					//  wheel spin resistance
+//					wheel[w].fluidRes = whH[w] * fp.whSpinDamp  * (1.f + bump * fp.bumpAmp);
+//
+//					if (whH[w] > 0.01f /*&& inAir*/)
+//						chassis->applyForce( ToBulletVector(force), ToBulletVector(whPos) );
+//				}
+//			}
+//		}
+//		else
+//		{	whH[w] = 0.f;  wheel[w].fluidRes = 0.f;  whP[w] = -1;	}
+//	}
+}
+
 MATHVECTOR<Dbl, 3> CarDynamics::getWheelPosition(WHEEL_POSITION wp) const {
 	return getWheelPosition(wp, suspension[wp].GetDisplacementPercent());
 }

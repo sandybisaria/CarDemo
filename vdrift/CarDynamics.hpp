@@ -52,6 +52,9 @@ public:
 							  Dbl liftSurfArea, Dbl liftCoeff, Dbl liftEff);
 
 	// Graphics interface (interpolated)
+	void update();
+	void updateBuoyancy();
+
 	MATHVECTOR<Dbl, 3> getWheelPosition(WHEEL_POSITION wp) const;
 	MATHVECTOR<Dbl, 3> getWheelPosition(WHEEL_POSITION wp, Dbl displacementPercent) const;
 
