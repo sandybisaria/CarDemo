@@ -6,7 +6,8 @@
 
 CarModel::CarModel(int id, std::string carModelName, Ogre::SceneManager* sceneMgr, Sim* sim)
 	: mId(id), mCarModelName(carModelName),
-	  mSceneMgr(sceneMgr), mSim(sim), mCar(0) {
+	  mSceneMgr(sceneMgr), mSim(sim), mCar(0),
+	  carColor(0, 1, 0) {
 
 	resGrpId = mCarModelName + toStr(mId);
 	carResPath = "../data/cars/" + mCarModelName; //TODO Pathmanager for paths?
@@ -46,8 +47,8 @@ void CarModel::load() {
 	}
 
 	//TODO Get start position and orientation from Sim (Scene)
-	MATHVECTOR<float, 3> pos(0, 0, 0);
-	QUATERNION<float> rot;
+	MATHVECTOR<double, 3> pos(0, 0, 0);
+	QUATERNION<double> rot;
 
 	std::string carConf = carResPath + "/sim/" + mCarModelName + ".car";
 	CONFIGFILE cf;

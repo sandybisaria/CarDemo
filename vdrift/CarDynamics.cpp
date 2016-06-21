@@ -611,7 +611,7 @@ void CarDynamics::init(const MATHVECTOR<Dbl, 3> position, const QUATERNION<Dbl> 
 		wheelOrientation[i] = orientation * getWheelSteeringAndSuspensionOrientation(WHEEL_POSITION(i));
 	}
 
-	alignWithGround();//--
+	alignWithGround();
 }
 
 void CarDynamics::setDrive(const std::string& newDrive) {

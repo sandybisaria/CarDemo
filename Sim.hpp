@@ -21,13 +21,15 @@ public:
 	void update(float dt);
 
 	// Load car
-	Car* loadCar(std::string carType, CONFIGFILE& cf, const MATHVECTOR<float, 3> pos, const QUATERNION<float> rot,
+	Car* loadCar(std::string carType, CONFIGFILE& cf, const MATHVECTOR<double, 3> pos, const QUATERNION<double> rot,
 				 int id);
 
 private:
 	Scene* mScene;
 
+	// Note that Sim combines aspects of Stuntrally's App and GAME
 	std::vector<Car*> cars;
+	std::vector<CarModel*> carModels;
 
 	Ogre::SceneManager* mSceneMgr;
 };

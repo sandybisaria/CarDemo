@@ -13,7 +13,7 @@ public:
 	~Car();
 
 	// True on success
-	bool load(std::string carType, CONFIGFILE& cf, const MATHVECTOR<float, 3> pos, const QUATERNION<float> rot,
+	bool load(std::string carType, CONFIGFILE& cf, const MATHVECTOR<double, 3> pos, const QUATERNION<double> rot,
 			  int id);
 
 	std::string mCarType;

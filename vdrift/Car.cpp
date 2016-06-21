@@ -9,7 +9,7 @@ Car::~Car() {
 
 }
 
-bool Car::load(std::string carType, CONFIGFILE& cf, const MATHVECTOR<float, 3> pos, const QUATERNION<float> rot,
+bool Car::load(std::string carType, CONFIGFILE& cf, const MATHVECTOR<double, 3> pos, const QUATERNION<double> rot,
 		  	   int id) {
 	int nw = 0;
 	cf.GetParam("wheels", nw);
@@ -57,8 +57,19 @@ bool Car::load(std::string carType, CONFIGFILE& cf, const MATHVECTOR<float, 3> p
 	if (!cd.load(cf))
 		return false;
 
-	MATHVECTOR<double, 3> initPos = pos;
+	MATHVECTOR<double, 3> initPos;
 	QUATERNION<double> initRot; initRot = rot;
+
+//	float stOfsY = 0.f;
+//	cf.GetParam("collision.start-offsetY", stOfsY);
+//		pos[2] += stOfsY -0.4/**/ + cd.com_ofs_H;
+
+//	posAtStart = posLastCheck = pos;
+//	rotAtStart = rotLastCheck = rot;
+//	dmgLastCheck = 0.f;
+
+	cd.init(pos, rot);
+	//TODO Add ABS and TCS methods to CarDynamics
 
 	return true;
 }
