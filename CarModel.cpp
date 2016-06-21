@@ -2,8 +2,9 @@
 
 #include "vdrift/cardefs.h"
 
-CarModel::CarModel(int id)
-	: mId(id), mCar(0) {
+CarModel::CarModel(int id, std::string carModelName, Ogre::SceneManager* sceneMgr)
+	: mId(id), mCarModelName(carModelName),
+	  mSceneMgr(sceneMgr), mCar(0) {
 	setNumWheels(DEF_WHEELS);
 
 	//TODO Implement CarModel::Defaults?
@@ -15,6 +16,18 @@ CarModel::~CarModel() {
 
 void CarModel::load() {
 
+}
+
+void CarModel::create() {
+	// To identify this CarModel's resources
+	std::string resGrpId = mCarModelName + Ogre::StringConverter::toString(mId);
+
+	// Location of car resources
+	std::string carResPath = "../data/cars/" + mCarModelName;
+
+	Ogre::ResourceGroupManager::getSingleton().createResourceGroup(resGrpId);
+	Ogre::Root::getSingleton().addResourceLocation(carResPath + "/mesh", "FileSystem", resGrpId);
+	Ogre::Root::getSingleton().addResourceLocation(carResPath + "/textures", "FileSystem", resGrpId);
 }
 
 void CarModel::setNumWheels(int n) {

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../CarModel.hpp"
-
+class CarModel;
 #include "cardefs.h"
 #include "configfile.h"
 
