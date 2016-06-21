@@ -5,10 +5,10 @@
 #include "App.hpp"
 
 int main(int argc, char* argv[]) {
-
+	// Plugins are loaded manually, for now
 	Ogre::Root* root = OGRE_NEW Ogre::Root("", "../config/resources.cfg");
-	App* app = new App(root);
 
+	App* app = new App(root);
 	try {
 		app->run();
 	} catch (Ogre::Exception& e) {

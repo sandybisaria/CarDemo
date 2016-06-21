@@ -23,7 +23,6 @@ void CarDynamics::setNumWheels(int n) {
 	wheelSubmersion.resize(n); wheelFluidParticle.resize(n); wheelFluidDmg.resize(n);
 
 	//TODO inFluidsWh.resize(n);
-
 	for (int i = 0; i < n; i++) { wheelFluidParticle[i] = -1; } // Reset particle IDs
 }
 
@@ -647,14 +646,15 @@ void CarDynamics::updateAction(btCollisionWorld* collisionWorld, btScalar dt) {
 void CarDynamics::update() {
 	if (!chassis) return;
 
-	btTransform tr;
-	chassis->getMotionState()->getWorldTransform(tr);
-	chassisRotation = ToMathQuaternion<Dbl>(tr.getRotation());
-	chassisCenterOfMass = ToMathVector<Dbl>(tr.getOrigin());
-
-	MATHVECTOR<Dbl,3> com = centerOfMass;
-	chassisRotation.RotateVector(com);
-	chassisPosition = chassisCenterOfMass - com;
+	//TODO FIX
+//	btTransform tr;
+//	chassis->getMotionState()->getWorldTransform(tr);
+//	chassisRotation = ToMathQuaternion<Dbl>(tr.getRotation());
+//	chassisCenterOfMass = ToMathVector<Dbl>(tr.getOrigin());
+//
+//	MATHVECTOR<Dbl,3> com = centerOfMass;
+//	chassisRotation.RotateVector(com);
+//	chassisPosition = chassisCenterOfMass - com;
 
 	updateBuoyancy();
 }

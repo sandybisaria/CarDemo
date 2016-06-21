@@ -1,4 +1,4 @@
-#include <iostream>
+#include "App.hpp"
 
 #include "shiny/Platforms/Ogre/OgrePlatform.hpp"
 #include "shiny/Platforms/Ogre/OgreMaterial.hpp"
@@ -7,7 +7,7 @@
 #include <OgreConfigFile.h>
 #include <OgreRenderWindow.h>
 
-#include "App.hpp"
+#include <iostream>
 
 App::App(Ogre::Root* root)
 	: mShutDown(false), mScene(0), mSim(0),
@@ -23,7 +23,6 @@ App::~App() {
 
 	delete mSim;
 	delete mScene;
-
 	delete mFactory;
 }
 
@@ -36,7 +35,7 @@ void App::run() {
 }
 
 bool App::setup() {
-	//TODO Look up in user's system
+	//TODO Look up in user's system, with a path manager
 	const Ogre::String OGRE_PLUGINS_DIR("/usr/local/lib/OGRE/");
 
 // Switch between debug and release plugins
@@ -201,8 +200,9 @@ void App::setupListeners() {
 }
 
 void App::setupScene() {
-	//TODO Set up GUI?
 	mScene->setupTerrain();
+
+	//TODO Sim may need an instance of Scene
 }
 
 //TODO Investigate if required

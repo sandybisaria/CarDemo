@@ -24,6 +24,7 @@ public:
 	void run();
 
 private:
+	// Setup methods
 	bool setup();
 	void setupResources();
 	bool setupRenderSystem();
@@ -45,7 +46,7 @@ private:
 	virtual bool keyPressed(const OIS::KeyEvent& ke);
 	virtual bool keyReleased(const OIS::KeyEvent& ke);
 
-	bool mShutDown;
+	bool mShutDown; // Setting this to true will make the app shut down
 
 	Sim* mSim;
 	Scene* mScene;

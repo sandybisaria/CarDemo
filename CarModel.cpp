@@ -152,7 +152,7 @@ void CarModel::create() {
 	Ogre::Entity* glass = mSceneMgr->createEntity(resGrpId + "_glass", mCarModelName + "_glass.mesh", resGrpId); forDel(glass);
 	carNode->attachObject(glass);
 
-#define resExists(s) Ogre::MeshManager::getSingleton().resourceExists(s)
+#define resExists(s) false
 	// Create wheels and brakes
 	int w2 = numWheels == 2? 1 : 2;
 	for (int w = 0; w < numWheels; w++) {
@@ -171,13 +171,13 @@ void CarModel::create() {
 		else if (w % 2 == 1 && resExists(mCarModelName + "_wheel_right.mesh"))
 			wheelMeshFile = mCarModelName + "_wheel_right.mesh";
 
-		if (resExists(wheelMeshFile)) {
+		if (true || resExists(wheelMeshFile)) {
 			Ogre::Entity* wheel = mSceneMgr->createEntity(wheelName, wheelMeshFile, resGrpId); forDel(wheel);
 			wheelNodes[w]->attachObject(wheel);
 		}
 
 		std::string brakeName = resGrpId + "_brake_" + toStr(w);
-		if (resExists(mCarModelName + "_brake.mesh")) {
+		if (true || resExists(mCarModelName + "_brake.mesh")) {
 			brakeNodes[w] = wheelNodes[w]->createChildSceneNode(); forDel(brakeNodes[w]);
 
 			Ogre::Entity* brake = mSceneMgr->createEntity(brakeName, mCarModelName + "_brake.mesh", resGrpId); forDel(brake);
@@ -244,6 +244,11 @@ void CarModel::update(CarPosInfo& cpi, float dt) {
 	if (!mMainNode) return;
 	mMainNode->setPosition(cpi.pos);
 	mMainNode->setOrientation(cpi.rot);
+
+	for (int w = 0; w < numWheels; w++) {
+		wheelNodes[w]->setPosition(cpi.wheelPos[w]);
+		wheelNodes[w]->setOrientation(cpi.wheelRot[w]);
+	}
 }
 
 void CarModel::setNumWheels(int n) {

@@ -14,7 +14,7 @@ class VERTEXARRAY
 {
 friend class joeserialize::Serializer;
 friend class MODEL_OBJ;
-//private:
+
 public:
 	std::vector < std::vector <float> > texcoords;
 	std::vector <float> normals;
