@@ -11,6 +11,8 @@ Car::~Car() {
 
 bool Car::load(std::string carType, CONFIGFILE& cf, const MATHVECTOR<double, 3> pos, const QUATERNION<double> rot,
 		  	   int id) {
+	std::cout << "Loading from Car" << std::endl;
+
 	int nw = 0;
 	cf.GetParam("wheels", nw);
 	if (nw >= MIN_WHEELS && nw <= MAX_WHEELS)
@@ -69,9 +71,14 @@ bool Car::load(std::string carType, CONFIGFILE& cf, const MATHVECTOR<double, 3> 
 //	dmgLastCheck = 0.f;
 
 	cd.init(pos, rot);
+
 	//TODO Add ABS and TCS methods to CarDynamics
 
 	return true;
+}
+
+void Car::update(float dt) {
+	cd.update();
 }
 
 void Car::setNumWheels(int n) {

@@ -25,8 +25,6 @@ public:
 				 int id);
 
 private:
-	Scene* mScene;
-
 	// Note that Sim combines aspects of Stuntrally's App and GAME
 	std::vector<Car*> cars;
 	std::vector<CarModel*> carModels;

@@ -1,6 +1,7 @@
 #include "CarDynamics.hpp"
 
 #include "cardefs.h"
+#include "dbl.h"
 
 CarDynamics::CarDynamics() {
 	setNumWheels(DEF_WHEELS);
@@ -193,7 +194,7 @@ bool CarDynamics::load(CONFIGFILE& c) {
 
 		float friction, max_pressure, area, bias, radius, handbrake = 0.f;
 
-		if (!c.GetParamE("brakes-"+pos+".frictionAddMassParticle", friction))  return false;
+		if (!c.GetParamE("brakes-"+pos+".friction", friction))  return false;
 		brake[wl].SetFriction(friction);  brake[wr].SetFriction(friction);
 
 		if (!c.GetParamE("brakes-"+pos+".area", area))  return false;
@@ -543,7 +544,7 @@ void CarDynamics::init(const MATHVECTOR<Dbl, 3> position, const QUATERNION<Dbl> 
 	//TODO Add COLLISION_WORLD and ShapeData; uncomment when implemented
 //	chassis = world.AddRigidBody(info, true, pSet->game.collis_cars);
 	rigids.push_back(chassis);
-	chassis->setActivationState(DISABLE_DEACTIVATION);
+//	chassis->setActivationState(DISABLE_DEACTIVATION);
 //	chassis->setUserPointer(new ShapeData(ST_Car, this, 0));
 //	world.world->addAction(this);
 	actions.push_back(this);
@@ -563,7 +564,7 @@ void CarDynamics::init(const MATHVECTOR<Dbl, 3> position, const QUATERNION<Dbl> 
 
 			// Uncomment when ready
 //			whTrigs->setUserPointer(new ShapeData(ST_Wheel, this, 0, w));
-			whTrigs->setActivationState(DISABLE_DEACTIVATION);
+//			whTrigs->setActivationState(DISABLE_DEACTIVATION);
 			whTrigs->setCollisionFlags(whTrigs->getCollisionFlags() | btCollisionObject::CF_NO_CONTACT_RESPONSE);
 
 //			world.world->addRigidBody(whTrigs);  rigids.push_back(whTrigs);
@@ -609,6 +610,8 @@ void CarDynamics::init(const MATHVECTOR<Dbl, 3> position, const QUATERNION<Dbl> 
 		wheelVelocity[i].Set(0.0);
 		wheelPosition[i] = getWheelPositionAtDisplacement(WHEEL_POSITION(i), 0);
 		wheelOrientation[i] = orientation * getWheelSteeringAndSuspensionOrientation(WHEEL_POSITION(i));
+
+//		std::cout << "WHPOS" << wheelPosition[i] << std::endl;
 	}
 
 	alignWithGround();
@@ -780,6 +783,15 @@ MATHVECTOR<Dbl, 3> CarDynamics::getWheelPosition(WHEEL_POSITION wp, Dbl displace
 	MATHVECTOR<Dbl, 3> pos = getLocalWheelPosition(wp, displacementPercent);
 	chassisRotation.RotateVector(pos);
 	return pos + chassisPosition;
+}
+
+QUATERNION<Dbl> CarDynamics::getWheelOrientation(WHEEL_POSITION wp) const {
+	QUATERNION<Dbl> sideRot;
+
+	if (wp == FRONT_RIGHT || wp == REAR_RIGHT)
+		sideRot.Rotate(PI_d, 0, 0, 1);
+
+	return chassisRotation * getWheelSteeringAndSuspensionOrientation(wp) * wheel[wp].GetOrientation() * sideRot;
 }
 
 void CarDynamics::alignWithGround() {

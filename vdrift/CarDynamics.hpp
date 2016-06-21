@@ -56,10 +56,12 @@ public:
 	// Graphics interface (interpolated)
 	void update();
 	void updateBuoyancy();
+	const MATHVECTOR<Dbl, 3>& getPosition() const { return chassisPosition; }
+	const QUATERNION<Dbl>& getRotation() const { return chassisRotation; }
 
 	MATHVECTOR<Dbl, 3> getWheelPosition(WHEEL_POSITION wp) const;
 	MATHVECTOR<Dbl, 3> getWheelPosition(WHEEL_POSITION wp, Dbl displacementPercent) const;
-
+	QUATERNION<Dbl> getWheelOrientation(WHEEL_POSITION wp) const;
 
 	// Driveline state access
 	const CARWHEEL& getWheel(WHEEL_POSITION pos) const { return wheel[pos]; }

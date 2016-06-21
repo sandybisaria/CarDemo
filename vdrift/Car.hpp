@@ -16,6 +16,8 @@ public:
 	bool load(std::string carType, CONFIGFILE& cf, const MATHVECTOR<double, 3> pos, const QUATERNION<double> rot,
 			  int id);
 
+	void update(float dt);
+
 	std::string mCarType;
 	int mId; // To uniquely identify the Car instance (and match with corresponding CarModel)
 

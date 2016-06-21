@@ -70,3 +70,5 @@ static void convertV2to1(float& x, float& y, float& z) {
 	float tx = x, ty = y, tz = z;
 	x = ty;  y = -tx;  z = tz;
 }
+
+// Methods from Axes.h, BECAUSE THEY WON'T WORK IN THEIR OWN FILE FOR SOME UNKNOWN REASON

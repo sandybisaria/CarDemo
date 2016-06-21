@@ -153,7 +153,6 @@ void CarModel::create() {
 	carNode->attachObject(glass);
 
 #define resExists(s) Ogre::MeshManager::getSingleton().resourceExists(s)
-
 	// Create wheels and brakes
 	int w2 = numWheels == 2? 1 : 2;
 	for (int w = 0; w < numWheels; w++) {
@@ -185,6 +184,7 @@ void CarModel::create() {
 			brakeNodes[w]->attachObject(brake);
 		}
 	}
+#undef resExists
 
 	recreateMaterials();
 	// Set car body material
@@ -192,7 +192,6 @@ void CarModel::create() {
 
 	Ogre::ResourceGroupManager::getSingleton().initialiseResourceGroup(resGrpId);
 	Ogre::ResourceGroupManager::getSingleton().loadResourceGroup(resGrpId);
-#undef resExists
 }
 
 void CarModel::recreateMaterials() {
@@ -236,6 +235,15 @@ void CarModel::recreateMaterials() {
 
 	updateLightMap();
 #undef resExists
+}
+
+void CarModel::update(CarPosInfo& cpi, float dt) {
+	if (!cpi.hasNew) return;
+	cpi.hasNew = false;
+
+	if (!mMainNode) return;
+	mMainNode->setPosition(cpi.pos);
+	mMainNode->setOrientation(cpi.rot);
 }
 
 void CarModel::setNumWheels(int n) {

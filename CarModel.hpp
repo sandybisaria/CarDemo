@@ -3,6 +3,9 @@
 #include "Sim.hpp"
 class Sim;
 
+#include "CarPosInfo.hpp"
+class CarPosInfo;
+
 #include "vdrift/Car.hpp"
 class Car;
 #include "vdrift/mathvector.h"
@@ -45,8 +48,9 @@ public:
 	void create(); // Create SceneNodes for car mesh
 	void recreateMaterials(); // Load car materials
 
-	Sim* mSim;
+	void update(CarPosInfo& cpi, float dt);
 
+	Sim* mSim;
 	Car* mCar; // The vdrift Car, constructed during load()
 
 	int numWheels;
