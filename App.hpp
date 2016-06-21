@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Scene.hpp"
 #include "Sim.hpp"
 
 #include "shiny/Main/Factory.hpp"
@@ -28,10 +27,9 @@ private:
 	void setupResources();
 	bool setupRenderSystem();
 	void setupInputSystem();
-	void setupSim();
 	void setupViewSystem();
 	void setupListeners();
-	void setupScene();
+	void setupSim();
 	void setupMaterials();
 	void setMaterialFactoryDefaults();
 
@@ -48,7 +46,6 @@ private:
 	bool mShutDown;
 
 	Sim* mSim;
-	Scene* mScene;
 
 	sh::Factory* mFactory;
 

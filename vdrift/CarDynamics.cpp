@@ -458,23 +458,6 @@ bool CarDynamics::load(CONFIGFILE& c) {
 	updateMass();
 }
 
-void CarDynamics::convertV2to1(float& x, float& y, float& z) {
-	float tx = x, ty = y, tz = z;
-	x = ty;  y = -tx;  z = tz;
-}
-
-void CarDynamics::getWheelPosStr(int i, int numWheels, WHEEL_POSITION& wl, WHEEL_POSITION& wr, std::string& pos) {
-	if (numWheels == 2) {
-		if (i==0){	wl = wr = FRONT_LEFT;   pos = "front";  } else
-		if (i==1){	wl = wr = FRONT_RIGHT;  pos = "rear";   }
-	} else {
-		if (i==0){	wl = FRONT_LEFT;  wr = FRONT_RIGHT;  pos = "front";  } else
-		if (i==1){	wl = REAR_LEFT;   wr = REAR_RIGHT;   pos = "rear";   } else
-		if (i==2){	wl = REAR2_LEFT;  wr = REAR2_RIGHT;  pos = "rear2";  } else
-		if (i==3){	wl = REAR3_LEFT;  wr = REAR3_RIGHT;  pos = "rear2";  }
-	}
-}
-
 void CarDynamics::init(const MATHVECTOR<Dbl, 3> position, const QUATERNION<Dbl> orientation) {
 	//TODO Receive Settings(?), Scene, FluidsXml, COLLISION_WORLD
 	MATHVECTOR<Dbl, 3> zero(0);
@@ -652,6 +635,10 @@ void CarDynamics::addAerodynamicDevice(const MATHVECTOR<Dbl, 3>& newPos, Dbl dra
 									   Dbl liftSurfArea, Dbl liftCoeff, Dbl liftEff) {
 	aerodynamics.push_back(CARAERO());
 	aerodynamics.back().Set(newPos, dragFrontArea, dragCoeff, liftSurfArea, liftCoeff, liftEff);
+}
+
+void CarDynamics::updateAction(btCollisionWorld* collisionWorld, btScalar dt) {
+
 }
 
 void CarDynamics::update() {

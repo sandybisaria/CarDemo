@@ -10,7 +10,7 @@
 #include "App.hpp"
 
 App::App(Ogre::Root* root)
-	: mShutDown(false), mScene(0), mSim(0),
+	: mShutDown(false), mSim(0),
 	  mRoot(root), mWindow(0), mSceneMgr(0), mCamera(0), mCameraNode(0),
 	  mInputMgr(0), mKeyboard(0) {
 }
@@ -22,7 +22,6 @@ App::~App() {
 	windowClosed(mWindow);
 
 	delete mSim;
-	delete mScene;
 
 	delete mFactory;
 }
@@ -61,9 +60,6 @@ bool App::setup() {
 	mSceneMgr = mRoot->createSceneManager(Ogre::ST_EXTERIOR_FAR);
 
 	setupMaterials();
-	setupSim();
-
-	mScene = new Scene(mSceneMgr);
 
 	//TODO Explore multiple viewports for split-screen effects
 	//Would entail managing cameras in separate class
@@ -71,10 +67,10 @@ bool App::setup() {
 
 	Ogre::TextureManager::getSingleton().setDefaultNumMipmaps(5);
 
-	//TODO Init GUI system
+	//TODO Setup GUI system
 
 	setupListeners();
-	setupScene();
+	setupSim();
 
 	//TODO Setup compositors for rendering effects?
 
@@ -198,11 +194,6 @@ void App::setupListeners() {
 	Ogre::WindowEventUtilities::addWindowEventListener(mWindow, this);
 
 	mKeyboard->setEventCallback(this);
-}
-
-void App::setupScene() {
-	//TODO Set up GUI?
-	mScene->setupTerrain();
 }
 
 //TODO Investigate if required

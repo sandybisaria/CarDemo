@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 enum WHEEL_POSITION
 {
 	FRONT_LEFT,	FRONT_RIGHT,
@@ -7,6 +9,17 @@ enum WHEEL_POSITION
 	REAR2_LEFT, REAR2_RIGHT,
 	REAR3_LEFT, REAR3_RIGHT
 };
+static void getWheelPosStr(int i, int numWheels, WHEEL_POSITION& wl, WHEEL_POSITION& wr, std::string& pos) {
+	if (numWheels == 2) {
+		if (i==0){	wl = wr = FRONT_LEFT;   pos = "front";  } else
+		if (i==1){	wl = wr = FRONT_RIGHT;  pos = "rear";   }
+	} else {
+		if (i==0){	wl = FRONT_LEFT;  wr = FRONT_RIGHT;  pos = "front";  } else
+		if (i==1){	wl = REAR_LEFT;   wr = REAR_RIGHT;   pos = "rear";   } else
+		if (i==2){	wl = REAR2_LEFT;  wr = REAR2_RIGHT;  pos = "rear2";  } else
+		if (i==3){	wl = REAR3_LEFT;  wr = REAR3_RIGHT;  pos = "rear2";  }
+	}
+}
 
 const int MIN_WHEELS = 2;
 const int DEF_WHEELS = 4;
@@ -51,3 +64,9 @@ static bool isnan(double number) {  return (number != number);  }
 const static char sCfgWh[MAX_WHEELS][4] = {"FL","FR","RL","RR","RL2","RR2","RL3","RR3"};  // .car config wheel names
 
 const int PAR_BOOST = 2, PAR_THRUST = 4;  // max particles for boost and spc thrusters
+
+// v2 .car files store arrays in different order..
+static void convertV2to1(float& x, float& y, float& z) {
+	float tx = x, ty = y, tz = z;
+	x = ty;  y = -tx;  z = tz;
+}

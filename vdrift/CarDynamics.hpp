@@ -37,8 +37,6 @@ public:
 
 	// Load from .car file; return true on success
 	bool load(CONFIGFILE& carConf);
-	static void convertV2to1(float& x, float& y, float& z); // v2 .car files store arrays in different order..
-	static void getWheelPosStr(int i, int numWheels, WHEEL_POSITION& wl, WHEEL_POSITION& wr, std::string& pos);
 
 	// Init after loading
 	void init(const MATHVECTOR<Dbl, 3> position, const QUATERNION<Dbl> orientation);
@@ -50,6 +48,10 @@ public:
 	void setAngDamp(Dbl newDamp) { angDamp = newDamp; }
 	void addAerodynamicDevice(const MATHVECTOR<Dbl, 3>& newPos, Dbl dragFrontArea, Dbl dragCoeff,
 							  Dbl liftSurfArea, Dbl liftCoeff, Dbl liftEff);
+
+	// Bullet interface
+	virtual void updateAction(btCollisionWorld* collisionWorld, btScalar dt);
+	virtual void debugDraw(btIDebugDraw* debugDrawer) { }
 
 	// Graphics interface (interpolated)
 	void update();
