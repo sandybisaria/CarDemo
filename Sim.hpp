@@ -13,7 +13,7 @@ public:
 	void update(float dt);
 
 private:
-	Car* mCar;
-
 	Ogre::SceneManager* mSceneMgr;
+
+	Car* mCar;
 };

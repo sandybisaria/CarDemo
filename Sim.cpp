@@ -10,10 +10,10 @@ Sim::~Sim() {
 }
 
 void Sim::setup(Ogre::SceneManager* sceneMgr) {
-	mCar = new Car();
 	mSceneMgr = sceneMgr;
 
 	// Right now, will be using the Ferrari 360 Modena
+	mCar = new Car(0);
 	mCar->setup("360", mSceneMgr);
 }
 

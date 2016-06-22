@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <vector>
 
 // Based on vdrift/spline.h
 template <typename T>
@@ -61,8 +62,8 @@ public:
 
 		// Find the first derivitive.
 		slope = (points[high].second - points[low].second) /diff -
-				((3.0 * a2) - 1.0) / 6.0 * diff * second_deriv [low] +
-				((3.0 * b2) - 1.0) / 6.0 * diff * second_deriv [high];
+				((3.0 * a2) - 1.0) / 6.0 * diff * secondDeriv [low] +
+				((3.0 * b2) - 1.0) / 6.0 * diff * secondDeriv [high];
 
 		// Return the interpolated value.
 		return a * points[low].second +
@@ -103,7 +104,7 @@ private:
 		a[n-1] = diff / 6.0;
 		b[n-1] = diff / 3.0;
 		// c[n-1] is not used.
-		r[n-1] = last_slope - ((points [n-1].second - points [n-2].second) / diff);
+		r[n-1] = lastSlope - ((points [n-1].second - points [n-2].second) / diff);
 
 		// Gauss-Jordan Elimination
 		for (size_t i = 1; i < n; i++) {
@@ -134,7 +135,7 @@ private:
 		derivsCalculated = true;
 	}
 
-	std::vector<std::pair<T, T>> points;
+	std::vector<std::pair<T, T> > points;
 	mutable std::vector<T> secondDeriv; // Mutable means it can change in a const method
 	T firstSlope;
 	T lastSlope;

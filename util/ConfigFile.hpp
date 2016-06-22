@@ -3,6 +3,10 @@
 #include "bucketed_hashmap.h"
 
 #include <iostream>
+#include <vector>
+#include <list>
+#include <string>
+#include <map>
 
 class ConfigVariable {
 	friend class ConfigFile;
@@ -43,6 +47,11 @@ public:
 	bool getParam(std::string param, float& outVar) const;
 	bool getParam(std::string param, float* outVar) const; // For float[V_SIZE]
 	bool getParam(std::string param, bool& outVar) const;
+
+	void getPoints(const std::string& sectionName, const std::string& paramPrefix,
+				   std::vector<std::pair<double, double> >& outputPts);
+
+	void getParamList(std::list<std::string>& paramListOutput, std::string section) const;
 
 	//TODO Use C++ library functions rather than our own...
 	static std::string trim(std::string s);

@@ -7,8 +7,8 @@
 #include <OgreRoot.h>
 #include <OgreEntity.h>
 
-Car::Car()
-	: mSceneMgr(0), mainNode(0),
+Car::Car(int id)
+	: mId(id), mSceneMgr(0), mainNode(0),
 	  carColor(0, 1, 0) {
 	setNumWheels(DEF_WHEEL_COUNT);
 }
@@ -28,6 +28,7 @@ Car::~Car() {
 
 void Car::setup(std::string carName, Ogre::SceneManager* sceneMgr) {
 	mCarName = carName;
+	resGrpId = mCarName + "_" + Ogre::StringConverter::toString(mId);
 	carPath = "../data/cars/" + mCarName;
 
 	if (!loadFromConfig()){
@@ -38,25 +39,10 @@ void Car::setup(std::string carName, Ogre::SceneManager* sceneMgr) {
 	loadModel();
 
 	//TODO Load starting position/rotation from somewhere...
-	Ogre::Vector3 startPos(0, 10, 0);
-	dyn.setPos(startPos);
-
-	Ogre::Quaternion startRot(Ogre::Degree(180), Ogre::Vector3::UNIT_X);
-	dyn.setRot(startRot);
-
-	info.setSource(&dyn);
-	info.update();
 }
 
 void Car::update(float dt) {
-	info.update();
-
-	// Update model
-	mainNode->setPosition(info.getPos());
-	mainNode->setOrientation(info.getRot());
-	for (int w = 0; w < numWheels; w++) {
-		wheelNodes[w]->setPosition(info.getWheelPos()[w]);
-	}
+	//TODO Update CarDynamics, then update model
 
 	updateLightMap();
 }
@@ -75,27 +61,17 @@ bool Car::loadFromConfig() {
 	std::string carSimPath = carPath + "/sim/" + mCarName + ".car";
 
 	ConfigFile cf;
-	if (!cf.load(carSimPath)) {
+	if (!cf.load(carSimPath))
 		return false; //TODO Error if car not found
-	}
 
 	int nw = 0;
 	cf.getParam("wheels", nw);
 	if (nw >= MIN_WHEEL_COUNT && nw <= MAX_WHEEL_COUNT)
 		setNumWheels(nw);
 
-	/*TODO Get vehicle type (AWD, FWD, etc.)
-	 * Get params for model offsets, positions, etc.
-	 *
-	 * Refer to CarModel::LoadConfig
-	 */
-
-	/*TODO Load physical properties (CARDYNAMICS)
-	 *
-	 * Refer to CAR::Load and CARDYNAMICS::Load
-	 */
 	if (!dyn.loadFromConfig(cf)) {
-		return false;
+		std::cerr << "CarDynamics load failed" << std::endl;
+		return false; //TODO Error if not all car params found
 	}
 
 	return true;
@@ -103,9 +79,9 @@ bool Car::loadFromConfig() {
 
 void Car::loadModel() {
 	// Each car has its own resource group
-	Ogre::ResourceGroupManager::getSingleton().createResourceGroup(mCarName);
-	Ogre::Root::getSingleton().addResourceLocation(carPath + "/mesh", "FileSystem", mCarName);
-	Ogre::Root::getSingleton().addResourceLocation(carPath + "/textures", "FileSystem", mCarName);
+	Ogre::ResourceGroupManager::getSingleton().createResourceGroup(resGrpId);
+	Ogre::Root::getSingleton().addResourceLocation(carPath + "/mesh", "FileSystem", resGrpId);
+	Ogre::Root::getSingleton().addResourceLocation(carPath + "/textures", "FileSystem", resGrpId);
 
 	mainNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
 	forDeletion(mainNode);
@@ -116,53 +92,30 @@ void Car::loadModel() {
 	//TODO Allow for camera to follow car (using FollowCamera class)?
 	//TODO Create car reflection (using CarReflection class)?
 
-	// Create car body
-	std::string bodyMesh = mCarName + "_body";
-	Ogre::Entity* body = mSceneMgr->createEntity(bodyMesh, bodyMesh + ".mesh", mCarName);
-	forDeletion(body);
-	carNode->attachObject(body);
-
-	// Create interior
-	std::string interiorMesh = mCarName + "_interior";
-	Ogre::Entity* interior = mSceneMgr->createEntity(interiorMesh, interiorMesh + ".mesh", mCarName);
-	forDeletion(interior);
-	carNode->attachObject(interior);
-
-	// Create glass
-	std::string glassMesh = mCarName + "_glass";
-	Ogre::Entity* glass = mSceneMgr->createEntity(glassMesh, glassMesh + ".mesh", mCarName);
-	forDeletion(glass);
-	carNode->attachObject(glass);
+	// Create car body, interior, and glass
+	carNode->attachObject(loadPart("body"));
+	carNode->attachObject(loadPart("interior"));
+	carNode->attachObject(loadPart("glass"));
 
 	// Create wheels and brakes
 	for (int w = 0; w < numWheels; w++) {
-		// Wheels
 		wheelNodes[w] = mainNode->createChildSceneNode();
 		forDeletion(wheelNodes[w]);
-		std::string wheelMesh = mCarName + "_wheel";
-		//TODO Support vehicles with specific wheel meshes (i.e. wheel_front,...)
-		Ogre::Entity* wheel = mSceneMgr->createEntity(wheelMesh + Ogre::StringConverter::toString(w),
-													  wheelMesh + ".mesh", mCarName);
-		forDeletion(wheel);
-		wheelNodes[w]->attachObject(wheel);
+		//TODO Add support for custom wheel types, as in CarModel::Create()
+		wheelNodes[w]->attachObject(loadPart("wheel", w));
 
-		// Brakes
 		brakeNodes[w] = mainNode->createChildSceneNode();
 		forDeletion(brakeNodes[w]);
-		std::string brakeMesh = mCarName + "_brake";
-		Ogre::Entity* brake = mSceneMgr->createEntity(brakeMesh + Ogre::StringConverter::toString(w),
-													  brakeMesh + ".mesh", mCarName);
-		forDeletion(brake);
-		brakeNodes[w]->attachObject(brake);
+		brakeNodes[w]->attachObject(loadPart("brake", w));
 	}
 
 	loadMaterials();
 
 	// Set material of car body
-	body->setMaterialName(mtrNames[mtrCarBody]);
+	mSceneMgr->getEntity(resGrpId + "_body")->setMaterialName(mtrNames[mtrCarBody]);
 
-	Ogre::ResourceGroupManager::getSingleton().initialiseResourceGroup(mCarName);
-	Ogre::ResourceGroupManager::getSingleton().loadResourceGroup(mCarName);
+	Ogre::ResourceGroupManager::getSingleton().initialiseResourceGroup(resGrpId);
+	Ogre::ResourceGroupManager::getSingleton().loadResourceGroup(resGrpId);
 }
 
 void Car::loadMaterials() {
@@ -202,13 +155,21 @@ void Car::loadMaterials() {
 	updateLightMap();
 }
 
+Ogre::Entity* Car::loadPart(std::string partType, int partId) {
+	std::string extPartType = "_" + partType;
+
+	Ogre::Entity* entity = mSceneMgr->createEntity(resGrpId + extPartType +
+												   (partId != -1 ? Ogre::StringConverter::toString(partId) : ""),
+												   mCarName + extPartType + ".mesh", resGrpId);
+	forDeletion(entity);
+
+	return entity;
+}
+
 void Car::setNumWheels(int nw) {
 	numWheels = nw;
 	wheelNodes.resize(numWheels);
 	brakeNodes.resize(numWheels);
-
-	info.setNumWheels(nw);
-	dyn.setNumWheels(nw);
 }
 
 void Car::changeColor() {
@@ -217,7 +178,7 @@ void Car::changeColor() {
 //		  c_v = pSet->gui.car_val[i], gloss = pSet->gui.car_gloss[i], refl = pSet->gui.car_refl[i];
 //	carColor.setHSB(1-c_h, c_s, c_v);  //set, mini pos clr
 
-	//Hard-coded color; will need to add setting later
+	//TODO Hard-coded color; will need to add setting later
 	Ogre::MaterialPtr mtr = Ogre::MaterialManager::getSingleton().getByName(mtrNames[mtrCarBody]);
 	if (!mtr.isNull()) {
 		Ogre::Material::TechniqueIterator techIt = mtr->getTechniqueIterator();
@@ -236,7 +197,7 @@ void Car::changeColor() {
 		}
 	}
 
-	//TODO Refer to CarModel::ChangeClr
+	//Refer to CarModel::ChangeClr
 }
 
 void Car::updateLightMap() {
@@ -253,20 +214,12 @@ void Car::updateLightMap() {
 					if (pass->hasFragmentProgram())	{
 						Ogre::GpuProgramParametersSharedPtr params = pass->getFragmentProgramParameters();
 						params->setIgnoreMissingParams(true);  // Don't throw exception if material doesn't use lightmap
-						params->setNamedConstant("enableTerrainLightMap", true); //Hard-coded
+						params->setNamedConstant("enableTerrainLightMap", true); //TODO Hard-coded
 					}
 				}
 			}
 		}
 	}
 
-	//TODO Refer to CarModel::UpdateLightMap
-}
-
-void Car::forDeletion(Ogre::SceneNode* node) {
-	nodesToDelete.push_back(node);
-}
-
-void Car::forDeletion(Ogre::Entity* entity) {
-	entitiesToDelete.push_back(entity);
+	//Refer to CarModel::UpdateLightMap
 }

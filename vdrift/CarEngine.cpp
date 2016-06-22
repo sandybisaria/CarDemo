@@ -10,7 +10,7 @@ CarEngine::CarEngine()
 	crankshaft.setInertia(inertia);
 }
 
-double CarEngine::getTorqueCurve(double curThrottle, double curRPM) {
+double CarEngine::getTorqueCurve(double curThrottle, double curRPM) const {
 	if (curRPM < 1)
 		return 0.0;
 
@@ -21,7 +21,7 @@ double CarEngine::getTorqueCurve(double curThrottle, double curRPM) {
 
 double CarEngine::getFrictionTorque(double curAngVel, double fricFactor, double throttlePos) {
 	double velSign = curAngVel < 0 ? -1.0 : 1.0;
-	double B = fricCoeffB * friction;
+	double b = fricCoeffB * friction;
 
 	return (-curAngVel * b) * (1.0 - fricFactor * throttlePos);
 }
@@ -67,7 +67,7 @@ void CarEngine::applyForces() {
 	crankshaft.setTorque(totalTorque);
 }
 
-void CarEngine::setTorqueCurve(double maxPowerRPM, std::vector<std::pair<double, double>>& curve) {
+void CarEngine::setTorqueCurve(double maxPowerRPM, std::vector<std::pair<double, double> >& curve) {
 	torqueCurve.clear();
 
 	// Accounts for fact that torque curves are usually measured on a dyno,
@@ -79,7 +79,7 @@ void CarEngine::setTorqueCurve(double maxPowerRPM, std::vector<std::pair<double,
 	if (curve[0].first != 0)
 		torqueCurve.addPoint(0, 0); // Want to always start from 0 RPM
 
-	for (std::vector<std::pair<double, double>>::iterator i = curve.begin(); i != curve.end(); ++i) {
+	for (std::vector<std::pair<double, double> >::iterator i = curve.begin(); i != curve.end(); ++i) {
 		torqueCurve.addPoint(i->first, i->second * dynoCorrectionFactor);
 	}
 

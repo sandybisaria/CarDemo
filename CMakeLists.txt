@@ -1,10 +1,10 @@
-# The latest version as of 06/10/2016
+# The latest version as of 06/22/2016
 cmake_minimum_required(VERSION 3.5.1)
 
 project(CarDemo)
 
 # Assumption of Linux/Unix
-set(CMAKE_MODULE_PATH "/usr/local/lib/OGRE/cmake/;${CMAKE_MODULE_PATH}")
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake;/usr/local/lib/OGRE/cmake/;${CMAKE_MODULE_PATH}")
 
 if (CMAKE_BUILD_TYPE STREQUAL "")
 	# CMake defaults to leaving CMAKE_BUILD_TYPE empty. This screws up
@@ -19,6 +19,7 @@ set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/dist")
 # Update as needed
 find_package(OGRE REQUIRED)
 find_package(OIS REQUIRED)
+find_package(BULLET REQUIRED)
 
 set(BOOST_COMPONENTS system thread filesystem wave)
 find_package(Boost COMPONENTS ${BOOST_COMPONENTS} REQUIRED QUIET)
@@ -27,13 +28,15 @@ include_directories(
 	${OGRE_INCLUDE_DIRS}
 	${OIS_INCLUDE_DIRS}
 	${Boost_INCLUDE_DIRS}
+	${BULLET_INCLUDE_DIRS}
 )
 
 link_directories(
-	${Boost_INCLUDE_DIRS}
+	${Boost_LIBRARY_DIRS}
 )
 
 list(APPEND EXTLIBS ${Boost_LIBRARIES})
+list(APPEND EXTLIBS ${BULLET_LIBRARIES})
 
 # External libraries
 add_subdirectory(shiny)
@@ -43,15 +46,15 @@ list(APPEND EXTLIBS "shiny.OgrePlatform")
 # Header files
 file(GLOB HDRS
 	*.hpp
-	vdrift/*.hpp
 	util/*.hpp
+	vdrift/*.hpp
 )
 
 # Source files
 file(GLOB SRCS
 	*.cpp
-	vdrift/*.cpp
 	util/*.cpp
+	vdrift/*.cpp
 )
 
 add_executable(CarDemo ${HDRS} ${SRCS})

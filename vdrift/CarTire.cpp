@@ -14,12 +14,12 @@ void CarTire::findSigmaHatAlphaHat(double load, double& outputSigmaHat, double& 
 		y = PacejkaFy(x, load, 0, 1.0, junk);
 		if (y > yMax) {
 			outputAlphaHat = x;
-			ymax = y;
+			yMax = y;
 		}
 	}
 }
 
-void CarTire::lookUpSigmaHatAlphaHat(double normForce, double& sh, double& ah) {
+void CarTire::lookUpSigmaHatAlphaHat(double normForce, double& sh, double& ah) const {
 	assert(!sigmaHat.empty());
 	assert(!alphaHat.empty());
 	assert(sigmaHat.size() == alphaHat.size());
@@ -48,14 +48,14 @@ void CarTire::lookUpSigmaHatAlphaHat(double normForce, double& sh, double& ah) {
 
 MathVector<double, 3> CarTire::getForce(double normForce, double fricCoeff,
 							   const MathVector<double, 3>& hubVel, double patchSpeed,
-							   double currCamber) {
+							   double currCamber) const {
 	assert(fricCoeff > 0);
 
 	double sigHat(0), alHat(0);
 	lookUpSigmaHatAlphaHat(normForce, sigHat, alHat);
 
 	double fz = normForce * 0.001;
-	fz = std::min(fz, 30); // Cap to "prevent explosions"
+	fz = std::min(fz, 30.); // Cap to "prevent explosions"
 
 	const double EPSILON = 1e-6;
 	if (fz < EPSILON) {
@@ -83,7 +83,7 @@ MathVector<double, 3> CarTire::getForce(double normForce, double fricCoeff,
 	// Beckman method for pre-combining longitudinal and lateral forces
 	double s = sigma / sigHat;
 	assert(!isnan(s));
-	double a = alpha / alhat;
+	double a = alpha / alHat;
 	assert(!isnan(a));
 
 	double rho = std::max(sqrt(s*s + a*a), 0.0001); // Avoid division by zero
@@ -130,13 +130,13 @@ void CarTire::calculateSigmaHatAlphaHat(int tableSize) {
 }
 
 // Load is the normal force in newtons
-double CarTire::getMaximumFx(double load) {
+double CarTire::getMaximumFx(double load) const {
 	const std::vector<double>& b = longitudinal;
 	double fz = load * 0.001;
 
 	return (b[1] * fz + b[2]) * fz;
 }
-double CarTire::getMaximumFy(double load, double currCamber) {
+double CarTire::getMaximumFy(double load, double currCamber) const {
 	const std::vector<double>& a = lateral;
 	double fz = load * 0.001;
 	double gamma = currCamber * 180.0 / M_PI;
@@ -146,7 +146,7 @@ double CarTire::getMaximumFy(double load, double currCamber) {
 
 	return d + sv;
 }
-double CarTire::getMaximumMz(double load, double currCamber) {
+double CarTire::getMaximumMz(double load, double currCamber) const {
 	const std::vector<double>& c = aligning;
 	double fz = load * 0.001;
 	double gamma = currCamber * 180.0 / M_PI;
@@ -158,7 +158,7 @@ double CarTire::getMaximumMz(double load, double currCamber) {
 }
 
 
-double CarTire::PacejkaFx(double sigma, double fz, double fricCoeff, double& maxForceOutput) {
+double CarTire::PacejkaFx(double sigma, double fz, double fricCoeff, double& maxForceOutput) const {
 	const std::vector<double>& b = longitudinal;
 
 	double d = (b[1]*fz + b[2]) *fz *fricCoeff;
@@ -173,7 +173,7 @@ double CarTire::PacejkaFx(double sigma, double fz, double fricCoeff, double& max
 	assert(!isnan(fx));
 	return fx;
 }
-double CarTire::PacejkaFy(double alpha, double fz, double gamma, double fricCoeff, double& maxForceOutput) {
+double CarTire::PacejkaFy(double alpha, double fz, double gamma, double fricCoeff, double& maxForceOutput) const {
 	const std::vector<double>& a = lateral;
 
 	double D = ( a[1]*fz+a[2] ) *fz*fricCoeff;
@@ -189,7 +189,8 @@ double CarTire::PacejkaFy(double alpha, double fz, double gamma, double fricCoef
 	assert(!isnan(Fy));
 	return Fy;
 }
-double CarTire::PacejkaMz(double sigma, double alpha, double fz, double gamma, double fricCoeff, double& maxForceOutput) {
+double CarTire::PacejkaMz(double sigma, double alpha, double fz, double gamma, double fricCoeff,
+						  double& maxForceOutput) const {
 	const std::vector<double>& c = aligning;
 
 	double D = ( c[1]*fz+c[2] ) *fz*fricCoeff;
@@ -204,17 +205,17 @@ double CarTire::PacejkaMz(double sigma, double alpha, double fz, double gamma, d
 	assert(!isnan(Mz));
 	return Mz;
 }
-double CarTire::getOptimumSteeringAngle(double load) {
+double CarTire::getOptimumSteeringAngle(double load) const {
 	double sigHat(0), alHat(0);
 	lookUpSigmaHatAlphaHat(load, sigHat, alHat);
 	return alHat;
 }
 
-static CarTire::CarTire* none() {
+CarTire* CarTire::none() {
 	static CarTire s;
 	static bool init = true;
-	if (init)
-	{	init = false;
+	if (init) {
+		init = false;
 		int i=0;
 		s.lateral[i++] = 1.61;
 		s.lateral[i++] = -0;

@@ -63,8 +63,6 @@ bool App::setup() {
 	setupMaterials();
 	setupSim();
 
-	mScene = new Scene(mSceneMgr);
-
 	//TODO Explore multiple viewports for split-screen effects
 	//Would entail managing cameras in separate class
 	setupViewSystem();
@@ -202,6 +200,7 @@ void App::setupListeners() {
 
 void App::setupScene() {
 	//TODO Set up GUI?
+	mScene = new Scene(mSceneMgr);
 	mScene->setupTerrain();
 }
 

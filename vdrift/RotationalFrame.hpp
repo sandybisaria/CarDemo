@@ -91,7 +91,7 @@ public:
 
 		recalculateSecondary();
 		integrationStep = 0;
-		torque.set(0);
+		torque.set((double)0);
 	}
 
 	// Must only be called between integration steps 1 and 2

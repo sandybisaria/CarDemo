@@ -10,7 +10,7 @@ public:
 		: springConstant(50000.0), bounce(2588), rebound(2600), travel(0.19),
 		  antiRollK(8000), damperFactors(1), springFactors(1),
 		  camber(-0.5), caster(0.28), toe(0),
-		  overtravel(0), displacement(0), velocity(0), force(0) {}
+		  overTravel(0), displacement(0), velocity(0), force(0) {}
 
 	double getAntiRollK() const { return antiRollK; }
 	void setAntiRollK(double antiRollK) { this->antiRollK = antiRollK; }
@@ -67,13 +67,13 @@ public:
 	// Compute suspension force for given time interval and external displacement
 	double update(double dt, double extDisplacement) {
 		overTravel = extDisplacement - travel;
-		overTravel = std::max(overTravel, 0);
+		overTravel = std::max(overTravel, 0.);
 
-		extDisplacement = std::max(std::min(extDisplacement, travel), 0);
+		extDisplacement = std::max(std::min(extDisplacement, travel), 0.);
 		double newDisplacement = extDisplacement;
 
 		velocity = (newDisplacement - displacement) / dt;
-		velocity = std::max(std::min(velocity, 5), -5);
+		velocity = std::max(std::min(velocity, 5.), -5.);
 
 		displacement = newDisplacement;
 		force = getForce(displacement, velocity);
@@ -81,13 +81,13 @@ public:
 		return -force;
 	}
 
-	void setDamperFactorPoints(std::vector<std::pair<double, double>>& curve) {
-		for (std::vector<std::pair<double, double>>::iterator i = curve.begin(); i != curve.end(); ++i) {
+	void setDamperFactorPoints(std::vector<std::pair<double, double> >& curve) {
+		for (std::vector<std::pair<double, double> >::iterator i = curve.begin(); i != curve.end(); ++i) {
 			damperFactors.addPoint(i->first, i->second);
 		}
 	}
-	void setSpringFactorPoints(std::vector<std::pair<double, double>>& curve) {
-		for (std::vector<std::pair<double, double>>::iterator i = curve.begin(); i != curve.end(); ++i) {
+	void setSpringFactorPoints(std::vector<std::pair<double, double> >& curve) {
+		for (std::vector<std::pair<double, double> >::iterator i = curve.begin(); i != curve.end(); ++i) {
 			springFactors.addPoint(i->first, i->second);
 		}
 	}

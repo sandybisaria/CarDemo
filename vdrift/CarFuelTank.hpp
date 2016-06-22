@@ -19,7 +19,7 @@ public:
 	double getMass() const { return mass; }
 
 	void fill() { volume = capacity; }
-	void isEmpty() const { return volume <= 0.0; }
+	bool isEmpty() const { return volume <= 0.0; }
 	double fuelPercent() const { return volume / capacity; }
 	void consume(double amt) {
 		volume -= amt;

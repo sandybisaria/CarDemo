@@ -3,7 +3,7 @@
 #include "MathVector.hpp"
 
 // From vdrift/quaternion.h
-template <typename >
+template <typename T>
 class Quaternion {
 public:
 	Quaternion() { loadIdentity(); }
@@ -54,7 +54,7 @@ public:
 	}
 
 	void normalize() {
-		T len = Magnitude();
+		T len = magnitude();
 		for (size_t i = 0; i < 4; i++)
 			v[i] /= len;
 	}

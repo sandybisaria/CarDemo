@@ -2,7 +2,8 @@
 
 #include <cmath>
 #include <cassert>
-#include <string>
+#include <cstring>
+#include <ostream>
 
 // Custom vector class, from vdrift/mathvector.h, based on MATHVECTOR
 template <typename T, unsigned int dimension>
@@ -142,8 +143,8 @@ public:
 	}
 
 	template <typename T2>
-	const MathVector<T, dimension>& operator= (const MathVector<T2, dimension>& other) {
-		for (size_type i = 0; i < dimension; i++) {
+	const MathVector<T, dimension>& operator=(const MathVector<T2, dimension>& other) {
+		for (size_t i = 0; i < dimension; i++) {
 			v[i] = other[i];
 		}
 
@@ -154,7 +155,7 @@ public:
 	bool operator==(const MathVector<T2, dimension>& other) const {
 		bool same(true);
 
-		for (size_type i = 0; i < dimension; i++) {
+		for (size_t i = 0; i < dimension; i++) {
 			same = same && (v[i] == other.v[i]);
 		}
 
@@ -169,7 +170,7 @@ public:
 	MathVector<T, dimension> operator-() const {
 		MathVector<T, dimension> output;
 		for (size_t i = 0; i < dimension; i++) {
-			output.v[i] = -v[i]
+			output.v[i] = -v[i];
 		}
 		return output;
 	}

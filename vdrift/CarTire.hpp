@@ -3,6 +3,8 @@
 #include "MathVector.hpp"
 
 #include <vector>
+#include <algorithm>
+#include <string>
 
 // Loaded from a .tire file
 class CarTire {

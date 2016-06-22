@@ -12,7 +12,7 @@
 class Car
 	: public sh::MaterialInstanceListener {
 public:
-	Car();
+	Car(int id);
 	~Car();
 
 	void setup(std::string carName, Ogre::SceneManager* sceneMgr);
@@ -27,6 +27,8 @@ private:
 	void loadModel();
 	void loadMaterials();
 
+	Ogre::Entity* loadPart(std::string partType, int partId = -1);
+
 	void setNumWheels(int nw);
 	void changeColor();
 
@@ -35,12 +37,12 @@ private:
 	int numWheels;
 
 	std::string mCarName;
+	int mId; std::string resGrpId;
 	std::string carPath;
 
 	enum eMaterials {mtrCarBody, mtrCarBrake, numMaterials};
 	std::string mtrNames[numMaterials];
 
-	CarPosInfo info;
 	CarDynamics dyn;
 
 	Ogre::SceneManager* mSceneMgr;
@@ -50,9 +52,9 @@ private:
 	std::vector<Ogre::SceneNode*> brakeNodes;
 
 	std::vector<Ogre::SceneNode*> nodesToDelete;
-	void forDeletion(Ogre::SceneNode* node);
+	void forDeletion(Ogre::SceneNode* node) { nodesToDelete.push_back(node); }
 	std::vector<Ogre::Entity*> entitiesToDelete;
-	void forDeletion(Ogre::Entity* entity);
+	void forDeletion(Ogre::Entity* entity) { entitiesToDelete.push_back(entity); }
 
 	Ogre::ColourValue carColor;
 };

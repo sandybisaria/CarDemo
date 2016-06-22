@@ -1,35 +1,48 @@
 #pragma once
 
+#include "MathVector.hpp"
+#include "CarEngine.hpp"
+#include "CarClutch.hpp"
+#include "CarTransmission.hpp"
+#include "CarDifferential.hpp"
+#include "CarBrake.hpp"
+#include "CarFuelTank.hpp"
+#include "CarSuspension.hpp"
+#include "CarWheel.hpp"
+
 #include "../util/ConfigFile.hpp"
-#include "CarPosInfo.hpp"
 
-#include <OgreVector3.h>
+#include <sstream>
+#include <cassert>
+#include <vector>
 
-class CarDynamics
-	: public InfoSource {
+class CarDynamics {
 public:
 	CarDynamics();
 
-	bool loadFromConfig(ConfigFile& cf);
-
-	void setPos(Ogre::Vector3 newPos) { pos = newPos; }
-	Ogre::Vector3 getPos() { return pos; }
-
-	void setRot(Ogre::Quaternion newRot) { rot = newRot; }
-	Ogre::Quaternion getRot() { return rot; }
-
-	void setWheelPos(std::vector<Ogre::Vector3> newWP) { wheelPos = newWP; }
-	std::vector<Ogre::Vector3> getWheelPos() { return wheelPos; }
-
+	// Initialization
 	void setNumWheels(int nw);
+	bool loadFromConfig(ConfigFile& cf);
+	void setDrive(const std::string& newDrive);
 
 private:
+	// Driveline state
+	CarFuelTank fuelTank;
+	CarEngine engine;
+	CarClutch clutch;
+	CarTransmission transmission;
+	CarDifferential diffFront, diffRear, diffCenter;
+
+	enum { FWD = 3, RWD = 12, AWD = 15 } drive;
+
+	double shiftTime;
+
+	// Wheel state
 	int numWheels;
+	std::vector<CarWheel> wheels;
+	std::vector<CarBrake> brakes;
+	std::vector<CarSuspension> suspension;
 
-	// Convert from v2 .car format to v1
-	static void versionConvert(float& x, float& y, float& z);
-
-	Ogre::Vector3 pos;
-	Ogre::Quaternion rot;
-	std::vector<Ogre::Vector3> wheelPos;
+	// Aerodynamics
+	double rotCoeff[4];
 };

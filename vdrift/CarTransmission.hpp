@@ -31,7 +31,7 @@ public:
 			key++;
 		}
 		reverseGears = 0;
-		int key = -1;
+		key = -1;
 		while(gearRatios.find(key) != gearRatios.end()) {
 			reverseGears++;
 			key--;

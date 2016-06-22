@@ -82,9 +82,9 @@ public:
 	// Set torque curve using vector of (RPM, torque) pairs.
 	// Also recalculate engine friction.
 	// maxPowerRPM should be set to engine red line
-	void setTorqueCurve(double maxPowerRPM, std::vector<std::pair<double, double>>& curve);
+	void setTorqueCurve(double maxPowerRPM, std::vector<std::pair<double, double> >& curve);
 
-	void setMass(double val) { mass = value; }
+	void setMass(double val) { mass = val; }
 	double getMass() const { return mass; }
 
 	void setPosition(MathVector<double, 3>& value) { position = value; }
@@ -100,7 +100,7 @@ public:
 private:
 	// Constants
 	double maxRPM; // The "red line" in RPM
-	double idle; // Idle throttle %age; calculated algorithmically
+	double idle; // Idle throttle percentage; calculated algorithmically
 	double startRPM; // Initial RPM
 	double stallRPM; // RPM at which engine dies
 	double fuelConsumption; // fuelConsumption * RPM * throttle = liters of fuel consumer per second

@@ -46,13 +46,13 @@ public:
 		// Handle the case where the value is out of bounds.
 		if (x > points[high].first) {
 			if (mode == CONSTANTSLOPE)
-				return points[high].second + last_slope * (x - points[high].first);
+				return points[high].second + lastSlope * (x - points[high].first);
 			else
 				return points[high].second;
 		}
 		if (x < points[low].first) {
 			if (mode == CONSTANTSLOPE)
-				return points[low].second + first_slope * (x - points[low].first);
+				return points[low].second + firstSlope * (x - points[low].first);
 			else
 				return points[low].second;
 		}
@@ -80,7 +80,7 @@ public:
 	void setBoundaryMode(const BOUNDMODE& m) { mode = m; }
 
 private:
-	std::vector<std::pair<T, T>> points;
+	std::vector<std::pair<T, T> > points;
 	mutable T firstSlope;
 	mutable T lastSlope;
 	mutable bool slopesCalculated;

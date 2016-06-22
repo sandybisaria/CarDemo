@@ -19,7 +19,7 @@ public:
 		return data[n];
 	}
 
-	T& operator[](size_type n) {
+	T& operator[](size_t n) {
 		assert(n < 9);
 		return data[n];
 	}

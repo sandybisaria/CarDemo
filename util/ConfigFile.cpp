@@ -155,6 +155,39 @@ bool ConfigFile::getParam(std::string param, bool& outVar) const {
 	return true;
 }
 
+void ConfigFile::getPoints(const std::string& sectionName, const std::string& paramPrefix,
+			   	   	   	   std::vector<std::pair<double, double> >& outputPts) {
+	std::list<std::string> params;
+	getParamList(params, sectionName);
+	for (std::list<std::string>::iterator i = params.begin(); i != params.end(); ++i) {
+		if (i->find(paramPrefix) == 0) {
+			float point[3] = {0, 0, 0};
+			if (getParam(sectionName + "." + *i, point)) {
+				outputPts.push_back(std::make_pair(point[0], point[1]));
+			}
+		}
+	}
+}
+
+void ConfigFile::getParamList(std::list<std::string>& paramListOutput, std::string section) const {
+	bool all = (section == ""); // If empty, then search everything
+
+	paramListOutput.clear();
+	std::map<std::string, bool> tempList;
+	for (bucketed_hashmap<std::string, ConfigVariable>::const_iterator i = variables.begin();
+		 i != variables.end(); i++) {
+		if (all)
+			tempList[i->mSection + "." + i->mName] = true;
+		else if (i->mSection == section)
+			tempList[i->mName] = true;
+	}
+
+	for (std::map<std::string, bool>::iterator i = tempList.begin(); i != tempList.end(); i++) {
+		paramListOutput.push_back(i->first);
+	}
+}
+
+
 std::string ConfigFile::trim(std::string s) {
 	if (s.find_last_not_of(" \t") != std::string::npos) {
 		s = s.erase(s.find_last_not_of(" \t") + 1);

@@ -50,26 +50,26 @@ public:
 	double getSteerAngle() const { return steerAngle; }
 	void setSteerAngle(const double& sa) { steerAngle = sa; }
 
-	void SetRadius (const double& value) { radius = value; }
-	double GetRadius() const { return radius; }
+	void setRadius (const double& value) { radius = value; }
+	double getRadius() const { return radius; }
 
-	void SetRollHeight (const double& value) { rollHeight = value; }
-	double GetRollHeight() const { return rollHeight; }
+	void setRollHeight (const double& value) { rollHeight = value; }
+	double getRollHeight() const { return rollHeight; }
 
-	void SetMass (const double& value) { mass = value; }
-	double GetMass() const { return mass; }
+	void setMass (const double& value) { mass = value; }
+	double getMass() const { return mass; }
 
-	void SetInertia(double i) {
+	void setInertia(double i) {
 		inertiaCache = i;
 
 		Matrix3<double> in;
 		in.scale(i);
 		rotFr.setInertia(in);
 	}
-	double GetInertia() const {	return inertiaCache; }
+	double getInertia() const {	return inertiaCache; }
 
-	void SetFeedback(double fb) { feedback = fb; }
-	double GetFeedback() const { return feedback; }
+	void setFeedback(double fb) { feedback = fb; }
+	double getFeedback() const { return feedback; }
 
 	void setInitialConditions() {
 		MathVector<double, 3> v;
@@ -100,7 +100,7 @@ public:
 	double fluidRes;
 private:
 	// Constants
-	MathVector<double, 3> extendedPosition // Position when suspension is fully extended (zero g)
+	MathVector<double, 3> extendedPosition; // Position when suspension is fully extended (zero g)
 	double rollHeight; // How far off the road lateral forces are applied to the chassis
 	double mass;
 	RotationalFrame rotFr; // Simulation of wheel rotation
@@ -112,7 +112,7 @@ private:
 	double inertiaCache;
 	double steerAngle; // Negative values -> steering left
 	double radius; // Total radius of wheel
-	double feedback // Effect value of force feedback
+	double feedback; // Effect value of force feedback
 
 	// For info only
 	double angVel;

@@ -14,7 +14,7 @@ public:
 	}
 
 	void reset() {
-		inputs.resize(CARINPUT::ALL, 0.0f);
+		inputs.resize(CarInput::ALL, 0.0f);
 	}
 
 	// Speed sensitive steering (decrease steer angle range with higher speed)
@@ -33,8 +33,8 @@ public:
 	//TODO Implement processInputs, likely after reviewing CInput.h
 
 private:
-	std::vector<float> inputs; // Indexed by CARINPUT values
+	std::vector<float> inputs; // Indexed by CarInput values
 
-	// Shift
+	// Shift (gear up/down)
 	bool grUpOld[8], grDnOld[8];
 };
