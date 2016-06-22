@@ -24,6 +24,9 @@ public:
 	void setNumWheels(int nw);
 	bool loadFromConfig(ConfigFile& cf);
 	void setDrive(const std::string& newDrive);
+	void addMassParticle(double newMass, MathVector<double, 3> newPos);
+	void setMaxSteeringAngle(double newAngle) { maxAngle = newAngle; }
+	void setAngularDamping(double newDamping) { angularDamping = newDamping; }
 
 private:
 	// Driveline state
@@ -45,4 +48,11 @@ private:
 
 	// Aerodynamics
 	double rotCoeff[4];
+
+	// Steering
+	double maxAngle;
+	double angularDamping;
+
+	// Mass
+	std::list<std::pair<double, MathVector<double, 3> > > massOnlyParticles;
 };

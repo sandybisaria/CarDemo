@@ -59,7 +59,7 @@ bool CarDynamics::loadFromConfig(ConfigFile& cf) {
 		engine.setMass(mass);
 		engine.setPosition(position);
 
-//		addMassParticle(mass, position); //FIXME
+		addMassParticle(mass, position);
 
 		float mul(1), maxTorque(0);
 		cf.getParam("engine.torque-val-mul", mul);
@@ -306,7 +306,7 @@ bool CarDynamics::loadFromConfig(ConfigFile& cf) {
 			vec.set(pos[0], pos[1], pos[2]);
 			w.setExtendedPosition(vec);
 
-//			addMassParticle(mass, vec); //FIXME
+			addMassParticle(mass, vec);
 		}
 
 		// Rotational inertia param is located in the tire section
@@ -359,7 +359,7 @@ bool CarDynamics::loadFromConfig(ConfigFile& cf) {
 			while (cf.getParam(paramName, pos)) {
 				if (version == 2)  versionConvert(pos[0],pos[1],pos[2]);
 				position.set(pos[0],pos[1],pos[2]);
-//				addMassParticle(mass, position); //FIXME
+				addMassParticle(mass, position);
 				paramNum++;
 				std::stringstream str;
 				str << "contact-points.position-";
@@ -374,7 +374,7 @@ bool CarDynamics::loadFromConfig(ConfigFile& cf) {
 			if (!cf.getParam(paramName + ".position", pos))
 			if (version == 2)  versionConvert(pos[0],pos[1],pos[2]);
 			position.set(pos[0],pos[1],pos[2]);
-//				addMassParticle(mass, position); //FIXME
+				addMassParticle(mass, position);
 			paramNum++;
 			std::stringstream str;
 			str << "particle-";
@@ -387,7 +387,7 @@ bool CarDynamics::loadFromConfig(ConfigFile& cf) {
 	{
 		float maxAngle = 26.f;
 		if (!cf.getParam("steering.max-angle", maxAngle)) return false;
-//		setMaxSteeringAngle(maxAngle); //FIXME
+		setMaxSteeringAngle(maxAngle);
 
 		//TODO Skipped steering.flip-pow-mul
 	}
@@ -396,7 +396,7 @@ bool CarDynamics::loadFromConfig(ConfigFile& cf) {
 	{
 		float a = 0.4f;
 		cf.getParam("steering.angular-damping", a);
-//		setAngularDamping(a); //FIXME
+		setAngularDamping(a);
 
 		a=0.f; cf.getParam("rot_drag.roll", a); rotCoeff[0] = a;
 		a=0.f; cf.getParam("rot_drag.pitch", a); rotCoeff[1] = a;
@@ -413,7 +413,7 @@ bool CarDynamics::loadFromConfig(ConfigFile& cf) {
 		if (!cf.getParam("driver.position", pos)) return false;
 		if (version == 2) versionConvert(pos[0], pos[1], pos[2]);
 		vec.set(pos[0], pos[1], pos[2]);
-//		addMassParticle(mass, vec) //FIXME
+		addMassParticle(mass, vec);
 	}
 
 	// Load aerodynamics
@@ -460,4 +460,11 @@ void CarDynamics::setDrive(const std::string& newDrive) {
 		assert(newDrive == "AWD");
 		drive = AWD;
 	}
+}
+
+void CarDynamics::addMassParticle(double newMass, MathVector<double, 3> newPos) {
+	//TODO When collision params are loaded, uncomment and adjust
+//	newpos[0] += com_ofs_L;
+//	newpos[2] += com_ofs_H;
+	massOnlyParticles.push_back(std::pair<double, MathVector<double, 3> >(newMass, newPos));
 }

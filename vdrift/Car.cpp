@@ -69,6 +69,9 @@ bool Car::loadFromConfig() {
 	if (nw >= MIN_WHEEL_COUNT && nw <= MAX_WHEEL_COUNT)
 		setNumWheels(nw);
 
+	//TODO At some point, we will have to load the custom car collision params,
+	//	   as in CAR::Load(). We will ignore them for now...
+
 	if (!dyn.loadFromConfig(cf)) {
 		std::cerr << "CarDynamics load failed" << std::endl;
 		return false; //TODO Error if not all car params found
