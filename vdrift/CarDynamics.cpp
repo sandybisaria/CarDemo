@@ -68,15 +68,9 @@ void CarDynamics::updateWheelTransform() {
 	}
 }
 
-void CarDynamics::updateWheelContacts() {
-	MathVector<float, 3> rayDir = getDownVector();
+void CarDynamics::updateWheelVelocity() {
 	for (int i = 0; i < numWheels; i++) {
-		//TODO Implement and retrieve CollisionContact
-		MathVector<float, 3> rayStart = localToWorld(wheels[i].getExtendedPosition());
-		rayStart = rayStart - rayDir * wheels[i].getRadius();
-		float rayLen = 1.5;
-
-		world->castRay(rayStart, rayDir, rayLen, chassis, this, i, false); // False because we have car collisions TODO Update with CollisionContact
+		wheelVels[i] = body.getVelocity(wheelPos[i] - body.getPosition());
 	}
 }
 

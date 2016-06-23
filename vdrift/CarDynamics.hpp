@@ -47,8 +47,12 @@ public:
 	// Graphics interface
 	void update();
 
+	// Driveline input
+	void shiftGear(int value);
+
 	// Chassis state access
 	const Quaternion<double>& getOrientation() const { return chassisRotation; }
+	MathVector<double, 3> getVelocity() const { return body.getVelocity(); }
 
 	// Wheel state access
 	const CarWheel& getWheel(WheelPosition wp) const { return wheels[wp]; }
@@ -81,8 +85,11 @@ private:
 	CarDifferential diffFront, diffRear, diffCenter;
 
 	enum { FWD = 3, RWD = 12, AWD = 15 } drive;
+	double driveshaftRPM;
 
-	double shiftTime;
+	bool autoclutch, autoshift, autorear, shifted;
+	double shiftTime, remShiftTime, lastAutoClutch;
+	int gearToShift; // Analog to shift_gear
 
 	// Wheel state
 	int numWheels;
@@ -100,8 +107,27 @@ private:
 	MathVector<double, 3> getWheelPositionAtDisplacement(WheelPosition wp, double displacementPercent) const;
 	Quaternion<double> getWheelSteeringAndSuspensionOrientation(WheelPosition wp) const;
 
-	void updateWheelTransform();
+	// Updater methods
+	void synchronizeBody();
 	void updateWheelContacts();
+	void tick(double dt); // Update simulation
+	void synchronizeChassis();
+
+	void updateBody(double dt, double driveTorque[]); // Advance chassis (body, suspension, wheels) sim by dt
+
+	void updateTransmission(double dt);
+	void updateDriveline(double dt, double driveTorque[]); // Update engine, return wheel drive torque
+	double calculateDriveshaftRPM() const;
+
+	int nextGear() const; // Calculate next gear based on engine RPM
+
+	void updateWheelTransform();
+	void updateWheelVelocity();
+
+	void interpolateWheelContacts(double dt);
+
+	void applyEngineTorqueToBody();
+	void applyAerodynamicsToBody();
 
 	// Aerodynamics
 	std::vector<CarAero> aerodynamics;

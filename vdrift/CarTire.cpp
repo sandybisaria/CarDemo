@@ -48,7 +48,7 @@ void CarTire::lookUpSigmaHatAlphaHat(double normForce, double& sh, double& ah) c
 
 MathVector<double, 3> CarTire::getForce(double normForce, double fricCoeff,
 							   const MathVector<double, 3>& hubVel, double patchSpeed,
-							   double currCamber) const {
+							   double currCamber, CarWheel::SlideSlip* slips) const {
 	assert(fricCoeff > 0);
 
 	double sigHat(0), alHat(0);
@@ -96,6 +96,11 @@ MathVector<double, 3> CarTire::getForce(double normForce, double fricCoeff,
 	assert(!isnan(fy));
 	double mz = PacejkaMz(sigma, alpha, fz, gamma, fricCoeff, maxMz);
 
+	if (slips) {
+		slips->preFx = fx;
+		slips->preFy = fy;
+	}
+
 	// Combining Method 1: Traction Circle
 	float longFactor = 1.0;
 	float combForce = std::abs(fx) + std::abs(fy);
@@ -113,6 +118,16 @@ MathVector<double, 3> CarTire::getForce(double normForce, double fricCoeff,
 		fy *= sc;
 		assert(!isnan(fy));
 		maxFy *= sc;
+	}
+
+	if (slips) {
+		slips->slide = sigma; slips->slideRatio = s;
+		slips->slip = alpha; slips->slipRatio = a;
+		slips->fxSr = s / rho; slips->fxRsr = rho * sigHat;
+		slips->fyAr = a / rho; slips->fyRar = rho * alHat;
+		slips->fx = fx; slips->fxm = maxFx;
+		slips->fy = fy; slips->fym = maxFy;
+		slips->fz = fz;
 	}
 
 	MathVector<double, 3> outVec(fx, fy, mz);

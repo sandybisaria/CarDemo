@@ -97,6 +97,14 @@ public:
 
 	void setCamberDeg(const double& cd) { camberDeg = cd; }
 
+	struct SlideSlip {
+		double slide; // Ratio of tire contact patch speed to road speed, minus one
+		double slip; // Angle in degrees between wheel heading and actual wheel velocity
+		double slideRatio; // Ratio of slide to tire's optimum slide
+		double slipRatio; // Ratio of slip to tire's optimum slip
+		double fxSr, fxRsr, fyAr, fyRar, frict, gamma, fx, fxm, preFx, fy, fym, preFy, fz;
+	} slips;
+
 	double fluidRes;
 private:
 	// Constants

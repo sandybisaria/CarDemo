@@ -20,6 +20,9 @@ public:
 
 	void setVelocity(const MathVector<double, 3>& vel) { linFr.setVelocity(vel); }
 	const MathVector<double, 3>& getVelocity() const { return linFr.getVelocity(); }
+	const MathVector<double, 3>& getVelocity(const MathVector<double, 3>& offset) {
+		return linFr.getVelocity() + rotFr.getAngularVelocity().cross(offset);
+	}
 
 	// Accessor methods to RotationalFrame
 	void setInitialTorque(const MathVector<double, 3>& t) { rotFr.setInitialTorque(t); }

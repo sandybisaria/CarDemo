@@ -1,7 +1,9 @@
 #include "CarDynamics.hpp"
 #include "CarConstants.hpp"
 
-CarDynamics::CarDynamics() {
+CarDynamics::CarDynamics()
+	: autoclutch(true), autoshift(true), autorear(true), autoshift(true),
+	  shiftTime(0.2), remShiftTime(0.0), lastAutoClutch(1.0), gearToShift(0) {
 	setNumWheels(DEF_WHEEL_COUNT);
 }
 
@@ -544,7 +546,7 @@ void CarDynamics::init(MathVector<double, 3> pos, Quaternion<double> rot, Collis
 
 	chassis = world.addRigidBody(info, true, true); rigids.push_back(chassis); //TODO The second "true" is hard-coded; assume we allow car collisions!
 	chassis->setActivationState(DISABLE_DEACTIVATION);
-//	chassis->setUserPointer(new ShapeData()); //FIXME Implement ShapeData and fix constructer args
+//	chassis->setUserPointer(new ShapeData()); //TODO Implement ShapeData and fix constructer args
 
 	world.getDynamicsWorld()->addAction(this); actions.push_back(this);
 
@@ -560,7 +562,7 @@ void CarDynamics::init(MathVector<double, 3> pos, Quaternion<double> rot, Collis
 			btSphereShape* whSph = new btSphereShape(whRad);
 			whTrigs = new btRigidBody(0.001f, 0, whSph);
 
-//			whTrigs->setUserPointer(new ShapeData()); //FIXME Update bla bla bla
+//			whTrigs->setUserPointer(new ShapeData()); //TODO Update bla bla bla
 			whTrigs->setActivationState(DISABLE_DEACTIVATION);
 			whTrigs->setCollisionFlags(whTrigs->getCollisionFlags() | btCollisionObject::CF_NO_CONTACT_RESPONSE);
 
@@ -582,7 +584,7 @@ void CarDynamics::init(MathVector<double, 3> pos, Quaternion<double> rot, Collis
 		wheelRots[i] = rot * getWheelSteeringAndSuspensionOrientation(WheelPosition(i));
 	}
 
-//	alignWithGround(); //FIXME
+	alignWithGround();
 }
 
 void CarDynamics::removeBullet() {
@@ -596,13 +598,13 @@ void CarDynamics::removeBullet() {
 
 	for (i = rigids.size() - 1; i >= 0; i--) {
 		btRigidBody* body = rigids[i];
-//		if (body && body->getMotionState()) delete body->getMotionState(); FIXME Commented due to double free error
+//		if (body && body->getMotionState()) delete body->getMotionState(); TODO Commented due to double free error
 
 		world->getDynamicsWorld()->removeRigidBody(body);
 
 //		ShapeData* sd = (ShapeData*)body->getUserPointer(); TODO When ready
 //		delete sd;
-//		delete body; FIXME Commented due to double free error
+//		delete body; TODO Commented due to double free error
 	}
 
 	for (i = 0; i < shapes.size(); i++) {
@@ -616,7 +618,7 @@ void CarDynamics::removeBullet() {
 		}
 //		ShapeData* sd = (ShapeData*)shape->getUserPointer(); TODO
 //		delete sd;
-//		delete shape; FIXME Commented due to double free error
+//		delete shape; TODO Commented due to double free error
 	}
 	shapes.resize(0);
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "MathVector.hpp"
+#include "CarWheel.hpp"
 
 #include <vector>
 #include <algorithm>
@@ -21,7 +22,7 @@ public:
 
 	MathVector<double, 3> getForce(double normForce, double fricCoeff,
 								   const MathVector<double, 3>& hubVel, double patchSpeed,
-								   double currCamber) const;
+								   double currCamber, CarWheel::SlideSlip* slips) const;
 
 	double getMaximumFx(double load) const;
 	double getMaximumFy(double load, double currCamber) const;
