@@ -39,10 +39,13 @@ public:
 	void alignWithGround();
 
 	// Bullet interface
-	virtual void updateAction(btCollisionWorld* collisionWorld, btScalar deltaTimeStep) { }; //FIXME
+	virtual void updateAction(btCollisionWorld* collisionWorld, btScalar deltaTimeStep); //FIXME
 	virtual void debugDraw(btIDebugDraw* debugDrawer) { }
 
 	void removeBullet();
+
+	// Graphics interface
+	void update();
 
 	// Chassis state access
 	const Quaternion<double>& getOrientation() const { return chassisRotation; }

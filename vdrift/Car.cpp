@@ -43,6 +43,7 @@ void Car::setup(std::string carName, Ogre::SceneManager* sceneMgr, CollisionWorl
 
 void Car::update(float dt) {
 	//TODO Update CarDynamics, then update model
+	dyn.update();
 
 	updateLightMap();
 }
