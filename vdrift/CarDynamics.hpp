@@ -14,6 +14,7 @@
 #include "AABB.hpp"
 #include "CollisionWorld.hpp"
 class CollisionWorld;
+#include "CarConstants.hpp"
 
 #include "../util/ConfigFile.hpp"
 #include "../util/ToBullet.hpp"
@@ -29,14 +30,25 @@ class CarDynamics
 	: public btActionInterface {
 public:
 	CarDynamics();
+	~CarDynamics();
 
 	// Initialization
 	bool load(ConfigFile& cf);
 	void init(MathVector<double, 3> pos, Quaternion<double> rot, CollisionWorld& world);
 
+	void alignWithGround();
+
 	// Bullet interface
-	virtual void updateAction(btCollisionWorld* collisionWorld, btScalar deltaTimeStep) { }
+	virtual void updateAction(btCollisionWorld* collisionWorld, btScalar deltaTimeStep) { }; //FIXME
 	virtual void debugDraw(btIDebugDraw* debugDrawer) { }
+
+	void removeBullet();
+
+	// Chassis state access
+	const Quaternion<double>& getOrientation() const { return chassisRotation; }
+
+	// Wheel state access
+	const CarWheel& getWheel(WheelPosition wp) const { return wheels[wp]; }
 
 	// Collision params
 	float collR, collR2m, collW, collH,
@@ -75,6 +87,19 @@ private:
 	std::vector<CarBrake> brakes;
 	std::vector<CarSuspension> suspension;
 
+	std::vector<MathVector<double, 3> > wheelVels, wheelPos;
+	std::vector<Quaternion<double> > wheelRots;
+
+	MathVector<double, 3> localToWorld(const MathVector<double, 3>& local) const;
+
+	MathVector<double, 3> getWheelPosition(WheelPosition wp, double displacementPercent) const; // For internal use
+	MathVector<double, 3> getLocalWheelPosition(WheelPosition wp, double displacementPercent) const;
+	MathVector<double, 3> getWheelPositionAtDisplacement(WheelPosition wp, double displacementPercent) const;
+	Quaternion<double> getWheelSteeringAndSuspensionOrientation(WheelPosition wp) const;
+
+	void updateWheelTransform();
+	void updateWheelContacts();
+
 	// Aerodynamics
 	std::vector<CarAero> aerodynamics;
 	double rotCoeff[4];
@@ -85,9 +110,17 @@ private:
 
 	// Chassis state
 	btRigidBody* chassis;
+	btRigidBody* whTrigs;
 	RigidBody body;
 	MathVector<double, 3> centerOfMass;
 	std::list<std::pair<double, MathVector<double, 3> > > massOnlyParticles;
+
+	Quaternion<double> getBodyOrientation() const { return body.getOrientation(); }
+	MathVector<double, 3> getDownVector() const;
+
+	// Interpolated chassis state, using Bullet sim
+	MathVector<double, 3> chassisPosition;
+	Quaternion<double> chassisRotation;
 
 	CollisionWorld* world;
 
@@ -95,4 +128,5 @@ private:
 	btAlignedObjectArray<btCollisionShape*> shapes;
 	btAlignedObjectArray<btRigidBody*> rigids;
 	btAlignedObjectArray<btActionInterface*> actions;
+	btAlignedObjectArray<btTypedConstraint*> constraints;
 };

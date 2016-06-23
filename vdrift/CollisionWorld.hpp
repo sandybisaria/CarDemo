@@ -36,6 +36,9 @@ public:
 
 	btDiscreteDynamicsWorld* getDynamicsWorld() { return world; }
 
+	void addShape(btCollisionShape* sh) { shapes.push_back(sh); } // Add shape to CollisionWorld (to be deleted by CollisionWorld)
+	void removeShape(btCollisionShape* sh) { shapes.remove(sh); }
+
 private:
 	// Bullet simulation
 	btDefaultCollisionConfiguration* config;

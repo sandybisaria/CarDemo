@@ -5,12 +5,19 @@ CarDynamics::CarDynamics() {
 	setNumWheels(DEF_WHEEL_COUNT);
 }
 
+CarDynamics::~CarDynamics() {
+	removeBullet();
+}
+
 void CarDynamics::setNumWheels(int nw) {
 	numWheels = nw;
 
 	brakes.resize(numWheels);
 	suspension.resize(numWheels);
 	wheels.resize(numWheels);
+	wheelVels.resize(numWheels);
+	wheelPos.resize(numWheels);
+	wheelRots.resize(numWheels);
 }
 
 bool CarDynamics::load(ConfigFile& cf) {
@@ -465,9 +472,9 @@ void CarDynamics::init(MathVector<double, 3> pos, Quaternion<double> rot, Collis
 	btTransform tr; tr.setIdentity();
 	AABB<float> box;
 	for (int i = 0; i < numWheels; i++) {
-//		MathVector<float, 3> wheelPos = getLocalWheelPosition(WheelPosition(i), 0); //FIXME
+		MathVector<float, 3> wheelPos = getLocalWheelPosition(WheelPosition(i), 0);
 		AABB<float> wheelAABB;
-//		wheelAABB.setFromCorners(wheelPos, wheelPos);
+		wheelAABB.setFromCorners(wheelPos, wheelPos);
 		box.combineWith(wheelAABB);
 	}
 
@@ -543,8 +550,78 @@ void CarDynamics::init(MathVector<double, 3> pos, Quaternion<double> rot, Collis
 
 	// Join chassis and wheel triggers
 	{
+		for (int w = 0; w < numWheels; w++) {
+			WheelPosition wp; wp = WheelPosition(w);
+			double whRad = getWheel(wp).getRadius() * 1.2;
+			MathVector<float, 3> wheelPos = getWheelPosition(wp, 0);
+			wheelPos[0] += collLofs;
+			wheelPos[2] += collFlTrigH;
 
+			btSphereShape* whSph = new btSphereShape(whRad);
+			whTrigs = new btRigidBody(0.001f, 0, whSph);
+
+//			whTrigs->setUserPointer(new ShapeData()); //FIXME Update bla bla bla
+			whTrigs->setActivationState(DISABLE_DEACTIVATION);
+			whTrigs->setCollisionFlags(whTrigs->getCollisionFlags() | btCollisionObject::CF_NO_CONTACT_RESPONSE);
+
+			world.getDynamicsWorld()->addRigidBody(whTrigs); rigids.push_back(whTrigs);
+			world.addShape(whSph); shapes.push_back(whSph);
+
+			btTypedConstraint* constr = new btPoint2PointConstraint(*chassis, *whTrigs, toBulletVector(wheelPos), btVector3(0, 0, 0));
+			world.getDynamicsWorld()->addConstraint(constr, true); constraints.push_back(constr);
+		}
+
+		//TODO Initialization for buoyancy computations
 	}
+
+	// Init wheels and suspension
+	for (int i = 0; i < numWheels; i++) {
+		wheels[WheelPosition(i)].setInitialConditions();
+		wheelVels[i].set(0.0);
+		wheelPos[i] = getWheelPositionAtDisplacement(WheelPosition(i), 0);
+		wheelRots[i] = rot * getWheelSteeringAndSuspensionOrientation(WheelPosition(i));
+	}
+
+//	alignWithGround(); //FIXME
+}
+
+void CarDynamics::removeBullet() {
+	int i, c;
+	// Remove constraints first
+	for (i = 0; i < constraints.size(); i++) {
+		world->getDynamicsWorld()->removeConstraint(constraints[i]);
+		delete constraints[i];
+	}
+	constraints.resize(0);
+
+	for (i = rigids.size() - 1; i >= 0; i--) {
+		btRigidBody* body = rigids[i];
+//		if (body && body->getMotionState()) delete body->getMotionState(); FIXME Commented due to double free error
+
+		world->getDynamicsWorld()->removeRigidBody(body);
+
+//		ShapeData* sd = (ShapeData*)body->getUserPointer(); TODO When ready
+//		delete sd;
+//		delete body; FIXME Commented due to double free error
+	}
+
+	for (i = 0; i < shapes.size(); i++) {
+		btCollisionShape* shape = shapes[i];
+		world->removeShape(shape);
+
+		if (shape->isCompound()) {
+			btCompoundShape* cs = (btCompoundShape *)shape;
+			for (c = 0; c < cs->getNumChildShapes(); ++c)
+				delete cs->getChildShape(c);
+		}
+//		ShapeData* sd = (ShapeData*)shape->getUserPointer(); TODO
+//		delete sd;
+//		delete shape; FIXME Commented due to double free error
+	}
+	shapes.resize(0);
+
+	for (i = 0; i < actions.size(); ++i) world->getDynamicsWorld()->removeAction(actions[i]);
+	actions.resize(0);
 }
 
 void CarDynamics::setDrive(const std::string& newDrive) {
