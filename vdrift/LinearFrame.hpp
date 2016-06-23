@@ -15,7 +15,7 @@ public:
 	const MathVector<double, 3>& getPosition() const { return pos; }
 
 	void setVelocity(const MathVector<double, 3>& newVel) { mom = newVel / invMass; }
-	const MathVector<double, 3>& getVelocity() const { return getVelocityFromMomentum(mom); }
+	const MathVector<double, 3> getVelocity() const { return getVelocityFromMomentum(mom); }
 
 	// Modified velocity Verlet integration two-step method
 	// Both steps must be run per frame. Forces can only be set between steps 1 and 2

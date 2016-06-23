@@ -12,7 +12,7 @@ public:
 	RotationalFrame() : haveOldTorque(false), integrationStep(0) {}
 
 	void setInertia(const Matrix3<double>& inertia) {
-		MathVector<double, 3> avOld = getAngVelFromMom(angMom);
+		MathVector<double, 3> avOld = getAngularVelocityFromMomentum(angMom);
 
 		inertiaTensor = inertia;
 		invInertiaTensor = inertiaTensor.inverse();
@@ -21,7 +21,7 @@ public:
 		worldInertiaTensor = orientationMat.transpose().multiply(inertiaTensor).multiply(orientationMat);
 
 		angMom = worldInertiaTensor.multiply(avOld);
-		angVel = getAngVelFromMom(angMom);
+		angVel = getAngularVelocityFromMomentum(angMom);
 	}
 
 	const Matrix3<double>& getInertia() const { return worldInertiaTensor; }
@@ -136,16 +136,16 @@ private:
 		worldInvInertiaTensor = orientationMat.transpose().multiply(invInertiaTensor).multiply(orientationMat);
 		worldInertiaTensor = orientationMat.transpose().multiply(inertiaTensor).multiply(orientationMat);
 
-		angVel = getAngVelFromMom(angMom);
+		angVel = getAngularVelocityFromMomentum(angMom);
 	}
 
 	// orientationMat and worldInvIntertiaTensor must have been calculated
-	MathVector<double, 3> getAngVelFromMom(const MathVector<double, 3>& mom) const {
+	MathVector<double, 3> getAngularVelocityFromMomentum(const MathVector<double, 3>& mom) const {
 		return worldInvInertiaTensor.multiply(mom);
 	}
 
 	Quaternion<double> getSpinFromMom(const MathVector<double, 3>& am) const {
-		const MathVector<double, 3> av = getAngVelFromMom(am);
+		const MathVector<double, 3> av = getAngularVelocityFromMomentum(am);
 		Quaternion<double> qav = Quaternion<double>(av[0], av[1], av[2], 0);
 		return qav * orientation * 0.5;
 	}

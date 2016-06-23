@@ -19,8 +19,8 @@ public:
 	const MathVector<double, 3>& getPosition() const { return linFr.getPosition(); }
 
 	void setVelocity(const MathVector<double, 3>& vel) { linFr.setVelocity(vel); }
-	const MathVector<double, 3>& getVelocity() const { return linFr.getVelocity(); }
-	const MathVector<double, 3>& getVelocity(const MathVector<double, 3>& offset) {
+	const MathVector<double, 3> getVelocity() const { return linFr.getVelocity(); }
+	const MathVector<double, 3> getVelocity(const MathVector<double, 3>& offset) {
 		return linFr.getVelocity() + rotFr.getAngularVelocity().cross(offset);
 	}
 
