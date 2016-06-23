@@ -17,7 +17,7 @@ void CarDynamics::update() {
 
 	MathVector<double, 3> chassisCenterOfMass = toMathVector<double>(tr.getOrigin());
 	MathVector<double, 3> com = centerOfMass;
-	chassisRotation.rotateVector(com);
+	chassisRotation.rotateVector(com); //FIXME This becomes nan?
 	chassisPosition = chassisCenterOfMass - com;
 
 	//TODO updateBuoyancy()
@@ -86,6 +86,7 @@ void CarDynamics::updateBody(double dt, double driveTorque[]) {
 	int i;
 	double normalForce[MAX_WHEEL_COUNT];
 	for (i = 0; i < numWheels; i++) {
+		MathVector<double, 3> suspForce = updateSuspension(i, dt); //TODO This was still required!!
 		//TODO CollisionContact required!
 	}
 

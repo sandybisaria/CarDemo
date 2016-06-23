@@ -39,7 +39,7 @@ public:
 	void alignWithGround();
 
 	// Bullet interface
-	virtual void updateAction(btCollisionWorld* collisionWorld, btScalar deltaTimeStep); //FIXME
+	virtual void updateAction(btCollisionWorld* collisionWorld, btScalar deltaTimeStep);
 	virtual void debugDraw(btIDebugDraw* debugDrawer) { }
 
 	void removeBullet();
@@ -49,6 +49,10 @@ public:
 
 	// Driveline input
 	void shiftGear(int value);
+	void setThrottle(float value) { engine.setThrottle(value); } //TODO Ignore damage for now
+	void setClutch(float value) { clutch.setClutch(value); }
+	void setBrake(float value) { for (int i = 0; i < brakes.size(); i++) brakes[i].setBrakeFactor(value); } //TODO No dmg
+	void setHandBrake(float value) { for (int i = 0; i < brakes.size(); i++) brakes[i].setHandbrakeFactor(value); } //TODO No dmg
 
 	// Speedometer output based on driveshaft RPM
 	double getSpeedMPS() const;
@@ -58,11 +62,16 @@ public:
 	const Quaternion<double>& getOrientation() const { return chassisRotation; }
 	MathVector<double, 3> getVelocity() const { return body.getVelocity(); }
 	double getSpeed() const { return body.getVelocity().magnitude(); }
+	double getSpeedDir() const;
 
 	// Wheel state access
-	const CarWheel& getWheel(WheelPosition wp) const { return wheels[wp]; }
 	Quaternion<double> getWheelOrientation(WheelPosition wp) const;
 	MathVector<double, 3> getWheelPosition(WheelPosition wp) const;
+
+	//TODO Add traction control (ABS and TCS)
+
+	// Set steering angle to "val", where -1.0 = maximum left and 1.0 = maximum right
+	void setSteering(const double val, const float rangeMul);
 
 	// Collision params
 	float collR, collR2m, collW, collH,
@@ -94,7 +103,7 @@ private:
 	enum { FWD = 3, RWD = 12, AWD = 15 } drive;
 	double driveshaftRPM;
 
-	bool autoclutch, autoshift, autorear, shifted;
+	bool autoclutch, autoshift, autorear, shifted; //TODO Configurable in settings
 	double shiftTime, remShiftTime, lastAutoClutch;
 	int gearToShift; // Analog to shift_gear
 
@@ -139,6 +148,8 @@ private:
 	double shiftAutoClutch() const;
 	double shiftAutoClutchThrottle(double throttle, double dt);
 
+	MathVector<double, 3> updateSuspension(int i, double dt); // Update suspension displacement, return suspension force
+
 	void updateWheelTransform();
 	void updateWheelVelocity();
 
@@ -150,11 +161,14 @@ private:
 	void applyForce(const MathVector<double, 3>& force) { body.applyForce(force); } //TODO Skip camera body
 	void applyTorque(const MathVector<double, 3>& torque) { body.applyTorque(torque); }
 
+	//TODO Methods for applying tire and wheel force (after CollisionContact and TerrainSurface)
+
 	// Aerodynamics
 	std::vector<CarAero> aerodynamics;
 	double rotCoeff[4];
 
 	// Steering
+	double steerValue;
 	double maxAngle;
 	double angularDamping;
 
@@ -165,7 +179,8 @@ private:
 	MathVector<double, 3> centerOfMass;
 	std::list<std::pair<double, MathVector<double, 3> > > massOnlyParticles;
 
-	Quaternion<double> getBodyOrientation() const { return body.getOrientation(); }
+	Quaternion<double> getBodyOrientation() const { return body.getOrientation(); } // Replaces CARDYNAMICS::Orientation
+	MathVector<double, 3> getBodyPosition() const { return body.getPosition(); } // Replaces CARDYNAMICS::Position
 	MathVector<double, 3> getDownVector() const;
 
 	// Interpolated chassis state, using Bullet sim

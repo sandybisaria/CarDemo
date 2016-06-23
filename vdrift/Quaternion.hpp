@@ -264,3 +264,9 @@ public:
 private:
 	T v[4]; // X, Y, Z, W
 };
+
+template <typename T>
+std::ostream & operator<<(std::ostream &os, const Quaternion<T>& v) {
+	os << "x=" << v[0] << ", y=" << v[1] << ", z=" << v[2] << ", w=" << v[3];
+	return os;
+}

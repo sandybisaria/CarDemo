@@ -5,6 +5,14 @@ void CarDynamics::alignWithGround() {
 	updateWheelContacts();
 }
 
+double CarDynamics::getSpeedDir() const {
+	MathVector<double, 3> v(1, 0, 0);
+	getBodyOrientation().rotateVector(v);
+
+	double vel = body.getVelocity().dot(v); // Car body vel in local car dir
+	return sqrt(vel * vel); //TODO Should this be fabs?
+}
+
 Quaternion<double> CarDynamics::getWheelOrientation(WheelPosition wp) const {
 	Quaternion<double> sideRot;
 	if (wp == FRONT_RIGHT || wp == REAR_RIGHT)

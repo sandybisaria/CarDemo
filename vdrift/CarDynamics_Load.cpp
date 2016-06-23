@@ -2,8 +2,11 @@
 #include "CarConstants.hpp"
 
 CarDynamics::CarDynamics()
-	: autoclutch(true), autoshift(true), autorear(true), shifted(true),
-	  shiftTime(0.2), remShiftTime(0.0), lastAutoClutch(1.0), gearToShift(0) {
+	: world(0), chassis(0), whTrigs(0),
+	  drive(AWD),
+	  autoclutch(true), autoshift(true), autorear(true), shifted(true),
+	  shiftTime(0.2), remShiftTime(0.0), lastAutoClutch(1.0), gearToShift(0),
+	  steerValue(0.f), maxAngle(45.0), angularDamping(0.4) {
 	setNumWheels(DEF_WHEEL_COUNT);
 }
 
@@ -554,7 +557,7 @@ void CarDynamics::init(MathVector<double, 3> pos, Quaternion<double> rot, Collis
 	{
 		for (int w = 0; w < numWheels; w++) {
 			WheelPosition wp; wp = WheelPosition(w);
-			double whRad = getWheel(wp).getRadius() * 1.2;
+			double whRad = wheels[wp].getRadius() * 1.2;
 			MathVector<float, 3> wheelPos = getWheelPosition(wp, 0);
 			wheelPos[0] += collLofs;
 			wheelPos[2] += collFlTrigH;

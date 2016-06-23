@@ -28,6 +28,41 @@ double CarDynamics::getSpeedMPS() const {
 	}
 }
 
+void CarDynamics::setSteering(const double val, const float rangeMul) {
+	//TODO Dmg
+
+	steerValue = val;
+	double steerAngle = val * maxAngle * rangeMul; // Steering angle in degs
+	if (numWheels == 2) {
+		wheels[FRONT_LEFT].setSteerAngle(steerAngle);
+		return;
+	}
+
+	// Ackerman steering geometry
+	bool ax2 = numWheels >= 6; // Two front steering axles?
+	int iMax = ax2 ? 2 : 1;
+	for (int i = 0; i < iMax; i++) {
+		WheelPosition wl, wr, rear;
+		if (i == 0) { wl = FRONT_LEFT; wr = FRONT_RIGHT; rear = REAR_LEFT; }
+		else { wl = REAR_LEFT; wr = REAR_RIGHT; rear = REAR2_LEFT; }
+
+		double alpha = std::abs(steerAngle * M_PI / 180.0); // Outside wheel steering angle in rads
+
+		double dW = wheels[wl].getExtendedPosition()[1] - wheels[wr].getExtendedPosition()[1]; // Width between front wheels
+		double dL = wheels[wl].getExtendedPosition()[0] - wheels[rear].getExtendedPosition()[0]; // Length between front and rear
+		if (i == 1) dL *= 2.f;
+
+		double beta = atan2(1.0, 1.0 / tan(alpha) - dW / fabs(dL)); // Inside wheel steering angle in rads
+
+		double left = 0, right = 0; // Wheel angle
+		if (val >= 0) { left = alpha; right = beta; }
+		else { left = -alpha; right = -beta; }
+		left *= 180.0 / M_PI; right *= 180.0 / M_PI;
+
+		wheels[wl].setSteerAngle(left); wheels[wr].setSteerAngle(right);
+	}
+}
+
 void CarDynamics::updateTransmission(double dt) {
 	driveshaftRPM = calculateDriveshaftRPM();
 
@@ -267,6 +302,31 @@ double CarDynamics::shiftAutoClutchThrottle(double throttle, double dt) {
 		}
 	}
 	return throttle;
+}
+
+MathVector<double, 3> CarDynamics::updateSuspension(int i, double dt) {
+	// Displacement
+	//TODO Need wheelContact (CollisionContact) and TerrainSurface!
+
+	double displacement = 2.0 * wheels[i].getRadius(); //TODO Fix with wheel contact and bump offset!
+
+	// Compute suspension force
+	double springDampForce = suspension[i].update(dt, displacement);
+
+	// Anti-roll
+	int otherI = i;
+	if (i % 2 == 0) otherI++;
+	else otherI--;
+
+	double antiRollForce = suspension[i].getAntiRollK() *
+						   (suspension[i].getDisplacement() - suspension[otherI].getDisplacement());
+
+	if (isnan(antiRollForce)) antiRollForce = 0.f;
+	assert(!isnan(antiRollForce));
+
+	MathVector<double, 3> suspForce(0, 0, antiRollForce + springDampForce);
+	getBodyOrientation().rotateVector(suspForce);
+	return suspForce;
 }
 
 void CarDynamics::interpolateWheelContacts(double dt) {
