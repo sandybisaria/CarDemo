@@ -50,9 +50,13 @@ public:
 	// Driveline input
 	void shiftGear(int value);
 
+	// Speedometer output based on driveshaft RPM
+	double getSpeedMPS() const;
+
 	// Chassis state access
 	const Quaternion<double>& getOrientation() const { return chassisRotation; }
 	MathVector<double, 3> getVelocity() const { return body.getVelocity(); }
+	double getSpeed() const { return body.getVelocity().magnitude(); }
 
 	// Wheel state access
 	const CarWheel& getWheel(WheelPosition wp) const { return wheels[wp]; }
@@ -107,6 +111,8 @@ private:
 	MathVector<double, 3> getWheelPositionAtDisplacement(WheelPosition wp, double displacementPercent) const;
 	Quaternion<double> getWheelSteeringAndSuspensionOrientation(WheelPosition wp) const;
 
+	bool wheelDriven(int i) const { return (1 << i) & drive; } // Sorry for the magic function
+
 	// Updater methods
 	void synchronizeBody();
 	void updateWheelContacts();
@@ -117,9 +123,18 @@ private:
 
 	void updateTransmission(double dt);
 	void updateDriveline(double dt, double driveTorque[]); // Update engine, return wheel drive torque
-	double calculateDriveshaftRPM() const;
+	double calculateDriveshaftRPM() const; // Calculate clutch driveshaft RPM
+	double calculateDriveshaftSpeed(); // Calculate driveshaft speed given wheel angular velocity
+
+	void applyClutchTorque(double engineDrag, double clutchSpeed); // Apply clutch torque to engine
+	void calculateDriveTorque(double driveTorque[], double clutchTorque); // Calculate wheel drive torque
 
 	int nextGear() const; // Calculate next gear based on engine RPM
+	double downshiftRPM(int gear, float avgWhHeight = 0.f) const; // Calculate downshift point based on gear and engine RPM
+
+	double autoClutch(double lastClutch, double dt) const;
+	double shiftAutoClutch() const;
+	double shiftAutoClutchThrottle(double throttle, double dt);
 
 	void updateWheelTransform();
 	void updateWheelVelocity();
@@ -128,6 +143,9 @@ private:
 
 	void applyEngineTorqueToBody();
 	void applyAerodynamicsToBody();
+
+	void applyForce(const MathVector<double, 3>& force) { body.applyForce(force); } //TODO Skip camera body
+	void applyTorque(const MathVector<double, 3>& torque) { body.applyTorque(torque); }
 
 	// Aerodynamics
 	std::vector<CarAero> aerodynamics;

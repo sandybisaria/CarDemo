@@ -2,7 +2,7 @@
 #include "CarConstants.hpp"
 
 CarDynamics::CarDynamics()
-	: autoclutch(true), autoshift(true), autorear(true), autoshift(true),
+	: autoclutch(true), autoshift(true), autorear(true), shifted(true),
 	  shiftTime(0.2), remShiftTime(0.0), lastAutoClutch(1.0), gearToShift(0) {
 	setNumWheels(DEF_WHEEL_COUNT);
 }

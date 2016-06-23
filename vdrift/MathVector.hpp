@@ -288,8 +288,8 @@ public:
 
 	// Project this vector onto the vector 'vec'.  Neither needs to be a unit vector.
 	MathVector<T,3> project(const MathVector<T,3>& vec) const {
-		T scalarProj = dot(vec.normalize());
-		return vec.normalize() * scalarProj;
+		T scalarProj = dot(vec.normalized());
+		return vec.normalized() * scalarProj;
 	}
 
 private:
