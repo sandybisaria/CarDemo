@@ -145,7 +145,7 @@ public:
 				planes[i].set(cFrustum[i]);
 		}
 
-		std::vector<MathPlane<T>> planes;
+		std::vector<MathPlane<T> > planes;
 	};
 
 	bool intersects(const Frustum& frustum) const {

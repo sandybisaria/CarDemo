@@ -13,7 +13,7 @@ void CarDynamics::setNumWheels(int nw) {
 	wheels.resize(numWheels);
 }
 
-bool CarDynamics::loadFromConfig(ConfigFile& cf) {
+bool CarDynamics::load(ConfigFile& cf) {
 	int nw = 0;
 	cf.getParam("wheels", nw);
 	if (nw >= MIN_WHEEL_COUNT && nw <= MAX_WHEEL_COUNT)
@@ -427,7 +427,7 @@ bool CarDynamics::loadFromConfig(ConfigFile& cf) {
 		if (!cf.getParam("drag.position", pos)) return false;
 		if (version == 2) versionConvert(pos[0], pos[1], pos[2]);
 		vec.set(pos[0], pos[1], pos[2]);
-//		addAerodynamicDevice(vec, dragArea, dragCoeff, 0, 0, 0); //FIXME
+		addAerodynamicDevice(vec, dragArea, dragCoeff, 0, 0, 0);
 
 		for (int i = 0; i < 2; i++) {
 			std::string type = (i == 1 ? "rear" : "front");
@@ -440,15 +440,111 @@ bool CarDynamics::loadFromConfig(ConfigFile& cf) {
 			if (!cf.getParam(searchStr + "position", pos)) return false;
 			if (version == 2) versionConvert(pos[0], pos[1], pos[2]);
 			vec.set(pos[0], pos[1], pos[2]);
-	//		addAerodynamicDevice(vec, dragArea, dragCoeff, liftArea, liftCoeff, liftEff); //FIXME
+			addAerodynamicDevice(vec, dragArea, dragCoeff, liftArea, liftCoeff, liftEff);
 		}
 	}
 
 	//TODO Skipped hover params
 
-//	updateMass(); //FIXME
+	calculateMass();
 
 	return true;
+}
+
+void CarDynamics::init(MathVector<double, 3> pos, Quaternion<double> rot, CollisionWorld& world) {
+	this->world = &world;
+
+	MathVector<double, 3> zero((double)0);
+
+	body.setPosition(pos); body.setOrientation(rot);
+	body.setInitialForce(zero); body.setInitialTorque(zero);
+
+	engine.setInitialConditions();
+
+	// Init chassis
+	btTransform tr; tr.setIdentity();
+	AABB<float> box;
+	for (int i = 0; i < numWheels; i++) {
+//		MathVector<float, 3> wheelPos = getLocalWheelPosition(WheelPosition(i), 0); //FIXME
+		AABB<float> wheelAABB;
+//		wheelAABB.setFromCorners(wheelPos, wheelPos);
+		box.combineWith(wheelAABB);
+	}
+
+	const MathVector<double, 3> verticalMargin(0, 0, 0.3);
+	btVector3 origin = toBulletVector(box.getCenter() + verticalMargin - centerOfMass);
+	btVector3 size = toBulletVector(box.getSize() - verticalMargin);
+
+	// Assuming the vehicle is not a sphere... of course
+	// y is length, x is width, h is height
+	btCollisionShape* chassisShape;
+	{
+		btScalar w = size.getX() * 0.2, r = size.getZ() * 0.3, h = 0.45;
+
+		//TODO I think this is what the Stuntrally devs meant (based on their formatting)
+		btScalar l0 = 0.f, w0 = 0.f, h0 = 0.f;
+		if (collR > 0.f) { r = collR; l0 = collLofs; }
+		if (collW > 0.f) { w = collW; w0 = collWofs; }
+		if (collH > 0.f) { h = collH; h0 = collHofs; }
+		origin = btVector3(l0, w0, h0);
+
+		const int numSph = 14; int i = 0;
+		btScalar rad[numSph]; btVector3 posi[numSph];
+
+		btScalar r2 = r * collR2m;
+		btScalar l1 = collPosLFront, l2 = collPosLBack, l1m = l1 * 0.5, l2m = l2 * 0.5;
+		float ww = 1.f;
+		float wt = collTopWMul * ww;
+
+		rad[i] = r2;  posi[i] = btVector3( l1 , -w*ww, -h*collFrHMul);  ++i;  // front
+		rad[i] = r2;  posi[i] = btVector3( l1 ,  w*ww, -h*collFrHMul);  ++i;
+		rad[i] = r;   posi[i] = btVector3( l1m, -w*ww, -h*collFrHMul);  ++i;  // front near
+		rad[i] = r;   posi[i] = btVector3( l1m,  w*ww, -h*collFrHMul);  ++i;
+
+		rad[i] = r;   posi[i] = btVector3( l2m, -w,    -h);  ++i;  // rear near
+		rad[i] = r;   posi[i] = btVector3( l2m,  w,    -h);  ++i;
+		rad[i] = r2;  posi[i] = btVector3( l2 , -w,    -h);  ++i;  // rear
+		rad[i] = r2;  posi[i] = btVector3( l2 ,  w,    -h);  ++i;
+
+		rad[i] = r2;  posi[i] = btVector3( collTopFr,  -w*wt, h*collTopFrHm  );  ++i;  // top
+		rad[i] = r2;  posi[i] = btVector3( collTopFr,   w*wt, h*collTopFrHm  );  ++i;
+		rad[i] = r2;  posi[i] = btVector3( collTopMid, -w*wt, h*collTopMidHm );  ++i;
+		rad[i] = r2;  posi[i] = btVector3( collTopMid,  w*wt, h*collTopMidHm );  ++i;
+		rad[i] = r2;  posi[i] = btVector3( collTopBack,-w*wt, h*collTopBackHm);  ++i;  // top rear
+		rad[i] = r2;  posi[i] = btVector3( collTopBack, w*wt, h*collTopBackHm);  ++i;
+
+		for (i=0; i < numSph; ++i)
+			posi[i] += origin;
+		chassisShape = new btMultiSphereShape(posi, rad, numSph);
+		chassisShape->setMargin(0.02f);
+	}
+
+	double chassisMass = body.getMass();
+	Matrix3<double> inertia = body.getInertia();
+	btVector3 chassisInertia(inertia[0], inertia[4], inertia[8]);
+
+	btTransform transform;
+	transform.setOrigin(toBulletVector(pos));
+	transform.setRotation(toBulletQuaternion(rot));
+	btDefaultMotionState* chassisState = new btDefaultMotionState();
+	chassisState->setWorldTransform(transform);
+
+	btRigidBody::btRigidBodyConstructionInfo info(chassisMass, chassisState, chassisShape, chassisInertia);
+	info.m_angularDamping = angularDamping;
+	info.m_restitution = 0.0;
+	info.m_friction = collFriction;  /// 0.4-0.7
+	shapes.push_back(chassisShape);
+
+	chassis = world.addRigidBody(info, true, true); rigids.push_back(chassis); //TODO The second "true" is hard-coded; assume we allow car collisions!
+	chassis->setActivationState(DISABLE_DEACTIVATION);
+//	chassis->setUserPointer(new ShapeData()); //FIXME Implement ShapeData and fix constructer args
+
+	world.getDynamicsWorld()->addAction(this); actions.push_back(this);
+
+	// Join chassis and wheel triggers
+	{
+
+	}
 }
 
 void CarDynamics::setDrive(const std::string& newDrive) {
@@ -463,8 +559,54 @@ void CarDynamics::setDrive(const std::string& newDrive) {
 }
 
 void CarDynamics::addMassParticle(double newMass, MathVector<double, 3> newPos) {
-	//TODO When collision params are loaded, uncomment and adjust
-//	newpos[0] += com_ofs_L;
-//	newpos[2] += com_ofs_H;
+	newPos[0] += comOfsL;
+	newPos[2] += comOfsH;
 	massOnlyParticles.push_back(std::pair<double, MathVector<double, 3> >(newMass, newPos));
+}
+
+void CarDynamics::addAerodynamicDevice(const MathVector<double, 3>& newPos, double dragFrontalArea,
+									   double dragCoefficient, double liftSurfaceArea, double liftCoefficient, double liftEfficiency) {
+	CarAero aero;
+	aero.set(newPos, dragFrontalArea, dragCoefficient, liftSurfaceArea, liftCoefficient, liftEfficiency);
+	aerodynamics.push_back(aero);
+}
+
+void CarDynamics::calculateMass() {
+	typedef std::pair<double, MathVector<double, 3> > MassPair;
+
+	double totalMass(0);
+	centerOfMass.set((double)0);
+
+	//
+	for (std::list< MassPair >::iterator i = massOnlyParticles.begin(); i != massOnlyParticles.end(); i++) {
+		totalMass += i->first;
+		centerOfMass = centerOfMass + i->second * i->first;
+	}
+
+	// Account for fuel
+	totalMass += fuelTank.getMass();
+	centerOfMass = centerOfMass + fuelTank.getPosition() * fuelTank.getMass();
+
+	body.setMass(totalMass);
+	centerOfMass = centerOfMass * (1.0 / totalMass);
+
+	// Calculate inertia tensor
+	Matrix3<double> inertia;
+	for (int i = 0; i < 9; i++) { inertia[i] = 0; }
+
+	for (std::list< MassPair >::iterator i = massOnlyParticles.begin(); i != massOnlyParticles.end(); i++) {
+		// Transform into RigidBody coordinates
+		MathVector<double, 3> pos = i->second - centerOfMass;
+		double mass = i->first;
+		inertia[0] += mass * (pos[1] * pos[1] + pos[2] * pos[2]);
+		inertia[1] -= mass * (pos[0] * pos[1]);
+		inertia[2] -= mass * (pos[0] * pos[2]);
+		inertia[3] = inertia[1];
+		inertia[4] += mass * (pos[2] * pos[2] + pos[0] * pos[0]);
+		inertia[5] -= mass * (pos[1] * pos[2]);
+		inertia[6] = inertia[2];
+		inertia[7] = inertia[5];
+		inertia[8] += mass * (pos[0] * pos[0] + pos[1] * pos[1]);
+	}
+	body.setInertia(inertia);
 }

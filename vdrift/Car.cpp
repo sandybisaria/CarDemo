@@ -3,6 +3,8 @@
 #include "CarConstants.hpp"
 #include "../shiny/Main/Factory.hpp"
 #include "../util/ConfigFile.hpp"
+#include "../vdrift/MathVector.hpp"
+#include "../vdrift/Quaternion.hpp"
 
 #include <OgreRoot.h>
 #include <OgreEntity.h>
@@ -26,19 +28,17 @@ Car::~Car() {
 	entitiesToDelete.clear();
 }
 
-void Car::setup(std::string carName, Ogre::SceneManager* sceneMgr) {
+void Car::setup(std::string carName, Ogre::SceneManager* sceneMgr, CollisionWorld& world) {
 	mCarName = carName;
 	resGrpId = mCarName + "_" + Ogre::StringConverter::toString(mId);
 	carPath = "../data/cars/" + mCarName;
 
-	if (!loadFromConfig()){
+	if (!loadFromConfig(world)){
 		return; //TODO With error
 	}
 
 	mSceneMgr = sceneMgr;
 	loadModel();
-
-	//TODO Load starting position/rotation from somewhere...
 }
 
 void Car::update(float dt) {
@@ -56,7 +56,7 @@ void Car::createdConfiguration(sh::MaterialInstance* m, const std::string& confi
 	updateLightMap();
 }
 
-bool Car::loadFromConfig() {
+bool Car::loadFromConfig(CollisionWorld& world) {
 	// Top-level directory for all car data
 	std::string carSimPath = carPath + "/sim/" + mCarName + ".car";
 
@@ -69,13 +69,55 @@ bool Car::loadFromConfig() {
 	if (nw >= MIN_WHEEL_COUNT && nw <= MAX_WHEEL_COUNT)
 		setNumWheels(nw);
 
-	//TODO At some point, we will have to load the custom car collision params,
-	//	   as in CAR::Load(). We will ignore them for now...
+	// Load car collision params (Stuntrally puts it outside of CARDYNAMICS so...
+	// com
+	dyn.comOfsL = 0.f;  cf.getParam("collision.com_ofs_L", dyn.comOfsL);
+	dyn.comOfsH = 0.f;  cf.getParam("collision.com_ofs_H", dyn.comOfsH);
+	// dim
+	dyn.collR   = 0.3f;  cf.getParam("collision.radius", 	 dyn.collR);
+	dyn.collR2m = 0.6f;  cf.getParam("collision.radius2mul", dyn.collR2m);
+	dyn.collH   = 0.45f; cf.getParam("collision.height", 	 dyn.collH);
+	dyn.collW   = 0.5f;  cf.getParam("collision.width",  	 dyn.collW);
+	// ofs
+	dyn.collLofs = 0.f;  cf.getParam("collision.offsetL", dyn.collLofs);
+	dyn.collWofs = 0.f;  cf.getParam("collision.offsetW", dyn.collWofs);
+	dyn.collHofs = 0.f;  cf.getParam("collision.offsetH", dyn.collHofs);
+	dyn.collLofs -= dyn.comOfsL;
+	dyn.collHofs -= dyn.comOfsH;
+	// L
+	dyn.collPosLFront = 1.9f; cf.getParam("collision.posLfront", dyn.collPosLFront);
+	dyn.collPosLBack = -1.9f; cf.getParam("collision.posLrear",  dyn.collPosLBack);
+	// w
+	dyn.collFrWMul  = 0.2f;   cf.getParam("collision.FrWmul",  dyn.collFrWMul);
+	dyn.collFrHMul  = 1.0f;   cf.getParam("collision.FrHmul",  dyn.collFrHMul);
+	dyn.collTopWMul = 0.8f;   cf.getParam("collision.TopWmul", dyn.collTopWMul);
+	// Top L pos
+	dyn.collTopFr    = 0.4f;  cf.getParam("collision.TopFr",    dyn.collTopFr);
+	dyn.collTopMid   =-0.3f;  cf.getParam("collision.TopMid",   dyn.collTopMid);
+	dyn.collTopBack  =-1.1f;  cf.getParam("collision.TopBack",  dyn.collTopBack);
+	// Top h mul
+	dyn.collTopFrHm  = 0.2f;  cf.getParam("collision.TopFrHm",  dyn.collTopFrHm);
+	dyn.collTopMidHm = 0.4f;  cf.getParam("collision.TopMidHm", dyn.collTopMidHm);
+	dyn.collTopBackHm= 0.2f;  cf.getParam("collision.TopBackHm",dyn.collTopBackHm);
 
-	if (!dyn.loadFromConfig(cf)) {
+	dyn.collFriction = 0.4f;  cf.getParam("collision.friction",  dyn.collFriction);
+	dyn.collFlTrigH  = 0.f;   cf.getParam("collision.fluidTrigH",dyn.collFlTrigH);
+	dyn.collFlTrigH -= dyn.comOfsH;
+
+	if (!dyn.load(cf)) {
 		std::cerr << "CarDynamics load failed" << std::endl;
 		return false; //TODO Error if not all car params found
 	}
+
+	//TODO Load starting position/rotation from the scene
+	MathVector<double, 3> pos;
+	Quaternion<double> rot;
+
+	float stOfsY = 0.f;
+	cf.getParam("collision.start-offsetY", stOfsY);
+	pos[2] += stOfsY - 0.4 + dyn.comOfsH;
+
+	dyn.init(pos, rot, world);
 
 	return true;
 }

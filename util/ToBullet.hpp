@@ -8,26 +8,26 @@
 #include "LinearMath/btQuaternion.h"
 #include "LinearMath/btMatrix3x3.h"
 
-btVector3 toBulletVector(const MathVector<float, 3>& v) {
-	return btVector3(v[0], v[1]. v[2]);
+static btVector3 toBulletVector(const MathVector<float, 3>& v) {
+	return btVector3(v[0], v[1], v[2]);
 }
 
-btQuaternion toBulletQuaternion(const Quaternion<float>& q) {
+static btQuaternion toBulletQuaternion(const Quaternion<float>& q) {
 	return btQuaternion(q.x(), q.y(), q.z(), q.w());
 }
 
-btQuaternion toBulletQuaternion(const Quaternion<double>& q) {
+static btQuaternion toBulletQuaternion(const Quaternion<double>& q) {
 	return btQuaternion(q.x(), q.y(), q.z(), q.w());
 }
 
-btMatrix3x3 toBulletMatrix(const Matrix3<float>& m) {
+static btMatrix3x3 toBulletMatrix(const Matrix3<float>& m) {
 	return btMatrix3x3(m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8]);
 }
 
-template <typename T> MathVector<T, 3> toMathVector(const btVector3& v) {
+template <typename T> static MathVector<T, 3> toMathVector(const btVector3& v) {
 	return MathVector<T, 3>(v.x(), v.y(), v.z());
 }
 
-template <typename T> Quaternion<T> toMathQuaternion(const btQuaternion& q) {
+template <typename T> static Quaternion<T> toMathQuaternion(const btQuaternion& q) {
 	return Quaternion<T>(q.x(), q.y(), q.z(), q.w());
 }

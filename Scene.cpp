@@ -25,7 +25,7 @@ void Scene::setupTerrain() {
 	mTerrainGlobals = OGRE_NEW Ogre::TerrainGlobalOptions();
 
 	mTerrainGroup = OGRE_NEW Ogre::TerrainGroup(mSceneMgr,
-			Ogre::Terrain::ALIGN_X_Z, 513, 10000.0);
+			Ogre::Terrain::ALIGN_X_Z, 513, 10000.0); //TODO Store world size somewhere!
 
 	configureTerrainDefaults();
 	defineTerrain();

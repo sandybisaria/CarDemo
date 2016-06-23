@@ -16,25 +16,25 @@ public:
 	const double getMass() const { return linFr.getMass(); }
 
 	void setPosition(const MathVector<double, 3>& pos) { linFr.setPosition(pos); }
-	const MathVector<double, 3>& getPosition() { return linFr.getPosition(); }
+	const MathVector<double, 3>& getPosition() const { return linFr.getPosition(); }
 
 	void setVelocity(const MathVector<double, 3>& vel) { linFr.setVelocity(vel); }
-	const MathVector<double, 3>& getVelocity() { return linFr.getVelocity(); }
+	const MathVector<double, 3>& getVelocity() const { return linFr.getVelocity(); }
 
 	// Accessor methods to RotationalFrame
 	void setInitialTorque(const MathVector<double, 3>& t) { rotFr.setInitialTorque(t); }
 	void setTorque(const MathVector<double, 3>& t) { rotFr.setTorque(t); }
-	const MathVector<double, 3>& getTorque() { return rotFr.getTorque(); }
+	const MathVector<double, 3>& getTorque() const { return rotFr.getTorque(); }
 
 	void setInertia(const Matrix3<double>& i) { rotFr.setInertia(i); }
-	const Matrix3<double>& getInertia() { return rotFr.getInertia(); }
-	const Matrix3<double>& getInertiaLocal() { return rotFr.getInertiaLocal(); }
+	const Matrix3<double>& getInertia() const { return rotFr.getInertia(); }
+	const Matrix3<double>& getInertiaLocal() const { return rotFr.getInertiaLocal(); }
 
 	void setOrientation(const Quaternion<double>& o) { rotFr.setOrientation(o); }
-	const Quaternion<double>& getOrientation() { return rotFr.getOrientation(); }
+	const Quaternion<double>& getOrientation() const { return rotFr.getOrientation(); }
 
 	void setAngularVelocity(const MathVector<double, 3>& nav) { rotFr.setAngularVelocity(nav); }
-	const MathVector<double, 3>& getAngularVelocity() { return rotFr.getAngularVelocity(); }
+	const MathVector<double, 3>& getAngularVelocity() const { return rotFr.getAngularVelocity(); }
 
 
 	void integrateStep1(const double& dt) {

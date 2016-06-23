@@ -10,7 +10,7 @@
 #include "App.hpp"
 
 App::App(Ogre::Root* root)
-	: mShutDown(false), mScene(0), mSim(0),
+	: mShutDown(false), mFactory(0), mScene(0), mSim(0),
 	  mRoot(root), mWindow(0), mSceneMgr(0), mCamera(0), mCameraNode(0),
 	  mInputMgr(0), mKeyboard(0) {
 }
@@ -177,8 +177,8 @@ void App::setupViewSystem() {
 	mCamera = mSceneMgr->createCamera("MainCamera");
 
 	mCameraNode = mSceneMgr->getRootSceneNode()->createChildSceneNode("MainCameraNode");
-	mCameraNode->setPosition(Ogre::Vector3(0, 80, 0));
-	mCameraNode->setDirection(Ogre::Vector3::ZERO);
+	mCameraNode->setPosition(Ogre::Vector3(0, 1, -2));
+	mCameraNode->setDirection(Ogre::Vector3::UNIT_Z);
 	mCameraNode->attachObject(mCamera);
 
 	//TODO Make configurable a la Stuntrally
@@ -248,6 +248,7 @@ void App::updateCamera(const Ogre::FrameEvent& evt) {
 	} if (mKeyboard->isKeyDown(OIS::KC_Q)) {
 		translation += Ogre::Vector3::NEGATIVE_UNIT_Y;
 	}
+	translation *= 0.01;
 	mCameraNode->translate(translation, Ogre::Node::TS_LOCAL);
 
 	if (mKeyboard->isKeyDown(OIS::KC_A)) {

@@ -3,6 +3,7 @@
 #include "CarPosInfo.hpp"
 #include "CarDynamics.hpp"
 #include "../shiny/Main/MaterialInstance.hpp"
+#include "CollisionWorld.hpp"
 
 #include <iostream>
 
@@ -15,7 +16,7 @@ public:
 	Car(int id);
 	~Car();
 
-	void setup(std::string carName, Ogre::SceneManager* sceneMgr);
+	void setup(std::string carName, Ogre::SceneManager* sceneMgr, CollisionWorld& world);
 
 	void update(float dt);
 
@@ -23,7 +24,7 @@ public:
 	virtual void createdConfiguration(sh::MaterialInstance* m, const std::string& configuration);
 
 private:
-	bool loadFromConfig();
+	bool loadFromConfig(CollisionWorld& world);
 	void loadModel();
 	void loadMaterials();
 

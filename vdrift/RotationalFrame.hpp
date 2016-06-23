@@ -34,7 +34,7 @@ public:
 		angMom = worldInertiaTensor.multiply(nav);
 		angVel = nav;
 	}
-	const MathVector<double, 3> getAngularVelocity() const { return angVel; }
+	const MathVector<double, 3>& getAngularVelocity() const { return angVel; }
 
 	// Modified velocity Verlet integration two-step method
 	// Both steps must be called per frame
@@ -116,7 +116,7 @@ public:
 		torque = t;
 	}
 
-	const MathVector<double, 3>& getTorque() { return oldTorque; }
+	const MathVector<double, 3>& getTorque() const { return oldTorque; }
 
 	// Must be called once when simulation starts to set initial torque
 	void setInitialTorque(const MathVector<double, 3>& t) {

@@ -16,11 +16,11 @@ public:
 
 	inline const T& operator[](const int i) const {
 		assert(i < 4);
-		return v[n];
+		return v[i];
 	}
 	inline T& operator[](const int i) {
 		assert(i < 4);
-		return v[n];
+		return v[i];
 	}
 
 	template <typename T2>

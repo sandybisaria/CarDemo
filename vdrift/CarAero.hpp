@@ -12,7 +12,7 @@ public:
 	void set(const MathVector<double, 3>& np, double ndfa, double ndc,
 			 double nlsa, double nlc, double nle) {
 		pos = np;
-		dragFrontArea = ndf;
+		dragFrontArea = ndfa;
 		dragCoeff = ndc;
 		liftSurfArea = nlsa;
 		liftCoeff = nlc;

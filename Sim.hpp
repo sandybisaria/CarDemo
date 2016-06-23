@@ -1,6 +1,7 @@
 #pragma once
 
 #include "vdrift/Car.hpp"
+#include "vdrift/CollisionWorld.hpp"
 
 #include "OgreSceneManager.h"
 
@@ -15,5 +16,6 @@ public:
 private:
 	Ogre::SceneManager* mSceneMgr;
 
+	CollisionWorld world;
 	Car* mCar;
 };
