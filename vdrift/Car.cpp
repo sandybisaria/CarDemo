@@ -42,8 +42,8 @@ void Car::setup(std::string carName, Ogre::SceneManager* sceneMgr, CollisionWorl
 }
 
 void Car::update(float dt) {
-	//TODO Update CarDynamics, then update model
 	dyn.update();
+	updateModel();
 
 	updateLightMap();
 }
@@ -244,6 +244,23 @@ void Car::changeColor() {
 	}
 
 	//Refer to CarModel::ChangeClr
+}
+
+void Car::updateModel() {
+	mainNode->setPosition(Axes::vectorToOgre(dyn.getPosition()));
+	std::cout << "My position: " << mainNode->getPosition() << std::endl;
+
+	Ogre::Quaternion rot; rot = Axes::doQuatToOgre(dyn.getOrientation());
+	mainNode->setOrientation(rot);
+
+	for (int w = 0; w < numWheels; w++) {
+		WheelPosition wp; wp = WheelPosition(w);
+
+		wheelNodes[w]->setPosition(Axes::vectorToOgre(dyn.getWheelPosition(wp)));
+
+		Ogre::Quaternion whRot; whRot = Axes::doWhQuatToOgre(dyn.getWheelOrientation(wp));
+		wheelNodes[w]->setOrientation(whRot);
+	}
 }
 
 void Car::updateLightMap() {

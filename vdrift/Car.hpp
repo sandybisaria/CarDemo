@@ -1,9 +1,9 @@
 #pragma once
 
-#include "CarPosInfo.hpp"
 #include "CarDynamics.hpp"
 #include "../shiny/Main/MaterialInstance.hpp"
 #include "CollisionWorld.hpp"
+#include "../util/Axes.hpp"
 
 #include <iostream>
 
@@ -33,6 +33,7 @@ private:
 	void setNumWheels(int nw);
 	void changeColor();
 
+	void updateModel(); // Retrieves info from CarDynamics to update model
 	void updateLightMap();
 
 	int numWheels;

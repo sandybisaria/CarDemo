@@ -44,7 +44,7 @@ public:
 
 	void removeBullet();
 
-	// Graphics interface
+	// Update method
 	void update();
 
 	// Driveline input
@@ -54,12 +54,15 @@ public:
 	double getSpeedMPS() const;
 
 	// Chassis state access
+	const MathVector<double, 3>& getPosition() const { return chassisPosition; }
 	const Quaternion<double>& getOrientation() const { return chassisRotation; }
 	MathVector<double, 3> getVelocity() const { return body.getVelocity(); }
 	double getSpeed() const { return body.getVelocity().magnitude(); }
 
 	// Wheel state access
 	const CarWheel& getWheel(WheelPosition wp) const { return wheels[wp]; }
+	Quaternion<double> getWheelOrientation(WheelPosition wp) const;
+	MathVector<double, 3> getWheelPosition(WheelPosition wp) const;
 
 	// Collision params
 	float collR, collR2m, collW, collH,
@@ -104,12 +107,12 @@ private:
 	std::vector<MathVector<double, 3> > wheelVels, wheelPos;
 	std::vector<Quaternion<double> > wheelRots;
 
-	MathVector<double, 3> localToWorld(const MathVector<double, 3>& local) const;
-
 	MathVector<double, 3> getWheelPosition(WheelPosition wp, double displacementPercent) const; // For internal use
 	MathVector<double, 3> getLocalWheelPosition(WheelPosition wp, double displacementPercent) const;
 	MathVector<double, 3> getWheelPositionAtDisplacement(WheelPosition wp, double displacementPercent) const;
 	Quaternion<double> getWheelSteeringAndSuspensionOrientation(WheelPosition wp) const;
+
+	MathVector<double, 3> localToWorld(const MathVector<double, 3>& local) const;
 
 	bool wheelDriven(int i) const { return (1 << i) & drive; } // Sorry for the magic function
 

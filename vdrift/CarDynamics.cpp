@@ -5,10 +5,18 @@ void CarDynamics::alignWithGround() {
 	updateWheelContacts();
 }
 
-MathVector<double, 3> CarDynamics::localToWorld(const MathVector<double, 3>& local) const {
-	MathVector<double, 3> position = local - centerOfMass;
-	body.getOrientation().rotateVector(position);
-	return position + body.getPosition();
+Quaternion<double> CarDynamics::getWheelOrientation(WheelPosition wp) const {
+	Quaternion<double> sideRot;
+	if (wp == FRONT_RIGHT || wp == REAR_RIGHT)
+		sideRot.rotate(M_PI, 0, 0, 1);
+
+	return chassisRotation * getWheelSteeringAndSuspensionOrientation(wp) * wheels[wp].getOrientation() * sideRot;
+}
+
+MathVector<double, 3> CarDynamics::getWheelPosition(WheelPosition wp) const {
+	MathVector<double, 3> localPos = getLocalWheelPosition(wp, suspension[wp].getDisplacementPercent());
+	chassisRotation.rotateVector(localPos);
+	return localPos + chassisPosition;
 }
 
 MathVector<double, 3> CarDynamics::getWheelPosition(WheelPosition wp, double displacementPercent) const {
@@ -59,6 +67,12 @@ Quaternion<double> CarDynamics::getWheelSteeringAndSuspensionOrientation(WheelPo
 	toe.rotate(toeRot, 0, 0, 1);
 
 	return camber * toe * steer;
+}
+
+MathVector<double, 3> CarDynamics::localToWorld(const MathVector<double, 3>& local) const {
+	MathVector<double, 3> position = local - centerOfMass;
+	body.getOrientation().rotateVector(position);
+	return position + body.getPosition();
 }
 
 void CarDynamics::updateWheelTransform() {

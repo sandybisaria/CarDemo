@@ -8,11 +8,13 @@
 #include <OgreRenderWindow.h>
 
 #include "App.hpp"
+#include "util/Axes.hpp"
 
 App::App(Ogre::Root* root)
 	: mShutDown(false), mFactory(0), mScene(0), mSim(0),
 	  mRoot(root), mWindow(0), mSceneMgr(0), mCamera(0), mCameraNode(0),
 	  mInputMgr(0), mKeyboard(0) {
+	Axes::init();
 }
 
 App::~App() {
@@ -248,7 +250,7 @@ void App::updateCamera(const Ogre::FrameEvent& evt) {
 	} if (mKeyboard->isKeyDown(OIS::KC_Q)) {
 		translation += Ogre::Vector3::NEGATIVE_UNIT_Y;
 	}
-	translation *= 0.01;
+//	translation *= 0.01;
 	mCameraNode->translate(translation, Ogre::Node::TS_LOCAL);
 
 	if (mKeyboard->isKeyDown(OIS::KC_A)) {
