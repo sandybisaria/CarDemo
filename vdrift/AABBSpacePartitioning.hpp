@@ -25,24 +25,65 @@ public:
 		typename std::list<typename objectListType::iterator> toDel;
 
 		//if we've got objects, test them
-		for (typename objectListType::iterator i = objects.begin(); i != objects.end(); ++i) {
+		for (typename objectListType::iterator i = objects.begin(); i != objects.end(); ++i)
 			if (i->first == object)
-			{
-				todel.push_back(i);
-			}
-		}
+				toDel.push_back(i);
 
-		//do any deletions
-		for (typename std::list <typename objectlist_type::iterator>::iterator i = todel.begin(); i != todel.end(); ++i)
-		{
+		// Do any deletions
+		for (typename std::list <typename objectListType::iterator>::iterator i = toDel.begin(); i != toDel.end(); ++i)
 			objects.erase(*i);
-		}
 
-		//if we have children, pass it on
+		// If we have children, pass it on
+		for (typename childrenListType::iterator i = children.begin(); i != children.end(); ++i)
+			i->remove(object);
+	}
+
+	// Faster delete that uses the supplied AABB to find the object
+	void remove(DATATYPE& object, const AABB<float>& objAABB) {
+		typename std::list <typename objectListType::iterator> toDel;
+
+		//if we've got objects, test them
+		for (typename objectListType::iterator i = objects.begin(); i != objects.end(); ++i)
+			if (i->first == object)
+				toDel.push_back(i);
+
+		// Do any deletions
+		for (typename std::list <typename objectListType::iterator>::iterator i = toDel.begin(); i != toDel.end(); ++i)
+			objects.erase(*i);
+
+		// If we have children, pass it on
 		for (typename childrenlist_type::iterator i = children.begin(); i != children.end(); ++i)
-		{
-			i->Delete(object);
-		}
+			if (i->getBoundingBox().intersects(objAABB))
+				i->remove(object, objAABB);
+	}
+
+	// Run a query for objects that collide with the given shape
+	template <typename T, typename U>
+	void query(const T& shape, U& outputList) const {
+		// If we've got objects, test them
+		for (typename objectListType::const_iterator i = objects.begin(); i != objects.end(); ++i)
+			if (i->second.intersects(shape))
+				outputList.push_back(i->first);
+
+		// If we have children, test them
+		for (typename childrenListType::const_iterator i = children.begin(); i != children.end(); ++i)
+			if (i->getBoundingBox().intersect(shape))
+				// Our child intersects with the segment; dispatch a query
+				i->query(shape, outputList);
+	}
+
+	bool isEmpty() const { return objects.empty() && children.empty(); }
+	void clear() { objects.clear(); children.clear(); }
+
+	// Traverse entire tree, collecting pointers to all DATATYPE objects
+	void getContainedObjects(std::list<DATATYPE*>& outputList) {
+		// If we've got objects, add them
+		for (typename objectListType::iterator i = objects.begin(); i != objects.end(); ++i)
+			outputlist.push_back(&i->first);
+
+		// If we have children, add them
+		for (typename childrenListType::iterator i = children.begin(); i != children.end(); ++i)
+			i->getContainedObjects(outputList);
 	}
 
 private:
