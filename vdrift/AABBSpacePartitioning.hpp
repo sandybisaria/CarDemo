@@ -20,6 +20,31 @@ public:
 		distributeObjectsToChildren(0);
 	}
 
+	// Slow delete
+	void remove(DATATYPE& object) {
+		typename std::list<typename objectListType::iterator> toDel;
+
+		//if we've got objects, test them
+		for (typename objectListType::iterator i = objects.begin(); i != objects.end(); ++i) {
+			if (i->first == object)
+			{
+				todel.push_back(i);
+			}
+		}
+
+		//do any deletions
+		for (typename std::list <typename objectlist_type::iterator>::iterator i = todel.begin(); i != todel.end(); ++i)
+		{
+			objects.erase(*i);
+		}
+
+		//if we have children, pass it on
+		for (typename childrenlist_type::iterator i = children.begin(); i != children.end(); ++i)
+		{
+			i->Delete(object);
+		}
+	}
+
 private:
 	// Recursively send all objects and childrens' objects to target node (clearing out everything else)
 	void collapseTo(AABBSpacePartitioningNode& collapseTarget) {
