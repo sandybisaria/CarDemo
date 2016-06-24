@@ -14,7 +14,6 @@ public:
 	CarEngine();
 
 	double realPowTorqueMul; // .car params
-	std::string soundName; //TODO Remove for now?
 
 	double getTorqueCurve(const double curThrottle, const double curRPM) const;
 	double getFrictionTorque(double curAngVel, double fricFactor, double throttlePos);

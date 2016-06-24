@@ -13,12 +13,11 @@ void CarDynamics::update() {
 
 	btTransform tr;
 	chassis->getMotionState()->getWorldTransform(tr);
-	chassisRotation = toMathQuaternion<double>(tr.getRotation());
 
+	chassisRotation = toMathQuaternion<double>(tr.getRotation());
 	MathVector<double, 3> chassisCenterOfMass = toMathVector<double>(tr.getOrigin());
-	MathVector<double, 3> com = centerOfMass;
-	chassisRotation.rotateVector(com); //FIXME This becomes nan?
-	chassisPosition = chassisCenterOfMass - com;
+	chassisRotation.rotateVector(centerOfMass);
+	chassisPosition = chassisCenterOfMass - centerOfMass;
 
 	//TODO updateBuoyancy()
 }

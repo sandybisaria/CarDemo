@@ -35,7 +35,7 @@ MathVector<double, 3> CarDynamics::getWheelPosition(WheelPosition wp, double dis
 
 MathVector<double, 3> CarDynamics::getLocalWheelPosition(WheelPosition wp, double displacementPercent) const {
 	const MathVector<double, 3>& wheelExt = wheels[wp].getExtendedPosition();
-	const MathVector<double, 3> hinge = suspension[wp].getHinge();
+	const MathVector<double, 3>& hinge = suspension[wp].getHinge();
 	MathVector<double, 3> relWheelExt = wheelExt - hinge;
 	MathVector<double, 3> up(0, 0, 1);
 	MathVector<double, 3> rotAxis = up.cross(relWheelExt.normalized());

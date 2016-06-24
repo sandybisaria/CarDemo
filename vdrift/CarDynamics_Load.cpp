@@ -239,40 +239,39 @@ bool CarDynamics::load(ConfigFile& cf) {
 			}
 
 			std::string searchStr = "suspension-" + pos + ".";
-			CarSuspension s = suspension[wl], s2 = suspension[wr];
 
 			float springConstant, bounce, rebound, travel, camber, caster, toe, antiRoll;
 
 			if (!cf.getParam(searchStr + "spring-constant", springConstant)) return false;
-			s.setSpringConstant(springConstant); s2.setSpringConstant(springConstant);
+			suspension[wl].setSpringConstant(springConstant); suspension[wr].setSpringConstant(springConstant);
 
 			if (!cf.getParam(searchStr + "bounce", bounce)) return false;
-			s.setBounce(bounce); s2.setBounce(bounce);
+			suspension[wl].setBounce(bounce); suspension[wr].setBounce(bounce);
 
 			if (!cf.getParam(searchStr + "rebound", rebound)) return false;
-			s.setRebound(rebound); s2.setRebound(rebound);
+			suspension[wl].setRebound(rebound); suspension[wr].setRebound(rebound);
 
 			//TODO Load from suspension file
 			std::vector<std::pair<double, double> > damper, spring;
 			cf.getPoints("suspension-" + pos, "damper-factor", damper);
-			s.setDamperFactorPoints(damper); s2.setDamperFactorPoints(damper);
+			suspension[wl].setDamperFactorPoints(damper); suspension[wr].setDamperFactorPoints(damper);
 			cf.getPoints("suspension-" + pos, "spring-factor", spring);
-			s.setSpringFactorPoints(spring); s2.setSpringFactorPoints(spring);
+			suspension[wl].setSpringFactorPoints(spring); suspension[wr].setSpringFactorPoints(spring);
 
 			if (!cf.getParam(searchStr + "travel", travel)) return false;
-			s.setTravel(travel); s2.setTravel(travel);
+			suspension[wl].setTravel(travel); suspension[wr].setTravel(travel);
 
 			if (!cf.getParam(searchStr + "camber", camber)) return false;
-			s.setCamber(camber); s2.setCamber(camber);
+			suspension[wl].setCamber(camber); suspension[wr].setCamber(camber);
 
 			if (!cf.getParam(searchStr + "caster", caster)) return false;
-			s.setCaster(caster); s2.setCaster(caster);
+			suspension[wl].setCaster(caster); suspension[wr].setCaster(caster);
 
 			if (!cf.getParam(searchStr + "toe", toe)) return false;
-			s.setToe(toe); s2.setToe(toe);
+			suspension[wl].setToe(toe); suspension[wr].setToe(toe);
 
 			if (!cf.getParam(searchStr + "anti-roll", antiRoll)) return false;
-			s.setAntiRollK(antiRoll); s2.setAntiRollK(antiRoll);
+			suspension[wl].setAntiRollK(antiRoll); suspension[wr].setAntiRollK(antiRoll);
 
 			// Hinges
 			float hinge[ConfigVariable::V_SIZE];
@@ -283,14 +282,14 @@ bool CarDynamics::load(ConfigFile& cf) {
 				hinge[i] = std::max(std::min(hinge[i], 100.f), -100.f);
 			if (version == 2) versionConvert(hinge[0], hinge[1], hinge[2]);
 			vec.set(hinge[0], hinge[1], hinge[2]);
-			s.setHinge(vec);
+			suspension[wl].setHinge(vec);
 
 			if (!cf.getParam("suspension-" + possh + "R.hinge", hinge)) return false;
 			for (int i = 0; i < 3; i++)
 				hinge[i] = std::max(std::min(hinge[i], 100.f), -100.f);
 			if (version == 2) versionConvert(hinge[0], hinge[1], hinge[2]);
 			vec.set(hinge[0], hinge[1], hinge[2]);
-			s2.setHinge(vec);
+			suspension[wr].setHinge(vec);
 		}
 	}
 
