@@ -9,7 +9,7 @@
 template <typename T, unsigned int dimension>
 class MathVector {
 public:
-	MathVector() { set(0); }
+	MathVector() { set((T)0); }
 
 	MathVector(const T& t) { set(t); }
 
@@ -108,7 +108,7 @@ public:
 		return v[n];
 	}
 
-	MathVector<T, dimension> operator*(const T* scalar) const {
+	MathVector<T, dimension> operator*(const T& scalar) const {
 		MathVector<T, dimension> output;
 		for (size_t i; i < dimension; i++) {
 			output.v[i] = v[i] * scalar;
@@ -116,7 +116,7 @@ public:
 		return output;
 	}
 
-	MathVector<T, dimension> operator/(const T* scalar) const {
+	MathVector<T, dimension> operator/(const T& scalar) const {
 		assert(scalar != 0);
 
 		MathVector<T, dimension> output;

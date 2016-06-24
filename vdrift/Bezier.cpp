@@ -267,3 +267,175 @@ AABB<float> Bezier::getAABB() const {
 	box.setFromCorners(bboxmin, bboxmax);
 	return box;
 }
+
+MathVector<float, 3> Bezier::bernstein(float u, MathVector<float, 3>* p) const {
+	float oneminusu(1.0f - u);
+
+	MathVector<float, 3> a = p[0] * (u * u *u);
+	MathVector<float, 3> b = p[1] * (3 * u * u * oneminusu);
+	MathVector<float, 3> c = p[2] * (3 * u * oneminusu * oneminusu);
+	MathVector<float, 3> d = p[3] * (oneminusu * oneminusu * oneminusu);
+
+	return MathVector<float, 3>(a[0] + b[0] + c[0] + d[0],
+								a[1] + b[1] + c[1] + d[1],
+								a[2] + b[2] + c[2] + d[2]);
+}
+
+MathVector<float, 3> Bezier::bernsteinTangent(float u, MathVector<float, 3> *p) const {
+	MathVector<float, 3> a = (p[1] - p[0]) * (3 * pow(u, 2));
+	MathVector<float, 3> b = (p[2] - p[1]) * (3 * 2 * u * (1 -u ));
+	MathVector<float, 3> c = (p[3] - p[2]) * (3 * pow((1 - u), 2));
+
+	return a + b + c;
+}
+
+MathVector<float, 3> Bezier::surfCoord(float px, float py) const {
+	MathVector<float, 3> temp[ARR_SIZE];
+	MathVector<float, 3> temp2[ARR_SIZE];
+	int i, j;
+
+	// Get splines along x axis
+	for (j = 0; j < ARR_SIZE; j++) {
+		for (i = 0; i < ARR_SIZE; ++i) {
+			temp2[i] = points[j][i];
+		}
+		temp[j] = bernstein(px, temp2);
+	}
+
+	return bernstein(py, temp);
+}
+
+MathVector<float, 3> Bezier::surfNorm(float px, float py) const {
+	MATHVECTOR<float, 3> temp[ARR_SIZE];
+	MATHVECTOR<float, 3> temp2[ARR_SIZE];
+	MATHVECTOR<float, 3> tempx[ARR_SIZE];
+
+	// Get splines along x axis
+	for (int j = 0; j < ARR_SIZE; j++) {
+		for (int i = 0; i < ARR_SIZE; ++i) {
+			temp2[i] = points[j][i];
+		}
+		temp[j] = bernstein(px, temp2);
+	}
+
+	// Get splines along y axis
+	for (int j = 0; j < ARR_SIZE; j++)
+	{
+		for (int i = 0; i < ARR_SIZE; ++i) {
+			temp2[i] = points[i][j];
+		}
+		tempx[j] = bernstein(py, temp2);
+	}
+
+	return -(bernsteinTangent(px, tempx).cross(bernsteinTangent(py, temp)).normalized());
+}
+
+bool Bezier::intersectsQuadrilateral(const MathVector<float, 3>& orig, const MathVector<float, 3>& dir,
+									 const MathVector<float, 3>& v_00, const MathVector<float, 3>& v_10,
+									 const MathVector<float, 3>& v_11, const MathVector<float, 3>& v_01,
+									 float &t, float &u, float &v) const {
+	const float EPSILON = 0.000001;
+
+	// Reject rays that are parallel to Q, and rays that intersect the plane
+	// of Q either on the left of the line V00V01 or below the line V00V10.
+	MathVector<float, 3> E_01 = v_10 - v_00;
+	MathVector<float, 3> E_03 = v_01 - v_00;
+	MathVector<float, 3> P = dir.cross(E_03);
+	float det = E_01.dot(P);
+
+	if (std::abs(det) < EPSILON) return false;
+
+	MathVector<float, 3> T = orig - v_00;
+	float alpha = T.dot(P) / det;
+
+	if (alpha < 0.0) return false;
+
+	MathVector<float, 3> Q = T.cross(E_01);
+	float beta = dir.dot(Q) / det;
+
+	if (beta < 0.0) return false;
+
+	if (alpha + beta > 1.0) {
+		// Reject rays that that intersect the plane of Q either on
+		// the right of the line V11V10 or above the line V11V00.
+		MathVector<float, 3> E_23 = v_01 - v_11;
+		MathVector<float, 3> E_21 = v_10 - v_11;
+		MathVector<float, 3> P_prime = dir.cross(E_21);
+		float det_prime = E_23.dot(P_prime);
+
+		if (std::abs(det_prime) < EPSILON) return false;
+
+		MathVector<float, 3> T_prime = orig - v_11;
+		float alpha_prime = T_prime.dot(P_prime) / det_prime;
+
+		if (alpha_prime < 0.0) return false;
+
+		MathVector<float, 3> Q_prime = T_prime.cross(E_23);
+		float beta_prime = dir.dot(Q_prime) / det_prime;
+
+		if (beta_prime < 0.0) return false;
+	}
+
+	// Compute the ray parameter of the intersection point, and
+	// reject the ray if it does not hit Q.
+	t = E_03.dot(Q) / det;
+
+	if (t < 0.0) return false;
+
+	// Compute the barycentric coordinates of the fourth vertex.
+	// These do not depend on the ray, and can be precomputed
+	// and stored with the quadrilateral.
+	float alpha_11, beta_11;
+	MathVector<float, 3> E_02 = v_11 - v_00;
+	MathVector<float, 3> n = E_01.cross(E_03);
+
+	if ((std::abs(n[0]) >= std::abs(n[1])) && (std::abs(n[0]) >= std::abs(n[2]))) {
+		alpha_11 = ((E_02[1] * E_03[2]) - (E_02[2] * E_03[1])) / n[0];
+		beta_11 = ((E_01[1] * E_02[2]) - (E_01[2]  * E_02[1])) / n[0];
+	} else if ((std::abs(n[1]) >= std::abs(n[0])) && (std::abs(n[1]) >= std::abs(n[2]))) {
+		alpha_11 = ((E_02[2] * E_03[0]) - (E_02[0] * E_03[2])) / n[1];
+		beta_11 = ((E_01[2] * E_02[0]) - (E_01[0]  * E_02[2])) / n[1];
+	} else {
+		alpha_11 = ((E_02[0] * E_03[1]) - (E_02[1] * E_03[0])) / n[2];
+		beta_11 = ((E_01[0] * E_02[1]) - (E_01[1]  * E_02[0])) / n[2];
+	}
+
+	// Compute the bilinear coordinates of the intersection point.
+	if (std::abs(alpha_11 - (1.0)) < EPSILON) {
+		// Q is a trapezium.
+		u = alpha;
+		if (std::abs(beta_11 - (1.0)) < EPSILON) v = beta; // Q is a parallelogram.
+		else v = beta / ((u * (beta_11 - (1.0))) + (1.0)); // Q is a trapezium.
+	} else if (std::abs(beta_11 - (1.0)) < EPSILON) {
+		// Q is a trapezium.
+		v = beta;
+		if ( ((v * (alpha_11 - (1.0))) + (1.0)) == 0 ) return false;
+		u = alpha / ((v * (alpha_11 - (1.0))) + (1.0));
+	} else {
+		float A = (1.0) - beta_11;
+		float B = (alpha * (beta_11 - (1.0)))
+				- (beta * (alpha_11 - (1.0))) - (1.0);
+		float C = alpha;
+		float D = (B * B) - ((4.0) * A * C);
+		if (D < 0) return false;
+		float Q = (-0.5) * (B + ((B < (0.0) ? (-1.0) : (1.0))
+				* std::sqrt(D)));
+		u = Q / A;
+		if ((u < (0.0)) || (u > (1.0))) u = C / Q;
+		v = beta / ((u * (beta_11 - (1.0))) + (1.0));
+	}
+
+	return true;
+}
+
+std::ostream& operator<<(std::ostream& os, const Bezier& b) {
+	os << "====" << std::endl;
+	for (int x = 0; x < ARR_SIZE; x++) {
+		for (int y = 0; y < ARR_SIZE; y++) {
+			os << b[y*ARR_SIZE+x] << std::endl;
+		}
+		os << "----" << std::endl;
+	}
+	os << "====" << std::endl;
+	return os;
+}

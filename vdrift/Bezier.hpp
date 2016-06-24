@@ -18,6 +18,8 @@ public:
 	Bezier& operator=(const Bezier& other) { return copyFrom(other); }
 	Bezier& copyFrom(const Bezier& other);
 
+	friend std::ostream& operator<<(std::ostream& os, const Bezier& b);
+
 	float getDistFromStart() const { return distFromStart; }
 	void resetDistFromStart() { distFromStart = 0.f; }
 
@@ -90,7 +92,7 @@ private:
 								 const MathVector<float, 3>& v_11, const MathVector<float, 3>& v_01,
 								 float &t, float &u, float &v) const;
 
-	const int ARR_SIZE = 4
+	const int ARR_SIZE = 4;
 	MathVector<float, 3> points[ARR_SIZE][ARR_SIZE];
 	MathVector<float, 3> center;
 	float radius;
@@ -103,5 +105,3 @@ private:
 	float roadCurvature;
 	//TODO Ignore "racing line" variables
 };
-
-std::ostream& operator<<(std::ostream& os, const Bezier& b);

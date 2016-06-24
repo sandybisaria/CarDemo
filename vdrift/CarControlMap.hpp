@@ -1,15 +1,15 @@
 #pragma once
 
 #include "CarConstants.hpp"
+#include "../Input.hpp"
 
 #include <vector>
+#include <cassert>
 
 class CarControlMapLocal {
 public:
 	CarControlMapLocal() {
-		for (int i = 0; i < 8; i++) {
-			grUpOld[i] = grDnOld[i] = false;
-		}
+		grUpOld = grDnOld = false; //TODO Only one player
 		reset();
 	}
 
@@ -30,11 +30,37 @@ public:
 		return coeff;
 	}
 
-	//TODO Implement processInputs, likely after reviewing CInput.h
+	//TODO Skipped int player, race countdowns params, performance test params
+	const std::vector<float>& processInput(const float* channels, float carSpeed, float sssEffect,
+										   float sssVelFactor) {
+		assert(inputs.size() == CarInput::ALL);
+
+		// Throttle and brake
+		float thr = channels[PlayerActions::THROTTLE], brk = channels[PlayerActions::BRAKE];
+		//TODO Assume oneAxisThrBrk (one axis for both) is false!
+		inputs[CarInput::THROTTLE] = thr;
+		const float deadzone = 0.0001f; // Sensible dead-zone for braking
+		inputs[CarInput::BRAKE] = brk < deadzone ? 0.f : brk;
+
+		// Steering
+		float val = channels[PlayerActions::STEERING] * 2.f - 1.f;
+		if (sssEffect > 0.02f) val *= getSSSCoeff(fabs(carSpeed), sssVelFactor, sssEffect);
+
+		inputs[CarInput::STEER_RIGHT] = val > 0.f ?  val : 0.f;
+		inputs[CarInput::STEER_LEFT]  = val < 0.f ? -val : 0.f;
+
+		// Shift
+		bool grUp = channels[PlayerActions::SHIFT_UP], grDn = channels[PlayerActions::SHIFT_DOWN];
+		inputs[CarInput::SHIFT_UP]   = grUp && !grUpOld; //TODO Only one player, otherwise indexed by player
+		inputs[CarInput::SHIFT_DOWN] = grDn && !grDnOld;
+		grUpOld = grUp;  grDnOld = grDn;
+
+		return inputs;
+	}
 
 private:
 	std::vector<float> inputs; // Indexed by CarInput values
 
 	// Shift (gear up/down)
-	bool grUpOld[8], grDnOld[8];
+	bool grUpOld, grDnOld; //TODO Only one player
 };
