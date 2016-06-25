@@ -41,8 +41,8 @@ void CarTire::lookUpSigmaHatAlphaHat(double normForce, double& sh, double& ah) c
 		lBound = std::max(0, lBound);
 
 		blend = (nf - HAT_LOAD * (lBound + 1)) / HAT_LOAD;
-		sh = sigmaHat[lBound] * (1.0 - blend) + sigmaHat[lBound+1] * blend;
-		sh = alphaHat[lBound] * (1.0 - blend) + alphaHat[lBound+1] * blend;
+		sh = sigmaHat.at(lBound) * (1.0 - blend) + sigmaHat.at(lBound+1) * blend;
+		sh = alphaHat.at(lBound) * (1.0 - blend) + alphaHat.at(lBound+1) * blend;
 	}
 }
 

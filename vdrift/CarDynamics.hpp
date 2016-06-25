@@ -15,6 +15,7 @@
 #include "CollisionWorld.hpp"
 class CollisionWorld;
 #include "CarConstants.hpp"
+#include "CollisionContact.hpp"
 
 #include "../util/ConfigFile.hpp"
 #include "../util/ToBullet.hpp"
@@ -43,6 +44,10 @@ public:
 	virtual void debugDraw(btIDebugDraw* debugDrawer) { }
 
 	void removeBullet();
+
+	// CollisionWorld interface
+	const CollisionContact& getWheelContact(WheelPosition(wp)) const { return wheelContact[wp]; }
+	CollisionContact& getWheelContact(WheelPosition(wp)) { return wheelContact[wp]; }
 
 	// Update method
 	void update();
@@ -115,6 +120,7 @@ private:
 
 	std::vector<MathVector<double, 3> > wheelVels, wheelPos;
 	std::vector<Quaternion<double> > wheelRots;
+	std::vector<CollisionContact> wheelContact;
 
 	MathVector<double, 3> getWheelPosition(WheelPosition wp, double displacementPercent) const; // For internal use
 	MathVector<double, 3> getLocalWheelPosition(WheelPosition wp, double displacementPercent) const;
@@ -159,9 +165,14 @@ private:
 	void applyAerodynamicsToBody();
 
 	void applyForce(const MathVector<double, 3>& force) { body.applyForce(force); } //TODO Skip camera body
+	void applyForce(const MathVector<double, 3>& force, const MathVector<double, 3>& offset) { body.applyForce(force, offset); }
 	void applyTorque(const MathVector<double, 3>& torque) { body.applyTorque(torque); }
 
-	//TODO Methods for applying tire and wheel force (after CollisionContact and TerrainSurface)
+	// Apply tire friction to body; return friction in world space
+	MathVector<double, 3> applyTireForce(int i, const double normalForce, const Quaternion<double>& wheelSpace);
+	// Apply wheel torque to chassis
+	void applyWheelTorque(double dt, double driveTorque, int i, MathVector<double, 3> tireFriction,
+						  const Quaternion<double>& wheelSpace);
 
 	// Aerodynamics
 	std::vector<CarAero> aerodynamics;

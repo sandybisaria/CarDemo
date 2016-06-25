@@ -23,6 +23,7 @@ void CarDynamics::setNumWheels(int nw) {
 	wheelVels.resize(numWheels);
 	wheelPos.resize(numWheels);
 	wheelRots.resize(numWheels);
+	wheelContact.resize(numWheels);
 }
 
 bool CarDynamics::load(ConfigFile& cf) {

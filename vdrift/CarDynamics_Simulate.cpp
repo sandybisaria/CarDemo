@@ -306,9 +306,17 @@ double CarDynamics::shiftAutoClutchThrottle(double throttle, double dt) {
 
 MathVector<double, 3> CarDynamics::updateSuspension(int i, double dt) {
 	// Displacement
-	//TODO Need wheelContact (CollisionContact) and TerrainSurface!
+	const double posX = wheelContact[i].getPosition()[0];
+	const double posY = wheelContact[i].getPosition()[2];
+	const TerrainSurface& surface = wheelContact[i].getSurface();
 
-	double displacement = 2.0 * wheels[i].getRadius(); //TODO Fix with wheel contact and bump offset!
+	double phase = 0;
+	if (surface.bumpWavelength > 0.0001) phase = 2 * M_PI * (posX + posY) / surface.bumpWavelength;
+	double shift = 2.0 * sin(phase * sqrt(2)); //TODO Assume the "1.414214" is meant to be this
+	double amplitude = 0.25 * surface.bumpAmplitude;
+	double bumpOffset = amplitude * (sin(phase + shift) + sin(phase * sqrt(2)) - 2.0);
+
+	double displacement = 2.0 * wheels[i].getRadius() - wheelContact[i].getDepth() + bumpOffset;
 
 	// Compute suspension force
 	double springDampForce = suspension[i].update(dt, displacement);
@@ -372,4 +380,113 @@ void CarDynamics::applyAerodynamicsToBody() {
 		getBodyOrientation().rotateVector(rotDrag);
 		applyTorque(rotDrag);
 	}
+}
+
+MathVector<double, 3> CarDynamics::applyTireForce(int i, const double normalForce, const Quaternion<double>& wheelSpace) {
+	CarWheel& wheel = this->wheels[i];
+	const CollisionContact& wheelCon = this->wheelContact[i];
+	const TerrainSurface& surface = wheelCon.getSurface();
+	const CarTire* tire = surface.tire;
+	const MathVector<double, 3> surfaceNorm = wheelCon.getNormal();
+
+	// Camber relative to surface (clockwise in wheel heading direction)
+	MathVector<double, 3> wheelAxis(0,1,0);
+	wheelSpace.rotateVector(wheelAxis); // Aheel axis in world space (wheel plane normal)
+	double camberSin = wheelAxis.dot(surfaceNorm);
+	double camberRad = asin(camberSin);
+	wheel.setCamberDeg(camberRad * 180.0/M_PI);
+
+	// Tire space (SAE Tire Coordinate System)
+	// Surface normal is z-axis
+	// Wheel axis projected on surface plane is y-axis
+	MathVector<double, 3> yAxis = wheelAxis - surfaceNorm * camberSin;
+	MathVector<double, 3> xAxis = yAxis.cross(surfaceNorm);
+
+	// Wheel center velocity in tire space
+	MathVector<double, 3> hubVelocity;
+	hubVelocity[0] = xAxis.dot(wheelVels[i]);
+	hubVelocity[1] = yAxis.dot(wheelVels[i]);
+	hubVelocity[2] = 0; // unused
+
+	// Rearward speed of the contact patch
+	double patchSpeed = wheel.getAngularVelocity() * wheel.getRadius();
+
+	// Friction force in tire space
+	double frictionCoeff = surface.friction;
+	MathVector<double, 3> frictionForce(0);
+	if (frictionCoeff > 0)
+		frictionForce = tire->getForce(normalForce, frictionCoeff, hubVelocity, patchSpeed, camberRad, &wheel.slips);
+
+	///  multipliers x,y test
+	frictionForce[0] *= surface.frictionX;
+	frictionForce[1] *= surface.frictionY;
+
+	//TODO Ignoring feedback
+
+	// Friction force in world space
+	MathVector<double, 3> worldFrictionForce = xAxis * frictionForce[0] + yAxis * frictionForce[1];
+
+	// Fake viscous friction (sand, gravel, mud)
+	MathVector<double, 3> wheelDrag = -(xAxis * hubVelocity[0] + yAxis * hubVelocity[1]) * surface.rollingDrag;
+
+	// Apply forces to body
+	MathVector<double, 3> wheelNormal(0, 0, 1);
+	wheelSpace.rotateVector(wheelNormal);
+	MathVector<double, 3> contactPos = wheelPos[i] + wheelNormal * wheel.getRadius() * wheel.getRollHeight();
+	applyForce(worldFrictionForce + surfaceNorm * normalForce + wheelDrag, contactPos - getBodyPosition());
+
+	return worldFrictionForce;
+}
+
+void CarDynamics::applyWheelTorque(double dt, double driveTorque, int i, MathVector<double, 3> tireFriction,
+		  	  	  	  	  	  	   const Quaternion<double>& wheelSpace) {
+	CarWheel& wheel = wheels[i];
+	CarBrake& brake = brakes[i];
+
+	wheel.integrateStep1(dt);
+	(-wheelSpace).rotateVector(tireFriction);
+
+	// Torques acting on wheel
+	double frictionTorque = tireFriction[0] * wheel.getRadius();
+	double wheelTorque = driveTorque - frictionTorque;
+	double lockUpTorque = wheel.getLockUpTorque(dt) - wheelTorque; // Torque needed to lock up the wheel
+	double angVel = wheel.getAngularVelocity(); if (angVel < 0.0) angVel = -angVel;
+	double brakeTorque = brake.getTorque() + wheel.fluidRes * angVel; // Fluid resistance
+
+	// Brake and rolling resistance torque should never exceed lock up torque
+	if (lockUpTorque >= 0 && lockUpTorque > brakeTorque) {
+		brake.setWillLock(false); wheelTorque += brakeTorque; // Brake torque in same dir as lock up torque
+	} else if (lockUpTorque < 0 && lockUpTorque < -brakeTorque) {
+		brake.setWillLock(false); wheelTorque -= brakeTorque;
+	} else {
+		brake.setWillLock(true); wheelTorque = wheel.getLockUpTorque(dt);
+	}
+
+
+	// Set wheel torque due to tire rolling resistance
+	double rollRes = wheel.getRollingResistance(wheel.getAngularVelocity(), wheelContact[i].getSurface().rollingResist);
+	double tireRollResTorque = -rollRes * wheel.getRadius();
+
+	wheel.setTorque(wheelTorque * 0.5 + tireRollResTorque);
+	wheel.integrateStep2(dt);
+
+	//FIXME Two-wheel
+//	if (numWheels == 2) {
+//		float dmg = 1.f - 0.5f * fDamage*0.01f;
+//		Dbl v = GetSpeedDir() * 1./50.;
+//		v = 0.05 + 0.95 * std::min(1.0, v);  //par
+//		MATHVECTOR<float,3> dn = GetDownVector();
+//
+//		for (int w=0; w < numWheels; ++w)
+//		if (wheel_contact[w].GetColObj())
+//		{
+//			MATHVECTOR <float,3> n = wheel_contact[w].GetNormal();
+//			MATHVECTOR <float,3> t = dn.cross(n);
+//			(-Orientation()).RotateVector(t);
+//			Dbl x = t[0] * -1000. * v * 22 * dmg;  ///par in .car ...
+//			MATHVECTOR<Dbl,3> v(x,0,0);
+//			Orientation().RotateVector(v);
+//			ApplyTorque(v);
+//		}
+//	}
 }

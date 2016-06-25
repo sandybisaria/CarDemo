@@ -6,6 +6,7 @@
 #include "MathVector.hpp"
 #include "CarDynamics.hpp"
 class CarDynamics;
+#include "CollisionContact.hpp"
 
 //TODO When ready for fluids, implement Stuntrally's custom DynamicsWorld class
 
@@ -24,7 +25,7 @@ public:
 
 	// Casts a ray into the collision world, and returns for first hit (caster is excluded)
 	bool castRay(const MathVector<float, 3>& position, const MathVector<float, 3>& direction, const float length,
-				 const btCollisionObject* caster, /*CollisionContact& contact*/ //FIXME Implement CollisionContact class
+				 const btCollisionObject* caster, CollisionContact& contact,
 				 CarDynamics* carDyn, int nWheel, bool ignoreCars/*, bool camTilt, bool camDist = false*/) const; //TODO Okay to ignore cam bools?
 
 	// World physics

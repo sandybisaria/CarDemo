@@ -37,12 +37,12 @@ void CarDynamics::synchronizeBody() {
 void CarDynamics::updateWheelContacts() {
 	MathVector<float, 3> rayDir = getDownVector();
 	for (int i = 0; i < numWheels; i++) {
-		//TODO Implement and retrieve CollisionContact
+		CollisionContact& wheelCon = wheelContact[i];
 		MathVector<float, 3> rayStart = localToWorld(wheels[i].getExtendedPosition());
 		rayStart = rayStart - rayDir * wheels[i].getRadius();
 		float rayLen = 1.5;
 
-		world->castRay(rayStart, rayDir, rayLen, chassis, this, i, false); // False because we have car collisions TODO Update with CollisionContact
+		world->castRay(rayStart, rayDir, rayLen, chassis, wheelCon, this, i, false); // False because we have car collisions
 	}
 }
 
@@ -85,8 +85,12 @@ void CarDynamics::updateBody(double dt, double driveTorque[]) {
 	int i;
 	double normalForce[MAX_WHEEL_COUNT];
 	for (i = 0; i < numWheels; i++) {
-		MathVector<double, 3> suspForce = updateSuspension(i, dt); //TODO This was still required!!
-		//TODO CollisionContact required!
+		MathVector<double, 3> suspForce = updateSuspension(i, dt);
+		normalForce[i] = suspForce.dot(wheelContact[i].getNormal());
+		if (normalForce[i] < 0) normalForce[i] = 0;
+
+		MathVector<double, 3> tireFriction = applyTireForce(i, normalForce[i], wheelRots[i]);
+		applyWheelTorque(dt, driveTorque[i], i, tireFriction, wheelRots[i]);
 	}
 
 	body.integrateStep2(dt);

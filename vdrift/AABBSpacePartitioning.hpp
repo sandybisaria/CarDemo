@@ -52,7 +52,7 @@ public:
 			objects.erase(*i);
 
 		// If we have children, pass it on
-		for (typename childrenlist_type::iterator i = children.begin(); i != children.end(); ++i)
+		for (typename childrenListType::iterator i = children.begin(); i != children.end(); ++i)
 			if (i->getBoundingBox().intersects(objAABB))
 				i->remove(object, objAABB);
 	}
@@ -79,7 +79,7 @@ public:
 	void getContainedObjects(std::list<DATATYPE*>& outputList) {
 		// If we've got objects, add them
 		for (typename objectListType::iterator i = objects.begin(); i != objects.end(); ++i)
-			outputlist.push_back(&i->first);
+			outputList.push_back(&i->first);
 
 		// If we have children, add them
 		for (typename childrenListType::iterator i = children.begin(); i != children.end(); ++i)
@@ -132,7 +132,7 @@ private:
 		else if (boxSize[2] > boxSize[1] && boxSize[2] > boxSize[0]) axisMask.set(0,0,1);
 
 		// Distribute objects to each child
-		float avgcentercoord = avgCenter.dot(axisMask);
+		float avgCenterCoord = avgCenter.dot(axisMask);
 		int distributor(0);
 		for (typename objectListType::iterator i = objects.begin(); i != objects.end(); ++i) {
 			float objCenterCoord = i->second.getCenter().dot(axisMask);

@@ -3,6 +3,8 @@
 #include "MathVector.hpp"
 #include "MathPlane.hpp"
 
+#include <vector>
+
 template <typename T>
 class AABB {
 public:

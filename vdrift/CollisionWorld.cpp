@@ -1,9 +1,10 @@
 #include "CollisionWorld.hpp"
 
 #include "TerrainSurface.hpp"
+#include "Bezier.hpp"
 
 CollisionWorld::CollisionWorld()
-	: maxSubSteps(24), fixedTimeStep(1. / 160.) /*Defaults according to Stuntrally settings*/ {
+	: maxSubSteps(24), fixedTimeStep(1. / 160.), oldDyn(0) /*Defaults according to Stuntrally settings*/ {
 	config = new btDefaultCollisionConfiguration();
 	dispatcher = new btCollisionDispatcher(config);
 
@@ -115,7 +116,7 @@ struct MyRayResultCallback
 };
 
 bool CollisionWorld::castRay(const MathVector<float, 3>& position, const MathVector<float, 3>& direction, const float length,
-		 const btCollisionObject* caster, CarDynamics* carDyn, int nWheel, bool ignoreCars) const {
+		 const btCollisionObject* caster, CollisionContact& contact, CarDynamics* carDyn, int nWheel, bool ignoreCars) const {
 	btVector3 from = toBulletVector(position);
 	btVector3 to = toBulletVector(position + direction * length);
 
@@ -125,7 +126,7 @@ bool CollisionWorld::castRay(const MathVector<float, 3>& position, const MathVec
 	float dist;
 	const TerrainSurface* surf = TerrainSurface::none();
 	const btCollisionObject* col = NULL;
-//	const Bezier* bzr = NULL; //FIXME Add Bezier class?
+	const Bezier* bzr = NULL; //FIXME Add Bezier class?
 
 	world->rayTest(from, to, res);
 	bool geometryHit = res.hasHit();
@@ -150,10 +151,12 @@ bool CollisionWorld::castRay(const MathVector<float, 3>& position, const MathVec
 		}
 		//TODO When Track is implemented, use the Beziers to track collisions, or something...
 
-		//TODO Set CollisionContact
+		contact.set(pos, norm, dist, surf, bzr, col);
 		return true;
 	}
 
+	// Should only happen on vehicle roll-over
+	contact.set(position + direction * length, -direction, length, surf, bzr, col);
 	return false;
 }
 

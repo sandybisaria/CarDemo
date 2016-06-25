@@ -92,7 +92,7 @@ private:
 								 const MathVector<float, 3>& v_11, const MathVector<float, 3>& v_01,
 								 float &t, float &u, float &v) const;
 
-	const int ARR_SIZE = 4;
+	const static int ARR_SIZE = 4;
 	MathVector<float, 3> points[ARR_SIZE][ARR_SIZE];
 	MathVector<float, 3> center;
 	float radius;

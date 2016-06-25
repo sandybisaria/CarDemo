@@ -40,8 +40,8 @@ void Bezier::setFromCorners(const MathVector<float, 3>& fl, const MathVector<flo
 		points[0][1] = fl;
 		points[0][2] = fl;
 	} else {
-		points[0][1] = fl + temp.normalize() * (temp.magnitude() / 3.0);
-		points[0][2] = fl + temp.normalize() * (2.0 * temp.Magnitude() / 3.0);
+		points[0][1] = fl + temp.normalized() * (temp.magnitude() / 3.0);
+		points[0][2] = fl + temp.normalized() * (2.0 * temp.magnitude() / 3.0);
 	}
 
 	temp = br - bl;
@@ -49,17 +49,17 @@ void Bezier::setFromCorners(const MathVector<float, 3>& fl, const MathVector<flo
 		points[3][1] = bl;
 		points[3][2] = bl;
 	} else {
-		points[3][1] = bl + temp.normalize() * (temp.magnitude() / 3.0);
-		points[3][2] = bl + temp.normalize() * (2.0 * temp.magnitude() / 3.0);
+		points[3][1] = bl + temp.normalized() * (temp.magnitude() / 3.0);
+		points[3][2] = bl + temp.normalized() * (2.0 * temp.magnitude() / 3.0);
 	}
 
 	// Calculate intermediate left and right points
 	int i;
 	for (i = 0; i < ARR_SIZE; ++i) {
 		temp = points[3][i] - points[0][i];
-		if (temp.Magnitude() > 0.0001) {
-			points[1][i] = points[0][i] + temp.normalize() * (temp.magnitude() / 3.0);
-			points[2][i] = points[0][i] + temp.normalize() * (2.0 * temp.magnitude() / 3.0);
+		if (temp.magnitude() > 0.0001) {
+			points[1][i] = points[0][i] + temp.normalized() * (temp.magnitude() / 3.0);
+			points[2][i] = points[0][i] + temp.normalized() * (2.0 * temp.magnitude() / 3.0);
 		} else {
 			points[1][i] = points[0][i];
 			points[2][i] = points[0][i];
@@ -76,7 +76,7 @@ void Bezier::attach(Bezier& other, bool reverse) {
 
 	MathVector<float, 3> d1 = a - b, d2 = c - b;
 	float diff = d2.magnitude() - d1.magnitude();
-	double dd = ((d1.magnitude() < 0.0001) || (d2.magnitude() < 0.0001)) ? 0.0 : d1.normalize().dot(d2.normalize());
+	double dd = ((d1.magnitude() < 0.0001) || (d2.magnitude() < 0.0001)) ? 0.0 : d1.normalized().dot(d2.normalized());
 	float angle = acos((dd >= 1.0L) ? 1.0L :(dd <= -1.0L) ? -1.0L : dd);
 	float d1d2mag = d1.magnitude() + d2.magnitude();
 	float alpha = (d1d2mag < 0.0001) ? 0.0f : (M_PI * diff + 2.0 * d1.magnitude() * angle) / d1d2mag / 2.0;
@@ -94,8 +94,8 @@ void Bezier::attach(Bezier& other, bool reverse) {
 	else turn = 1; // Right turn ahead
 
 	// Calculate distance from start of the road
-	if (other.next_patch == NULL || reverse) other.dist_from_start = dist_from_start + d1.Magnitude();
-	length = d1.Magnitude();
+	if (other.nextPatch == NULL || reverse) other.distFromStart = distFromStart + d1.magnitude();
+	length = d1.magnitude();
 }
 
 bool Bezier::collideSubDivQuadSimple(const MathVector<float, 3>& origin, const MathVector<float, 3>& direction,
@@ -241,7 +241,7 @@ AABB<float> Bezier::getAABB() const {
 
 	for (int x = 0; x < ARR_SIZE; ++x) {
 		for (int y = 0; y < ARR_SIZE; ++y) {
-			MATHVECTOR<float,3> temp(points[x][y]);
+			MathVector<float,3> temp(points[x][y]);
 
 			// Cache for bounding box stuff
 			for (int n = 0; n < 3; ++n) {
@@ -306,9 +306,9 @@ MathVector<float, 3> Bezier::surfCoord(float px, float py) const {
 }
 
 MathVector<float, 3> Bezier::surfNorm(float px, float py) const {
-	MATHVECTOR<float, 3> temp[ARR_SIZE];
-	MATHVECTOR<float, 3> temp2[ARR_SIZE];
-	MATHVECTOR<float, 3> tempx[ARR_SIZE];
+	MathVector<float, 3> temp[ARR_SIZE];
+	MathVector<float, 3> temp2[ARR_SIZE];
+	MathVector<float, 3> tempx[ARR_SIZE];
 
 	// Get splines along x axis
 	for (int j = 0; j < ARR_SIZE; j++) {
@@ -430,9 +430,9 @@ bool Bezier::intersectsQuadrilateral(const MathVector<float, 3>& orig, const Mat
 
 std::ostream& operator<<(std::ostream& os, const Bezier& b) {
 	os << "====" << std::endl;
-	for (int x = 0; x < ARR_SIZE; x++) {
-		for (int y = 0; y < ARR_SIZE; y++) {
-			os << b[y*ARR_SIZE+x] << std::endl;
+	for (int x = 0; x < Bezier::ARR_SIZE; x++) {
+		for (int y = 0; y < Bezier::ARR_SIZE; y++) {
+			os << b[y*Bezier::ARR_SIZE+x] << std::endl;
 		}
 		os << "----" << std::endl;
 	}
