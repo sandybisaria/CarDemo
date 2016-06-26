@@ -2,6 +2,7 @@
 
 #include "TerrainSurface.hpp"
 #include "Bezier.hpp"
+#include "../terrain/ShapeData.hpp"
 
 CollisionWorld::CollisionWorld()
 	: maxSubSteps(24), fixedTimeStep(1. / 160.), oldDyn(0) /*Defaults according to Stuntrally settings*/ {
@@ -48,7 +49,8 @@ void CollisionWorld::clear() {
 		if (body && body->getMotionState()) delete body->getMotionState();
 
 		world->removeCollisionObject(obj);
-		//TODO Get ShapeData from obj and delete
+		ShapeData* sd = (ShapeData*)(obj->getUserPointer());
+		delete sd;
 		delete obj;
 	}
 
@@ -97,7 +99,15 @@ struct MyRayResultCallback
 		const btCollisionObject* obj = rayResult.m_collisionObject;
 		if (obj == mExclude) return 1.0;
 
-		//FIXME Include ShapeData for car detection!
+		ShapeData* sd = (ShapeData*)(obj->getUserPointer());
+		if (sd) {
+			if (mIgnoreCars && sd->type == ShapeType::Car) return 1.0;
+
+			// Car ignores fluids (Not dealing with cars)
+			if (sd->type == ShapeType::Fluid) return 1.0;
+
+			if (sd->type == ShapeType::Wheel) return 1.0;
+		}
 
 		// Caller will assign value of m_closestHitFraction
 		btAssert(rayResult.m_hitFraction <= m_closestHitFraction);
@@ -126,7 +136,7 @@ bool CollisionWorld::castRay(const MathVector<float, 3>& position, const MathVec
 	float dist;
 	const TerrainSurface* surf = TerrainSurface::none();
 	const btCollisionObject* col = NULL;
-	const Bezier* bzr = NULL; //FIXME Add Bezier class?
+	const Bezier* bzr = NULL;
 
 	world->rayTest(from, to, res);
 	bool geometryHit = res.hasHit();
@@ -141,9 +151,23 @@ bool CollisionWorld::castRay(const MathVector<float, 3>& position, const MathVec
 			int ptrU = (long) (col->getCollisionShape()->getUserPointer());
 			int su = ptrU & 0xFF00, mtr = ptrU & 0xFF; // Fancy arithmetic
 
+			//TODO STILL NEED TERRAINDATA ><
 			if (ptrU) {
 				switch (su) {
-				//TODO Go through different SU cases, defined in ShapeData.h
+				case SU_Road:
+					break;
+
+				case SU_PIPE:
+					break;
+
+				case SU_Terrain:
+					break;
+
+				case SU_Fluid:
+					break;
+
+				default:
+					break;
 				}
 			} else {
 				//TODO Go into TerrainData and get the TerrainSurface

@@ -1,6 +1,8 @@
 #include "CarDynamics.hpp"
 #include "CarConstants.hpp"
 
+#include "../terrain/ShapeData.hpp"
+
 CarDynamics::CarDynamics()
 	: world(0), chassis(0), whTrigs(0),
 	  drive(AWD),
@@ -547,9 +549,10 @@ void CarDynamics::init(MathVector<double, 3> pos, Quaternion<double> rot, Collis
 	info.m_friction = collFriction;  /// 0.4-0.7
 	shapes.push_back(chassisShape);
 
-	chassis = world.addRigidBody(info, true, true); rigids.push_back(chassis); //TODO The second "true" is hard-coded; assume we allow car collisions!
+	//TODO The second "true" is hard-coded; assume we allow car collisions!
+	chassis = world.addRigidBody(info, true, true); rigids.push_back(chassis);
 	chassis->setActivationState(DISABLE_DEACTIVATION);
-//	chassis->setUserPointer(new ShapeData()); //TODO Implement ShapeData and fix constructer args
+	chassis->setUserPointer(new ShapeData(ShapeType::Car, this));
 
 	world.getDynamicsWorld()->addAction(this); actions.push_back(this);
 

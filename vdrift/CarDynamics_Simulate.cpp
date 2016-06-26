@@ -342,7 +342,7 @@ void CarDynamics::interpolateWheelContacts(double dt) {
 	for (int i = 0; i < numWheels; i++) {
 		MathVector<float, 3> rayStart = localToWorld(wheels[i].getExtendedPosition());
 		rayStart = rayStart - rayDir * wheels[i].getRadius();
-		//TODO Get the wheel's collision contact
+		getWheelContact(WheelPosition(i)).castRay(rayStart, rayDir, 1.5f); //TODO From "par.cpp" (raylen)
 	}
 }
 
@@ -470,23 +470,20 @@ void CarDynamics::applyWheelTorque(double dt, double driveTorque, int i, MathVec
 	wheel.setTorque(wheelTorque * 0.5 + tireRollResTorque);
 	wheel.integrateStep2(dt);
 
-	//FIXME Two-wheel
-//	if (numWheels == 2) {
-//		float dmg = 1.f - 0.5f * fDamage*0.01f;
-//		Dbl v = GetSpeedDir() * 1./50.;
-//		v = 0.05 + 0.95 * std::min(1.0, v);  //par
-//		MATHVECTOR<float,3> dn = GetDownVector();
-//
-//		for (int w=0; w < numWheels; ++w)
-//		if (wheel_contact[w].GetColObj())
-//		{
-//			MATHVECTOR <float,3> n = wheel_contact[w].GetNormal();
-//			MATHVECTOR <float,3> t = dn.cross(n);
-//			(-Orientation()).RotateVector(t);
-//			Dbl x = t[0] * -1000. * v * 22 * dmg;  ///par in .car ...
-//			MATHVECTOR<Dbl,3> v(x,0,0);
-//			Orientation().RotateVector(v);
-//			ApplyTorque(v);
-//		}
-//	}
+	if (numWheels == 2) {
+		double v = getSpeedDir() * 1./50.;
+		v = 0.05 + 0.95 * std::min(1.0, v);  //par
+		MathVector<float, 3> dn = getDownVector();
+
+		for (int w = 0; w < numWheels; ++w)
+		if (wheelContact[w].getCollisionObject()) {
+			MathVector<float, 3> n = wheelContact[w].getNormal();
+			MathVector<float, 3> t = dn.cross(n);
+			(-getBodyOrientation()).rotateVector(t);
+			double x = t[0] * -1000. * v * 22;
+			MathVector<float, 3> v(x,0,0);
+			-getBodyOrientation().rotateVector(v);
+			applyTorque(v);
+		}
+	}
 }

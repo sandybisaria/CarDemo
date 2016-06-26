@@ -178,8 +178,9 @@ void Car::loadMaterials() {
 	mtrNames[mtrCarBrake] = carBrakeMtr;
 
 	for (int i=0; i < 1; ++i) {
-		//FIXME Currently altering "global" instance of material; refer to CarModel::RecreateMaterials
-		sh::MaterialInstance* m = sh::Factory::getInstance().getMaterialInstance(mtrNames[i]);
+		sh::Factory::getInstance().destroyMaterialInstance(mtrNames[i] + Ogre::StringConverter::toString(mId));
+		sh::MaterialInstance* m = sh::Factory::getInstance().createMaterialInstance(mtrNames[i] + Ogre::StringConverter::toString(mId),
+																					mtrNames[i]);
 
 		m->setListener(this);
 
@@ -196,6 +197,8 @@ void Car::loadMaterials() {
 			std::string v = sh::retrieveValue<sh::StringValue>(m->getProperty("reflMap"), 0).get();
 			m->setProperty("reflMap", sh::makeProperty<sh::StringValue>(new sh::StringValue(mCarName + "_" + v)));
 		}
+
+		mtrNames[i] = mtrNames[i] + Ogre::StringConverter::toString(mId);
 	}
 
 	updateLightMap();
@@ -236,8 +239,8 @@ void Car::changeColor() {
 				if (pass->hasFragmentProgram()) {
 					Ogre::GpuProgramParametersSharedPtr params = pass->getFragmentProgramParameters();
 					params->setNamedConstant("carColour", carColor);
-//					params->setNamedConstant("glossiness", 1 - gloss);
-//					params->setNamedConstant("reflectiveness", refl);
+					params->setNamedConstant("glossiness", Ogre::Real(1 - 0.5));
+					params->setNamedConstant("reflectiveness", Ogre::Real(0.5));
 				}
 			}
 		}

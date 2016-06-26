@@ -48,6 +48,7 @@ file(GLOB HDRS
 	*.hpp
 	util/*.hpp
 	vdrift/*.hpp
+	terrain/*.hpp
 )
 
 # Source files
@@ -55,6 +56,7 @@ file(GLOB SRCS
 	*.cpp
 	util/*.cpp
 	vdrift/*.cpp
+	terrain/*.cpp
 )
 
 add_executable(CarDemo ${HDRS} ${SRCS})

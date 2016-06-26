@@ -1,5 +1,7 @@
 #include "CarTire.hpp"
 
+#include <iostream>
+
 void CarTire::findSigmaHatAlphaHat(double load, double& outputSigmaHat, double& outputAlphaHat, int iterations) {
 	double x, y, yMax = 0, junk, x4 = 4.0 / iterations, x40 = 40.0 / iterations;
 	for (x = -2; x < 2; x += x4) {
@@ -38,7 +40,7 @@ void CarTire::lookUpSigmaHatAlphaHat(double normForce, double& sh, double& ah) c
 		double blend;
 		lBound = (int) (nf / HAT_LOAD);
 		lBound--;
-		lBound = std::max(0, lBound);
+		lBound = std::min(std::max(0, lBound), (int)sigmaHat.size() - 2); //FIXME Band-aid fix nf being nan
 
 		blend = (nf - HAT_LOAD * (lBound + 1)) / HAT_LOAD;
 		sh = sigmaHat.at(lBound) * (1.0 - blend) + sigmaHat.at(lBound+1) * blend;

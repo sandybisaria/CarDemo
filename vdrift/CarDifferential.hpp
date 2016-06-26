@@ -35,7 +35,7 @@ public:
 
 		return getDriveshaftSpeed();
 	}
-	//TODO CARDIFFERENTIAL::GetDriveshaftSpeed took in parameters...
+
 	double getDriveshaftSpeed() const {
 		return finalDrive * (side1Speed + side2Speed) * 0.5;
 	}
