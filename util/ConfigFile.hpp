@@ -53,6 +53,8 @@ public:
 
 	void getParamList(std::list<std::string>& paramListOutput, std::string section) const;
 
+	void getSectionList(std::list<std::string>& sectionListOutput) const;
+
 	//TODO Use C++ library functions rather than our own...
 	static std::string trim(std::string s);
 	static std::string strip(std::string s, char strip);

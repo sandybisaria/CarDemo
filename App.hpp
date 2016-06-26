@@ -3,6 +3,8 @@
 #include "Scene.hpp"
 #include "Sim.hpp"
 
+#include "vdrift/TerrainSurface.hpp"
+
 #include "shiny/Main/Factory.hpp"
 
 #include <OgreRoot.h>
@@ -11,6 +13,9 @@
 
 #include <OISInputManager.h>
 #include <OISKeyboard.h>
+
+#include <vector>
+#include <map>
 
 class App
 	: public sh::MaterialListener,
@@ -25,13 +30,16 @@ public:
 
 private:
 	bool setup();
+
 	void setupResources();
 	bool setupRenderSystem();
 	void setupInputSystem();
 	void setupSim();
-	void setupViewSystem();
 	void setupListeners();
+
 	void setupScene();
+	bool loadSurfaces();
+
 	void setupMaterials();
 	void setMaterialFactoryDefaults();
 
@@ -49,6 +57,9 @@ private:
 
 	Sim* mSim;
 	Scene* mScene;
+
+	std::vector<TerrainSurface> surfaces;
+	std::map<std::string, int> surfaceMap; // Map surface name to ID
 
 	sh::Factory* mFactory;
 

@@ -1,7 +1,7 @@
 #include "Scene.hpp"
 
 Scene::Scene(Ogre::SceneManager* sceneMgr)
-	: mSceneMgr(sceneMgr), sun(0),
+	: mSim(NULL), mSceneMgr(sceneMgr), sun(0),
 	  mTerrainGlobals(0), mTerrainGroup(0) {
 }
 
@@ -10,7 +10,9 @@ Scene::~Scene() {
 	OGRE_DELETE mTerrainGroup;
 }
 
-void Scene::setupTerrain() {
+void Scene::setupTerrain(Sim* sim) {
+	mSim = sim;
+
 	mSceneMgr->setAmbientLight(Ogre::ColourValue(0.4, 0.4, 0.4));
 
 	Ogre::Vector3 lightDir(0.55, -0.3, 0.75);
@@ -35,6 +37,8 @@ void Scene::setupTerrain() {
 	mTerrainGroup->freeTemporaryResources();
 
 	mSceneMgr->setSkyDome(true, "CloudySky");
+
+	createBulletTerrain();
 }
 
 void Scene::configureTerrainDefaults() {
@@ -62,4 +66,49 @@ void Scene::defineTerrain() {
 	Ogre::Image img;
 	img.load("terrain.png", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 	mTerrainGroup->defineTerrain(0, 0, &img);
+}
+
+void Scene::createBulletTerrain() {
+	Ogre::Terrain* baseTerrain = mTerrainGroup->getTerrain(0, 0);
+	btHeightfieldTerrainShape* hfShape = new btHeightfieldTerrainShape(
+			baseTerrain->getSize(), baseTerrain->getSize(),
+			baseTerrain->getHeightData(), 1, baseTerrain->getMinHeight(), baseTerrain->getMaxHeight(),
+			2, PHY_FLOAT, false);
+	hfShape->setUseDiamondSubdivision(true);
+
+	float metersBetweenVerts = baseTerrain->getWorldSize() / (baseTerrain->getSize() - 1);
+	btVector3 scale(metersBetweenVerts, metersBetweenVerts, 1);
+	hfShape->setLocalScaling(scale);
+	hfShape->setUserPointer((void*) SU_Terrain);
+
+	btCollisionObject* colObj = new btCollisionObject();
+	colObj->setCollisionShape(hfShape);
+	colObj->setFriction(0.9); colObj->setRestitution(0.0);
+	colObj->setCollisionFlags(colObj->getCollisionFlags() |
+		btCollisionObject::CF_STATIC_OBJECT | btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT);
+	mSim->getCollisionWorld().getDynamicsWorld()->addCollisionObject(colObj);
+	mSim->getCollisionWorld().addShape(hfShape);
+
+	const float px[4] = {-1, 1, 0, 0};
+	const float py[4] = { 0, 0,-1, 1};
+
+	for (int i=0; i < 4; ++i) {
+		btVector3 vpl(px[i], py[i], 0);
+		btCollisionShape* shp = new btStaticPlaneShape(vpl,0);
+		shp->setUserPointer((void*)SU_Border);
+
+		btTransform tr;  tr.setIdentity();
+		tr.setOrigin(vpl * -0.5 * 10000.0);
+
+		btCollisionObject* col = new btCollisionObject();
+		col->setCollisionShape(shp);
+		col->setWorldTransform(tr);
+		col->setFriction(0.3);   //+
+		col->setRestitution(0.0);
+		col->setCollisionFlags(col->getCollisionFlags() |
+			btCollisionObject::CF_STATIC_OBJECT | btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT/**/);
+
+		mSim->getCollisionWorld().getDynamicsWorld()->addCollisionObject(col);
+		mSim->getCollisionWorld().addShape(shp);
+	}
 }

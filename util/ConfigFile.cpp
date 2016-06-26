@@ -187,6 +187,17 @@ void ConfigFile::getParamList(std::list<std::string>& paramListOutput, std::stri
 	}
 }
 
+void ConfigFile::getSectionList(std::list<std::string>& sectionListOutput) const {
+	sectionListOutput.clear();
+
+	std::map<std::string, bool> tempList;
+	for(bucketed_hashmap<std::string, ConfigVariable>::const_iterator i = variables.begin(); i != variables.end(); i++) {
+		tempList[i->mSection] = true;
+	}
+	for(std::map<std::string, bool>::iterator i = tempList.begin(); i != tempList.end(); i++) {
+		sectionListOutput.push_back(i->first);
+	}
+}
 
 std::string ConfigFile::trim(std::string s) {
 	if (s.find_last_not_of(" \t") != std::string::npos) {

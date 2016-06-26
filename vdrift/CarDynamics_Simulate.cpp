@@ -482,7 +482,7 @@ void CarDynamics::applyWheelTorque(double dt, double driveTorque, int i, MathVec
 			(-getBodyOrientation()).rotateVector(t);
 			double x = t[0] * -1000. * v * 22;
 			MathVector<float, 3> v(x,0,0);
-			-getBodyOrientation().rotateVector(v);
+			(-getBodyOrientation()).rotateVector(v);
 			applyTorque(v);
 		}
 	}

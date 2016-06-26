@@ -23,7 +23,7 @@ CollisionWorld::CollisionWorld()
 }
 
 CollisionWorld::~CollisionWorld() {
-	clear();
+//	clear();
 
 	delete world;
 	delete solver;
@@ -56,6 +56,7 @@ void CollisionWorld::clear() {
 
 	for (i = 0; i < shapes.size(); i++) {
 		btCollisionShape* shape = shapes[i];
+
 		if (shape->isCompound()) {
 			btCompoundShape* cs = (btCompoundShape*)shape;
 			for (c = 0; c < cs->getNumChildShapes(); ++c) delete cs->getChildShape(c);
@@ -157,7 +158,7 @@ bool CollisionWorld::castRay(const MathVector<float, 3>& position, const MathVec
 				case SU_Road:
 					break;
 
-				case SU_PIPE:
+				case SU_Pipe:
 					break;
 
 				case SU_Terrain:

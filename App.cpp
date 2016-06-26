@@ -65,10 +65,6 @@ bool App::setup() {
 	setupMaterials();
 	setupSim();
 
-	//TODO Explore multiple viewports for split-screen effects
-	//Would entail managing cameras in separate class
-	setupViewSystem();
-
 	Ogre::TextureManager::getSingleton().setDefaultNumMipmaps(5);
 
 	//TODO Init GUI system
@@ -175,7 +171,16 @@ void App::setupSim() {
 	mSim->setup(mSceneMgr);
 }
 
-void App::setupViewSystem() {
+void App::setupListeners() {
+	mRoot->addFrameListener(this);
+	Ogre::WindowEventUtilities::addWindowEventListener(mWindow, this);
+
+	mKeyboard->setEventCallback(this);
+}
+
+void App::setupScene() {
+	//TODO Explore multiple viewports for split-screen effects
+	//Would entail managing cameras in separate class
 	mCamera = mSceneMgr->createCamera("MainCamera");
 
 	mCameraNode = mSceneMgr->getRootSceneNode()->createChildSceneNode("MainCameraNode");
@@ -191,19 +196,55 @@ void App::setupViewSystem() {
 	vp->setBackgroundColour(Ogre::ColourValue::Black);
 	mCamera->setAspectRatio(Ogre::Real(vp->getActualWidth() /
 									   vp->getActualHeight()));
-}
 
-void App::setupListeners() {
-	mRoot->addFrameListener(this);
-	Ogre::WindowEventUtilities::addWindowEventListener(mWindow, this);
+	if (!loadSurfaces()) ; //TODO Error: Can't load surfaces
 
-	mKeyboard->setEventCallback(this);
-}
-
-void App::setupScene() {
 	//TODO Set up GUI?
 	mScene = new Scene(mSceneMgr);
-	mScene->setupTerrain();
+	mScene->setupTerrain(mSim);
+}
+
+bool App::loadSurfaces() {
+	surfaces.clear();
+	surfaceMap.clear();
+
+	std::string path = "../data/scene/surfaces.cfg";
+	ConfigFile params;
+	if (!params.load(path)) return false;
+
+	std::list<std::string> secList;
+	params.getSectionList(secList);
+	for (std::list<std::string>::const_iterator sec = secList.begin(); sec != secList.end(); sec++) {
+		TerrainSurface surf;
+		surf.name = *sec;
+
+		int id;
+		params.getParam(*sec + ".ID", id); // For sound..?
+		surf.setType(id);
+
+		float temp = 0.0;
+		params.getParam(*sec + ".BumpWaveLength", temp);	surf.bumpWavelength = temp;
+		params.getParam(*sec + ".BumpAmplitude", temp);		surf.bumpAmplitude = temp;
+
+		params.getParam(*sec + ".FrictionTread", temp);		surf.friction = temp;
+		if (params.getParam(*sec + ".FrictionX", temp))  	surf.frictionX = temp;
+		if (params.getParam(*sec + ".FrictionY", temp))  	surf.frictionY = temp;
+
+		if (params.getParam(*sec + ".RollResistance", temp))surf.rollingResist = temp;
+		params.getParam(*sec + ".RollingDrag", temp);		surf.rollingDrag = temp;
+
+		// Tire
+		std::string tireFile;
+		if (!params.getParam(*sec + "." + "Tire", tireFile))
+			tireFile = "Default"; // Default surface if not found
+		surf.tireName = tireFile;
+		//TODO tire_map of GAME??
+
+		surfaces.push_back(surf);
+		surfaceMap[surf.name] = (int)surfaces.size(); //+1, 0 = not found
+	}
+
+	return true;
 }
 
 //TODO Investigate if required
