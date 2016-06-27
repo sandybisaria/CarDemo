@@ -8,7 +8,26 @@
 class CarDynamics;
 #include "CollisionContact.hpp"
 
-//TODO When ready for fluids, implement Stuntrally's custom DynamicsWorld class
+#include <OgreVector3.h>
+
+class DynamicsWorld
+	: public btDiscreteDynamicsWorld {
+public:
+	DynamicsWorld(btDispatcher* dispatcher, btBroadphaseInterface* broadphase, btConstraintSolver* constraintSolver,
+				  btCollisionConfiguration* collisionConfig)
+		: btDiscreteDynamicsWorld(dispatcher, broadphase, constraintSolver, collisionConfig) { }
+
+	~DynamicsWorld() { }
+
+	void solveConstraints(btContactSolverInfo& solverInfo);
+
+	struct Hit
+	{
+		btVector3 pos, norm, vel;  btScalar force;
+		class ShapeData* sdCar;  int dyn;
+	};
+	btAlignedObjectArray<Hit> vHits;
+};
 
 // Manages aspects of Bullet simulations (collisions, bodies, etc.)
 // Based on Stuntrally's COLLISION_WORLD in vdrift/collision_world.h
@@ -32,10 +51,12 @@ public:
 	void update(double dt);
 	CarDynamics* oldDyn;
 
+	class Sim* sim;
+
 	void setMaxSubSteps(int ms) { maxSubSteps = ms; }
 	void setFixedTimeStep(double ft) { fixedTimeStep = ft; }
 
-	btDiscreteDynamicsWorld* getDynamicsWorld() { return world; }
+	DynamicsWorld* getDynamicsWorld() { return world; }
 
 	void addShape(btCollisionShape* sh) { shapes.push_back(sh); } // Add shape to CollisionWorld (to be deleted by CollisionWorld)
 	void removeShape(btCollisionShape* sh) { shapes.remove(sh); }
@@ -46,7 +67,7 @@ private:
 	btCollisionDispatcher* dispatcher;
 	bt32BitAxisSweep3* broadphase;
 	btSequentialImpulseConstraintSolver* solver;
-	btDiscreteDynamicsWorld* world; //TODO Replace with custom DynamicsWorld class
+	DynamicsWorld* world; //TODO Replace with custom DynamicsWorld class
 
 	// Objects for eventual deletion
 	btAlignedObjectArray<btCollisionShape*> shapes;

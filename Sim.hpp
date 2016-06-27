@@ -1,7 +1,10 @@
 #pragma once
 
-#include "vdrift/Car.hpp"
+#include "terrain/Scene.hpp"
+class Scene;
+
 #include "vdrift/CollisionWorld.hpp"
+#include "vdrift/Car.hpp"
 
 #include "OgreSceneManager.h"
 
@@ -15,10 +18,14 @@ public:
 
 	CollisionWorld* getCollisionWorld() { return world; }
 
+	Scene* scene;
+
 private:
 	Ogre::SceneManager* mSceneMgr;
 
 	CollisionWorld* world;
-
 	Car* car;
+
+	int frameRate; //TODO Configurable
+	int targetTime, frame;
 };

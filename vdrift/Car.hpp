@@ -18,6 +18,7 @@ public:
 
 	void setup(std::string carName, Ogre::SceneManager* sceneMgr, CollisionWorld& world);
 
+	void updatePreviousVelocity() { dyn.updatePreviousVelocity(); }
 	void update(float dt);
 
 	virtual void requestedConfiguration(sh::MaterialInstance* m, const std::string& configuration);

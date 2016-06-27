@@ -67,9 +67,9 @@ public:
 		setFromCorners(min, max);
 	}
 
-	class Ray {
-	public:
-		Ray(const MathVector<T, 3>& o, const MathVector<T, 3>& d, T nsl) : orig(o), dir(d), segLen(nsl) {}
+	struct Ray {
+		Ray(const MathVector<T, 3>& newOrig, const MathVector<T, 3>& newDir, T newSegLen)
+			: orig(newOrig), dir(newDir), segLen(newSegLen) {}
 
 		MathVector<T, 3> orig, dir;
 		T segLen;
@@ -86,16 +86,11 @@ public:
 		absDiff.toAbsVal();
 
 		T f = size[0] + absSegDir[0];
-		if (absDiff[0] > f)
-			return false;
-
+		if (absDiff[0] > f)	return false;
 		f = size[1] + absSegDir[1];
-		if (absDiff[1] > f)
-			return false;
-
+		if (absDiff[1] > f)	return false;
 		f = size[2] + absSegDir[2];
-		if (absDiff[2] > f)
-			return false;
+		if (absDiff[2] > f)	return false;
 
 		MathVector<T,3> cross(segDir.cross(diff));
 
@@ -103,16 +98,11 @@ public:
 		absCross.toAbsVal();
 
 		f = size[1] * absSegDir[2] + size[2] * absSegDir[1];
-		if (absCross[0] > f)
-			return false;
-
+		if (absCross[0] > f) return false;
 		f = size[2] * absSegDir[0] + size[0] * absSegDir[2];
-		if (absCross[1] > f)
-			return false;
-
+		if (absCross[1] > f) return false;
 		f = size[0] * absSegDir[1] + size[1] * absSegDir[0];
-		if (absCross[2] > f)
-			return false;
+		if (absCross[2] > f) return false;
 
 		return true;
 	}
@@ -124,21 +114,15 @@ public:
 		MathVector<T, 3> c1(pos);
 		MathVector<T, 3> c2(pos + size);
 
-		// Bias checks for non-collisions
-		if (c1[0] > otherC2[0] || c2[0] < otherC1[0])
-			return false;
-
-		if (c1[2] > otherC2[2] || c2[2] < otherC1[2])
-			return false;
-
-		if (c1[1] > otherC2[1] || c2[1] < otherC1[1])
-			return false;
+		// Check for non-collisions
+		if (c1[0] > otherC2[0] || c2[0] < otherC1[0]) return false;
+		if (c1[2] > otherC2[2] || c2[2] < otherC1[2]) return false;
+		if (c1[1] > otherC2[1] || c2[1] < otherC1[1]) return false;
 
 		return true;
 	}
 
-	class Frustum {
-	public:
+	struct Frustum {
 		Frustum() : planes(6) {}
 		Frustum(T cFrustum[][4]) : planes(6) { set(cFrustum); }
 

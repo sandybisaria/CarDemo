@@ -14,8 +14,6 @@ void CarDynamics::update() {
 	btTransform tr;
 	chassis->getMotionState()->getWorldTransform(tr);
 
-//	if (isnan(tr.getOrigin().x())) return;
-
 	chassisRotation = toMathQuaternion<double>(tr.getRotation());
 	MathVector<double, 3> chassisCenterOfMass = toMathVector<double>(tr.getOrigin());
 	chassisRotation.rotateVector(centerOfMass);

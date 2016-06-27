@@ -12,6 +12,7 @@ Scene::~Scene() {
 
 void Scene::setupTerrain(Sim* sim) {
 	mSim = sim;
+	mSim->scene = this;
 
 	mSceneMgr->setAmbientLight(Ogre::ColourValue(0.4, 0.4, 0.4));
 
@@ -27,7 +28,7 @@ void Scene::setupTerrain(Sim* sim) {
 	mTerrainGlobals = OGRE_NEW Ogre::TerrainGlobalOptions();
 
 	mTerrainGroup = OGRE_NEW Ogre::TerrainGroup(mSceneMgr,
-			Ogre::Terrain::ALIGN_X_Z, 513, 10000.0); //TODO Store world size somewhere!
+			Ogre::Terrain::ALIGN_X_Z, terrSize, worldSize); //TODO Store world size somewhere!
 
 	configureTerrainDefaults();
 	defineTerrain();
@@ -50,8 +51,8 @@ void Scene::configureTerrainDefaults() {
 	mTerrainGlobals->setCompositeMapDiffuse(sun->getDiffuseColour());
 
 	Ogre::Terrain::ImportData& importData = mTerrainGroup->getDefaultImportSettings();
-	importData.terrainSize = 513;
-	importData.worldSize = 10000.0;
+	importData.terrainSize = terrSize;
+	importData.worldSize = worldSize;
 	importData.inputScale = 600;
 	importData.minBatchSize = 33;
 	importData.maxBatchSize = 65;
@@ -89,26 +90,9 @@ void Scene::createBulletTerrain() {
 	mSim->getCollisionWorld()->getDynamicsWorld()->addCollisionObject(colObj);
 	mSim->getCollisionWorld()->addShape(hfShape);
 
-	const float px[4] = {-1, 1, 0, 0};
-	const float py[4] = { 0, 0,-1, 1};
-
-	for (int i=0; i < 4; ++i) {
-		btVector3 vpl(px[i], py[i], 0);
-		btCollisionShape* shp = new btStaticPlaneShape(vpl,0);
-		shp->setUserPointer((void*)SU_Border);
-
-		btTransform tr;  tr.setIdentity();
-		tr.setOrigin(vpl * -0.5 * 10000.0);
-
-		btCollisionObject* col = new btCollisionObject();
-		col->setCollisionShape(shp);
-		col->setWorldTransform(tr);
-		col->setFriction(0.3);   //+
-		col->setRestitution(0.0);
-		col->setCollisionFlags(col->getCollisionFlags() |
-			btCollisionObject::CF_STATIC_OBJECT | btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT/**/);
-
-		mSim->getCollisionWorld()->getDynamicsWorld()->addCollisionObject(col);
-		mSim->getCollisionWorld()->addShape(shp);
-	}
+//	//YOLO
+//	btRigidBody* groundBody = new btRigidBody(0, new btDefaultMotionState(), hfShape);
+//	groundBody->getWorldTransform().setOrigin(btVector3(0, 0, 0));
+//	groundBody->getWorldTransform().setRotation(btQuaternion(0, 0, 0, 1));
+//	mSim->getCollisionWorld()->getDynamicsWorld()->addRigidBody(groundBody);
 }

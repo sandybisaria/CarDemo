@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Scene.hpp"
+#include "terrain/Scene.hpp"
 #include "Sim.hpp"
 
 #include "vdrift/TerrainSurface.hpp"

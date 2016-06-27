@@ -4,11 +4,95 @@
 #include "Bezier.hpp"
 #include "../terrain/ShapeData.hpp"
 
-#include <iostream>
+void DynamicsWorld::solveConstraints(btContactSolverInfo& solverInfo) {
+	btDiscreteDynamicsWorld::solveConstraints(solverInfo);
+
+	int numManifolds = getDispatcher()->getNumManifolds();
+	for (int i=0; i < numManifolds; ++i) {
+		btPersistentManifold* contactManifold =  getDispatcher()->getManifoldByIndexInternal(i);
+		const btCollisionObject* bA = contactManifold->getBody0();
+		const btCollisionObject* bB = contactManifold->getBody1();
+
+		void* pA = bA->getUserPointer(), *pB = bB->getUserPointer();
+		{
+			ShapeData* sdA = (ShapeData*)pA, *sdB = (ShapeData*)pB, *sdCar=0, *sdFluid=0, *sdWheel=0;
+			if (sdA) {
+				if (sdA->type == ShapeType::Car) 		sdCar = sdA;
+				else if (sdA->type == ShapeType::Fluid) sdFluid = sdA;
+				else if (sdA->type == ShapeType::Wheel) sdWheel = sdA;
+			}
+			if (sdB) {
+				if (sdB->type == ShapeType::Car)		sdCar = sdB;
+				else if (sdB->type == ShapeType::Fluid) sdFluid = sdB;
+				else if (sdB->type == ShapeType::Wheel) sdWheel = sdB;
+			}
+
+			if (sdFluid) { } //TODO Fluids?
+//				if (sdWheel) {
+//					std::list<FluidBox*>& fl = sdWheel->pCarDyn->inFluidsWh[sdWheel->whNum];
+//					if (fl.empty())
+//						fl.push_back(sdFluid->pFluid);
+//				} else if (sdCar) {
+//					if (sdCar->pCarDyn->inFluids.empty())
+//						sdCar->pCarDyn->inFluids.push_back(sdFluid->pFluid);
+//				}
+		}
+	}
+}
+
+void IntTickCallback(btDynamicsWorld* world, btScalar timeStep) {
+	CollisionWorld* cw = (CollisionWorld*)world->getWorldUserInfo();
+
+	int numManifolds = world->getDispatcher()->getNumManifolds();
+	for (int i=0; i < numManifolds; ++i) {
+		btPersistentManifold* contactManifold = world->getDispatcher()->getManifoldByIndexInternal(i);
+		const btCollisionObject* bA = contactManifold->getBody0();
+		const btCollisionObject* bB = contactManifold->getBody1();
+
+		if (bA->getCollisionFlags() & btCollisionObject::CF_NO_CONTACT_RESPONSE ||
+			bB->getCollisionFlags() & btCollisionObject::CF_NO_CONTACT_RESPONSE)
+			continue;
+
+		void* pA = bA->getUserPointer(), *pB = bB->getUserPointer();
+		{
+			ShapeData* sdA = (ShapeData*)pA, *sdB = (ShapeData*)pB, *sdCar=0, *sdFluid=0, *sdWheel=0;
+			if (sdA) {
+				if (sdA->type == ShapeType::Car) 		sdCar = sdA;
+				else if (sdA->type == ShapeType::Fluid) sdFluid = sdA;
+				else if (sdA->type == ShapeType::Wheel) sdWheel = sdA;
+			}
+			if (sdB) {
+				if (sdB->type == ShapeType::Car)		sdCar = sdB;
+				else if (sdB->type == ShapeType::Fluid) sdFluid = sdB;
+				else if (sdB->type == ShapeType::Wheel) sdWheel = sdB;
+			}
+
+//			if (sdFluid && sdFluid->pFluid)  // Solid fluid hit TODO Fluids
+//				if (sdFluid->pFluid->solid)  sdFluid = 0;
+
+			if (sdCar && !sdFluid && !sdWheel) {
+				bool dyn = (sdCar == sdA && !bB->isStaticObject()) || (sdCar == sdB && !bA->isStaticObject());
+				int num = contactManifold->getNumContacts();
+				for (int j=0; j < num; ++j) {
+					btManifoldPoint& pt = contactManifold->getContactPoint(j);
+					btScalar f = pt.getAppliedImpulse() * timeStep;
+					if (f > 0.f) {
+						DynamicsWorld::Hit hit;
+						hit.dyn = dyn ? 1 : 0;  //TODO Dev suggested custom sound for object type
+						hit.pos = pt.getPositionWorldOnA();
+						hit.norm = pt.m_normalWorldOnB;
+						hit.force = f;  hit.sdCar = sdCar;
+						hit.vel = sdCar ? sdCar->dyn->prevVel : (btVector3(1, 1, 1) * 0.1f);
+						cw->getDynamicsWorld()->vHits.push_back(hit);
+					}
+				}
+			}
+		}
+	}
+}
 
 CollisionWorld::CollisionWorld()
 	: maxSubSteps(24), fixedTimeStep(1. / 160.), oldDyn(0) /*Defaults according to Stuntrally settings*/ {
-	std::cout << "CONSTRUCTOR" << std::endl;
 	config = new btDefaultCollisionConfiguration();
 	dispatcher = new btCollisionDispatcher(config);
 
@@ -16,13 +100,13 @@ CollisionWorld::CollisionWorld()
 	broadphase = new bt32BitAxisSweep3(btVector3(-ws, -ws, -ws), btVector3(ws, ws, ws));
 	solver = new btSequentialImpulseConstraintSolver();
 
-	world = new btDiscreteDynamicsWorld(dispatcher, broadphase, solver, config);
+	world = new DynamicsWorld(dispatcher, broadphase, solver, config);
 
 	world->setGravity(btVector3(0., 0., -9.81));
 	world->getSolverInfo().m_restitution = 0.0f;
 	world->getDispatchInfo().m_enableSPU = true;
 
-//	world->setInternalTickCallback(IntTickCallback, this, false); //TODO When ready for fluids..
+	world->setInternalTickCallback(IntTickCallback, this, false);
 }
 
 CollisionWorld::~CollisionWorld() {
@@ -191,7 +275,27 @@ bool CollisionWorld::castRay(const MathVector<float, 3>& position, const MathVec
 void CollisionWorld::update(double dt) {
 	world->stepSimulation(dt, maxSubSteps, fixedTimeStep);
 
-	//TODO Do something with fluids... as usual
+	// Use collision hit results, once a frame
+	int n = world->vHits.size();
+	if (n > 0) {
+		// Pick the one with biggest force
+		DynamicsWorld::Hit& hit = world->vHits[0];
+		float force = 0.f;//, vel = 0.f;
+		for (int i=0; i < n; ++i)
+			if (world->vHits[i].force > force) {
+				force = world->vHits[i].force;
+				hit = world->vHits[i];
+			}
 
-	//TODO If you have oldDyn, modify some fHitForce variables...
+		CarDynamics* cd = hit.sdCar->dyn;
+		oldDyn = cd;
+		btVector3 vcar = hit.vel;
+		Ogre::Vector3 vel(vcar[0], vcar[2], -vcar[1]);
+		Ogre::Vector3 norm(hit.norm.getX(), hit.norm.getZ(), -hit.norm.getY());
+		float vlen = vel.length(), normvel = abs(vel.dotProduct(norm));
+	}
+
+	// Ignored cdOld and fHitForce
+
+	world->vHits.clear();
 }

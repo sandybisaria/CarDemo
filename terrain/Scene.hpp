@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Sim.hpp"
+#include "../Sim.hpp"
 class Sim;
 
-#include "terrain/ShapeData.hpp"
+#include "ShapeData.hpp"
 
 #include <OgreSceneManager.h>
 
@@ -18,6 +18,9 @@ public:
 	~Scene();
 
 	void setupTerrain(Sim* sim);
+
+	const int terrSize = 513;
+	const float worldSize = 10000.0;
 
 private:
 	void configureTerrainDefaults();

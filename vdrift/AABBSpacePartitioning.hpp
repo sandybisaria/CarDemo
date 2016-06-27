@@ -8,10 +8,8 @@ class AABBSpacePartitioningNode {
 public:
 	void add(DATATYPE& object, const AABB<float>& newAABB) {
 		objects.push_back(std::pair<DATATYPE, AABB<float> >(object, newAABB));
-		if (objects.size() == 1)
-			boundingBox = newAABB;
-		else
-			boundingBox.combineWith(newAABB);
+		if (objects.size() == 1) boundingBox = newAABB;
+		else boundingBox.combineWith(newAABB);
 	}
 
 	void optimize() {
