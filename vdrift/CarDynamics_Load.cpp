@@ -565,7 +565,7 @@ void CarDynamics::init(MathVector<double, 3> pos, Quaternion<double> rot, Collis
 			btSphereShape* whSph = new btSphereShape(whRad);
 			whTrigs = new btRigidBody(0.001f, 0, whSph);
 
-			whTrigs->setUserPointer(new ShapeData(ShapeType::Wheel, this));
+			whTrigs->setUserPointer(new ShapeData(ShapeType::Wheel, this, w));
 			whTrigs->setActivationState(DISABLE_DEACTIVATION);
 			whTrigs->setCollisionFlags(whTrigs->getCollisionFlags() | btCollisionObject::CF_NO_CONTACT_RESPONSE);
 

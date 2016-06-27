@@ -94,9 +94,7 @@ void App::setupResources() {
 bool App::setupRenderSystem() {
 	const std::string RENDER_SYSTEM("OpenGL Rendering Subsystem");
 	Ogre::RenderSystem* rs = mRoot->getRenderSystemByName(RENDER_SYSTEM);
-	if (rs->getName() != RENDER_SYSTEM) {
-		return false;
-	}
+	if (rs->getName() != RENDER_SYSTEM) return false;
 
 	rs->setConfigOption("Full Screen", "No");
 //	rs->setConfigOption("Video Mode", "800 x 600 @ 32-bit");

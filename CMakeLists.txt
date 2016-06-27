@@ -1,4 +1,3 @@
-# The latest version as of 06/22/2016
 cmake_minimum_required(VERSION 3.5.1)
 
 project(CarDemo)
@@ -13,7 +12,7 @@ if (CMAKE_BUILD_TYPE STREQUAL "")
 endif ()
 
 set(CMAKE_DEBUG_POSTFIX "_d")
-set(CMAKE_CXX_FLAGS_DEBUG "-O0")
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O0 -g -DNDEBUG")
 
 set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/dist")
 
