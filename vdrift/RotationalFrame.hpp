@@ -147,7 +147,7 @@ private:
 	Quaternion<double> getSpinFromMomentum(const MathVector<double, 3>& am) const {
 		const MathVector<double, 3> av = getAngularVelocityFromMomentum(am);
 		Quaternion<double> qav = Quaternion<double>(av[0], av[1], av[2], 0);
-		return qav * orientation * 0.5;
+		return (qav * orientation) * 0.5;
 	}
 
 	// Primary values

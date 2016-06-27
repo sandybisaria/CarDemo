@@ -138,7 +138,7 @@ MathVector<double, 3> CarTire::getForce(double normForce, double fricCoeff,
 
 
 void CarTire::calculateSigmaHatAlphaHat(int tableSize) {
-	const int HAT_LOAD = 0.5;
+	double HAT_LOAD = 0.5;
 	sigmaHat.resize(tableSize, 0);
 	alphaHat.resize(tableSize, 0);
 	for (int i = 0; i < tableSize; i++) {

@@ -83,6 +83,9 @@ void CarEngine::setTorqueCurve(double maxPowerRPM, std::vector<std::pair<double,
 		torqueCurve.addPoint(i->first, i->second * dynoCorrectionFactor);
 	}
 
+	// Ensure we have a smooth curve for over-revs
+	torqueCurve.addPoint(curve[curve.size()-1].first + 10000, 0);
+
 	double maxPowerAngVel = maxPowerRPM * M_PI / 30.0;
 	double maxPower = torqueCurve.interpolate(maxPowerRPM) * maxPowerAngVel;
 	friction = maxPower / (maxPowerAngVel * maxPowerAngVel * maxPowerAngVel);

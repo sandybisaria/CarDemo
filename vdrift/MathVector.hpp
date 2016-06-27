@@ -9,21 +9,18 @@
 template <typename T, unsigned int dimension>
 class MathVector {
 public:
-	MathVector() { set((T)0); }
+	MathVector() { for (size_t i = 0; i < dimension; i++) v[i] = 0; }
 
-	MathVector(const T& t) { set(t); }
+	MathVector(const T& t) { for (size_t i = 0; i < dimension; i++) v[i] = t; }
 
-	MathVector(const MathVector<T, dimension>& other) {
-		*this = other;
-	}
+	MathVector(const MathVector<T, dimension>& other) { *this = other; }
 
 	MathVector(const T x, const T y) {
-		set(x, y);
+		assert(dimension == 2);
+		v[0] = x; v[1] = y;
 	}
 
-	const T magnitude() const {
-		return sqrt(magnitudeSquared());
-	}
+	const T magnitude() const { return sqrt(magnitudeSquared()); }
 
 	const T magnitudeSquared() const {
 		T runningTotal(0);
@@ -245,7 +242,7 @@ public:
 
 	MathVector<T,3> operator/(const T & scalar) const {
 		assert(scalar != 0);
-		T scalInv = 1.0 / scalInv;
+		T scalInv = 1.0 / scalar; // MAJOR BUG
 		return (*this) * scalInv;
 	}
 

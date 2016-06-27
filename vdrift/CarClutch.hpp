@@ -10,7 +10,7 @@ public:
 	void setMaxTorque(const double& cmt) { clutchMaxTorque = cmt; }
 
 	// 1.0 is fully engaged
-	void setClutch(const double& cp) { clutchPosition = cp; }
+	void setClutch(double cp) { clutchPosition = cp; }
 	double getClutch() const { return clutchPosition; }
 
 	// Clutch is modeled as a limited highly-viscous coupling

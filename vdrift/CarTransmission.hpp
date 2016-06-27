@@ -3,8 +3,6 @@
 #include <cmath>
 #define _USE_MATH_DEFINES
 
-#include <iostream> //FIXME DELETE
-
 class CarTransmission {
 public:
 	// Default makes an S2000-like car
@@ -38,8 +36,6 @@ public:
 			reverseGears++;
 			key--;
 		}
-
-		std::cout << gearRatios[gear] << " " << gear << " " << ratio << std::endl;
 	}
 	double getGearRatio(int gear) const {
 		double ratio = 1.0;

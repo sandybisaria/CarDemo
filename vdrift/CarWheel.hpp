@@ -11,7 +11,7 @@ public:
 	CarWheel()
 		: rollHeight(0.9), mass(18.1), linRollRes(1.3e-2), quadRollRes(6.5e-6),
 		  inertiaCache(10.0), steerAngle(0.0), radius(0.3),
-		  feedback(0.0), angVel(0.0), camberDeg(0.0), fluidRes(0.0) {}
+		  feedback(0.0), angVel(0.0), camberDeg(0.0), fluidRes(0.0) { setInertia(10.0); }
 
 	double getRollingResistance(double vel, double rollResFactor) const {
 		// Surface influence on rolling resistance
@@ -103,6 +103,12 @@ public:
 		double slideRatio; // Ratio of slide to tire's optimum slide
 		double slipRatio; // Ratio of slip to tire's optimum slip
 		double fxSr, fxRsr, fyAr, fyRar, frict, gamma, fx, fxm, preFx, fy, fym, preFy, fz;
+
+		SlideSlip()
+			: slide(0), slip(0), slideRatio(0), slipRatio(0),
+			  fxSr(0), fxRsr(0), fyAr(0), fyRar(0),
+			  frict(0), gamma(0), fx(0), fxm(0), preFx(0), fy(0), fym(0), preFy(0), fz(0) { }
+
 	} slips;
 
 	double fluidRes;
