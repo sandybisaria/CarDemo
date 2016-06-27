@@ -19,8 +19,8 @@ public:
 
 	void setupTerrain(Sim* sim);
 
-	const int terrSize = 513;
-	const float worldSize = 10000.0;
+	const static int terrSize = 513;
+	const static float worldSize = 10000.0;
 
 private:
 	void configureTerrainDefaults();

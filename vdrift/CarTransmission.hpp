@@ -3,12 +3,14 @@
 #include <cmath>
 #define _USE_MATH_DEFINES
 
+#include <iostream> //FIXME DELETE
+
 class CarTransmission {
 public:
 	// Default makes an S2000-like car
 	CarTransmission()
 		: forwardGears(1), reverseGears(0), gear(0),
-		  driveshaftRPM(0), crankshaftRPM(0) {}
+		  driveshaftRPM(0), crankshaftRPM(0) { gearRatios[0] = 0; } // I missed this important line!
 
 	int getGear() const { return gear; }
 	int getForwardGears() const { return forwardGears;}
@@ -36,6 +38,8 @@ public:
 			reverseGears++;
 			key--;
 		}
+
+		std::cout << gearRatios[gear] << " " << gear << " " << ratio << std::endl;
 	}
 	double getGearRatio(int gear) const {
 		double ratio = 1.0;
