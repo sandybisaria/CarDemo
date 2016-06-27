@@ -182,27 +182,25 @@ bool CarDynamics::load(ConfigFile& cf) {
 			getWheelPosStr(i, numWheels, wl, wr, pos);
 			std::string searchStr = "brakes-" + pos + ".";
 
-			CarBrake b = brakes[wl], b2 = brakes[wr];
-
 			float friction, maxPressure, area, bias, radius, handbrake = 0;
 
 			if (!cf.getParam(searchStr + "friction", friction)) return false;
-			b.setFriction(friction); b2.setFriction(friction);
+			brakes[wl].setFriction(friction); brakes[wr].setFriction(friction);
 
 			if (!cf.getParam(searchStr + "area", area)) return false;
-			b.setArea(area); b2.setArea(area);
+			brakes[wl].setArea(area); brakes[wr].setArea(area);
 
 			if (!cf.getParam(searchStr + "radius", radius)) return false;
-			b.setRadius(radius); b2.setRadius(radius);
+			brakes[wl].setRadius(radius); brakes[wr].setRadius(radius);
 
 			cf.getParam(searchStr + "handbrake", handbrake);
-			b.setHandbrake(handbrake); b2.setHandbrake(handbrake);
+			brakes[wl].setHandbrake(handbrake); brakes[wr].setHandbrake(handbrake);
 
 			if (!cf.getParam(searchStr + "bias", bias)) return false;
-			b.setBias(bias); b2.setBias(bias);
+			brakes[wl].setBias(bias); brakes[wr].setBias(bias);
 
 			if (!cf.getParam(searchStr + "max-pressure", maxPressure)) return false;
-			b.setMaxPressure(maxPressure); b2.setMaxPressure(maxPressure);
+			brakes[wl].setMaxPressure(maxPressure); brakes[wr].setMaxPressure(maxPressure);
 		}
 	}
 
@@ -307,18 +305,17 @@ bool CarDynamics::load(ConfigFile& cf) {
 			MathVector<double, 3> vec;
 
 			std::string searchStr = "wheel-" + wt + ".";
-			CarWheel w = wheels[wp];
 
 			if (!cf.getParam(searchStr + "mass", mass)) return false;
-			w.setMass(mass);
+			wheels[wp].setMass(mass);
 
 			if (!cf.getParam(searchStr + "roll-height", rollH)) return false;
-			w.setRollHeight(rollH);
+			wheels[wp].setRollHeight(rollH);
 
 			if (!cf.getParam(searchStr + "position", pos)) return false;
 			if (version == 2) versionConvert(pos[0], pos[1], pos[2]);
 			vec.set(pos[0], pos[1], pos[2]);
-			w.setExtendedPosition(vec);
+			wheels[wp].setExtendedPosition(vec);
 
 			addMassParticle(mass, vec);
 		}
@@ -568,7 +565,7 @@ void CarDynamics::init(MathVector<double, 3> pos, Quaternion<double> rot, Collis
 			btSphereShape* whSph = new btSphereShape(whRad);
 			whTrigs = new btRigidBody(0.001f, 0, whSph);
 
-//			whTrigs->setUserPointer(new ShapeData()); //TODO Update bla bla bla
+			whTrigs->setUserPointer(new ShapeData(ShapeType::Wheel, this));
 			whTrigs->setActivationState(DISABLE_DEACTIVATION);
 			whTrigs->setCollisionFlags(whTrigs->getCollisionFlags() | btCollisionObject::CF_NO_CONTACT_RESPONSE);
 
@@ -584,7 +581,7 @@ void CarDynamics::init(MathVector<double, 3> pos, Quaternion<double> rot, Collis
 
 	// Init wheels and suspension
 	for (int i = 0; i < numWheels; i++) {
-		wheels[WheelPosition(i)].setInitialConditions();
+		wheels[i].setInitialConditions();
 		wheelVels[i].set(0.0);
 		wheelPos[i] = getWheelPositionAtDisplacement(WheelPosition(i), 0);
 		wheelRots[i] = rot * getWheelSteeringAndSuspensionOrientation(WheelPosition(i));

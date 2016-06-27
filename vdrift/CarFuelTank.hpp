@@ -11,10 +11,10 @@ public:
 		updateMass();
 	}
 
-	void setCapacity(const double& c) { capacity = c; }
-	void setDensity(const double& d) { density = d; }
-	void setVolume(const double& v) { volume = v; }
-	void setPosition(MathVector<double, 3>& p) { position = p; }
+	void setCapacity(double c) { capacity = c; }
+	void setDensity(double d) { density = d; }
+	void setVolume(double v) { volume = v; }
+	void setPosition(const MathVector<double, 3>& p) { position = p; }
 	MathVector<double, 3> getPosition() const { return position; }
 	double getMass() const { return mass; }
 
@@ -24,7 +24,6 @@ public:
 	void consume(double amt) {
 		volume -= amt;
 		volume = std::max(0.0, volume);
-
 		updateMass();
 	}
 

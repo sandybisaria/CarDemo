@@ -144,8 +144,6 @@ double CarDynamics::calculateDriveshaftRPM() const {
 	if (drive == RWD)
 		driveshaftSpeed = diffRear.getDriveshaftSpeed();
 	else if (drive == AWD) {
-//		double front = diffFront.getDriveshaftSpeed();
-//		double rear = diffRear.getDriveshaftSpeed();
 		driveshaftSpeed = diffCenter.getDriveshaftSpeed();
 	}
 

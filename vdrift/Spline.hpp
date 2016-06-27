@@ -21,10 +21,10 @@ public:
 	}
 
 	void addPoint(const T x, const T y) {
-		points.push_back(std::pair<T, T>(x, y));
+		points.push_back(std::pair< T, T >(x, y));
 		derivsCalculated = false;
 
-		PairSorterByFirst<T> sorter; // Sort by x-coordinates
+		PairSorterByFirst< T > sorter; // Sort by x-coordinates
 		std::sort(points.begin(), points.end(), sorter);
 	}
 
@@ -135,8 +135,8 @@ private:
 		derivsCalculated = true;
 	}
 
-	std::vector<std::pair<T, T> > points;
-	mutable std::vector<T> secondDeriv; // Mutable means it can change in a const method
+	std::vector<std::pair< T, T > > points;
+	mutable std::vector< T > secondDeriv; // Mutable means it can change in a const method
 	T firstSlope;
 	T lastSlope;
 	mutable bool derivsCalculated;

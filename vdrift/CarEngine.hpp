@@ -42,8 +42,8 @@ public:
 	void setFuelConsumption(double val) { fuelConsumption = val; }
 	double getFuelConsumption() const { return fuelConsumption; }
 
-	void integrateStep1(const double dt) { crankshaft.integrateStep1(dt); }
-	void integrateStep2(const double dt) { crankshaft.integrateStep2(dt); }
+	void integrateStep1(double dt) { crankshaft.integrateStep1(dt); }
+	void integrateStep2(double dt) { crankshaft.integrateStep2(dt); }
 
 	const double getRPM() const { return crankshaft.getAngularVelocity()[0] * 30 / M_PI; }
 
@@ -86,7 +86,7 @@ public:
 	void setMass(double val) { mass = val; }
 	double getMass() const { return mass; }
 
-	void setPosition(MathVector<double, 3>& value) { position = value; }
+	void setPosition(const MathVector<double, 3>& value) { position = value; }
 	MathVector<double, 3> getPosition() const { return position; }
 
 	double fuelRate() const { return fuelConsumption * getAngularVelocity() * throttlePosition; }

@@ -41,10 +41,10 @@ public:
 	}
 
 	double getFinalDrive() const { return finalDrive; }
-	void setFinalDrive(const double& fd) { finalDrive = fd; }
+	void setFinalDrive(double fd) { finalDrive = fd; }
 
-	const double& getSide1Speed() const { return side1Speed; }
-	const double& getSide2Speed() const { return side2Speed; }
+	const double& getSide1Speed()  const { return side1Speed; }
+	const double& getSide2Speed()  const { return side2Speed; }
 	const double& getSide1Torque() const { return side1Torque; }
 	const double& getSide2Torque() const { return side2Torque; }
 

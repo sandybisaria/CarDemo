@@ -41,15 +41,8 @@ bool App::setup() {
 	//TODO Look up in user's system
 	const Ogre::String OGRE_PLUGINS_DIR("/usr/local/lib/OGRE/");
 
-// Switch between debug and release plugins
-#ifdef _DEBUG
-#define D_SUFFIX "_d"
-#else
-#define D_SUFFIX ""
-#endif
-
-	mRoot->loadPlugin(OGRE_PLUGINS_DIR + "RenderSystem_GL" + D_SUFFIX);
-	mRoot->loadPlugin(OGRE_PLUGINS_DIR + "Plugin_OctreeSceneManager" + D_SUFFIX);
+	mRoot->loadPlugin(OGRE_PLUGINS_DIR + "RenderSystem_GL");
+	mRoot->loadPlugin(OGRE_PLUGINS_DIR + "Plugin_OctreeSceneManager");
 	//TODO Add Plugin_ParticleFX for particles
 
 	setupResources();
@@ -291,7 +284,7 @@ void App::updateCamera(const Ogre::FrameEvent& evt) {
 	} if (mKeyboard->isKeyDown(OIS::KC_Q)) {
 		translation += Ogre::Vector3::NEGATIVE_UNIT_Y;
 	}
-	translation *= 0.01;
+//	translation *= 0.01;
 	mCameraNode->translate(translation, Ogre::Node::TS_LOCAL);
 
 	if (mKeyboard->isKeyDown(OIS::KC_A)) {

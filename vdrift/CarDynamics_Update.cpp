@@ -14,6 +14,8 @@ void CarDynamics::update() {
 	btTransform tr;
 	chassis->getMotionState()->getWorldTransform(tr);
 
+//	if (isnan(tr.getOrigin().x())) return;
+
 	chassisRotation = toMathQuaternion<double>(tr.getRotation());
 	MathVector<double, 3> chassisCenterOfMass = toMathVector<double>(tr.getOrigin());
 	chassisRotation.rotateVector(centerOfMass);
@@ -57,12 +59,10 @@ void CarDynamics::tick(double dt) {
 		double driveTorque[MAX_WHEEL_COUNT];
 		updateDriveline(internalDt, driveTorque);
 		updateBody(internalDt, driveTorque);
-
 		//TODO Ignoring feedback var
 	}
 
 	fuelTank.consume(engine.fuelRate() * dt);
-
 	//TODO Ignoring fHitTime;
 }
 
@@ -83,13 +83,13 @@ void CarDynamics::updateBody(double dt, double driveTorque[]) {
 	//TODO Care about scene damage, wind, car flips, boosts?
 
 	int i;
-	double normalForce[MAX_WHEEL_COUNT];
+	double normalForce;
 	for (i = 0; i < numWheels; i++) {
 		MathVector<double, 3> suspForce = updateSuspension(i, dt);
-		normalForce[i] = suspForce.dot(wheelContact[i].getNormal());
-		if (normalForce[i] < 0) normalForce[i] = 0;
+		normalForce = suspForce.dot(wheelContact[i].getNormal());
+		if (normalForce < 0) normalForce = 0;
 
-		MathVector<double, 3> tireFriction = applyTireForce(i, normalForce[i], wheelRots[i]);
+		MathVector<double, 3> tireFriction = applyTireForce(i, normalForce, wheelRots[i]);
 		applyWheelTorque(dt, driveTorque[i], i, tireFriction, wheelRots[i]);
 	}
 
@@ -102,7 +102,5 @@ void CarDynamics::updateBody(double dt, double driveTorque[]) {
 
 	interpolateWheelContacts(dt);
 
-	for (i = 0; i < numWheels; i++) {
-		//TODO Add ABS and TCS
-	}
+	//TODO Add ABS and TCS
 }

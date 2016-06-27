@@ -22,10 +22,10 @@ public:
 	}
 
 	void addPoint(const T x, const T y) {
-		points.push_back(std::pair<T, T>(x, y));
+		points.push_back(std::pair< T, T >(x, y));
 		slopesCalculated = false;
 
-		PairSorterByFirst<T> sorter;
+		PairSorterByFirst< T > sorter;
 		std::sort(points.begin(), points.end(), sorter);
 	}
 
@@ -80,7 +80,7 @@ public:
 	void setBoundaryMode(const BOUNDMODE& m) { mode = m; }
 
 private:
-	std::vector<std::pair<T, T> > points;
+	std::vector<std::pair< T, T > > points;
 	mutable T firstSlope;
 	mutable T lastSlope;
 	mutable bool slopesCalculated;

@@ -39,13 +39,13 @@ public:
 	// Modified velocity Verlet integration two-step method
 	// Both steps must be called per frame
 	// Forces can only be set between steps 1 and 2
-	void integrateStep1(const double& dt) {
+	void integrateStep1(double dt) {
 		assert(integrationStep == 0);
 		assert(haveOldTorque); // Must call setInitialTorque()
 
 #ifdef MODIFIEDVERLET
 		angMom = angMom + oldTorque * dt * 0.5;
-		orientation = orientation + getSpinFromMom(angMom) * dt;
+		orientation = orientation + getSpinFromMomentum(angMom) * dt;
 		orientation.normalize();
 		recalculateSecondary();
 #endif
@@ -56,7 +56,7 @@ public:
 	// Modified velocity Verlet integration two-step method
 	// Both steps must be called per frame
 	// Forces can only be set between steps 1 and 2
-	void integrateStep2(const double& dt) {
+	void integrateStep2(double dt) {
 		assert(integrationStep == 1);
 
 #ifdef MODIFIEDVERLET
@@ -65,18 +65,18 @@ public:
 
 #ifdef NSV
 		angMom = angMom + torque * dt;
-		orientation = orientation + getSpinFromMom(angMom) * dt;
+		orientation = orientation + getSpinFromMomentum(angMom) * dt;
 		orientation.normalize()
 #endif
 
 #ifdef EULER
-		orientation = orientation + getSpinFromMom(angMom) * dt;
+		orientation = orientation + getSpinFromMomentum(angMom) * dt;
 		orientation.normalize();
 		angMom = angMom + torque * dt;
 #endif
 
 #ifdef SUVAT
-		orientation = orientation + getSpinFromMom(angMom + torque * dt * 0.5) * dt;
+		orientation = orientation + getSpinFromMomentum(angMom + torque * dt * 0.5) * dt;
 		orientation.normalize();
 		angMom = angMom + torque * dt;
 #endif
@@ -95,7 +95,7 @@ public:
 	}
 
 	// Must only be called between integration steps 1 and 2
-	const MathVector<double, 3> getLockUpTorque(const double dt) const {
+	const MathVector<double, 3> getLockUpTorque(double dt) const {
 		assert(integrationStep == 1);
 #ifdef MODIFIEDVERLET
 	return -angMom * 2 / dt;
@@ -144,7 +144,7 @@ private:
 		return worldInvInertiaTensor.multiply(mom);
 	}
 
-	Quaternion<double> getSpinFromMom(const MathVector<double, 3>& am) const {
+	Quaternion<double> getSpinFromMomentum(const MathVector<double, 3>& am) const {
 		const MathVector<double, 3> av = getAngularVelocityFromMomentum(am);
 		Quaternion<double> qav = Quaternion<double>(av[0], av[1], av[2], 0);
 		return qav * orientation * 0.5;

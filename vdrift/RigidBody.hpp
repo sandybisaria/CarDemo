@@ -12,7 +12,7 @@ public:
 	void setForce(const MathVector<double, 3>& f) { linFr.setForce(f); }
 	const MathVector<double, 3>& getForce() const { return linFr.getForce(); }
 
-	void setMass(const double& mass) { linFr.setMass(mass); }
+	void setMass(double mass) { linFr.setMass(mass); }
 	const double getMass() const { return linFr.getMass(); }
 
 	void setPosition(const MathVector<double, 3>& pos) { linFr.setPosition(pos); }
@@ -40,11 +40,11 @@ public:
 	const MathVector<double, 3>& getAngularVelocity() const { return rotFr.getAngularVelocity(); }
 
 
-	void integrateStep1(const double& dt) {
+	void integrateStep1(double dt) {
 		linFr.integrateStep1(dt);
 		rotFr.integrateStep1(dt);
 	}
-	void integrateStep2(const double& dt) {
+	void integrateStep2(double dt) {
 		linFr.integrateStep2(dt);
 		rotFr.integrateStep2(dt);
 	}

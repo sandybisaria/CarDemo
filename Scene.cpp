@@ -86,8 +86,8 @@ void Scene::createBulletTerrain() {
 	colObj->setFriction(0.9); colObj->setRestitution(0.0);
 	colObj->setCollisionFlags(colObj->getCollisionFlags() |
 		btCollisionObject::CF_STATIC_OBJECT | btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT);
-	mSim->getCollisionWorld().getDynamicsWorld()->addCollisionObject(colObj);
-	mSim->getCollisionWorld().addShape(hfShape);
+	mSim->getCollisionWorld()->getDynamicsWorld()->addCollisionObject(colObj);
+	mSim->getCollisionWorld()->addShape(hfShape);
 
 	const float px[4] = {-1, 1, 0, 0};
 	const float py[4] = { 0, 0,-1, 1};
@@ -108,7 +108,7 @@ void Scene::createBulletTerrain() {
 		col->setCollisionFlags(col->getCollisionFlags() |
 			btCollisionObject::CF_STATIC_OBJECT | btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT/**/);
 
-		mSim->getCollisionWorld().getDynamicsWorld()->addCollisionObject(col);
-		mSim->getCollisionWorld().addShape(shp);
+		mSim->getCollisionWorld()->getDynamicsWorld()->addCollisionObject(col);
+		mSim->getCollisionWorld()->addShape(shp);
 	}
 }

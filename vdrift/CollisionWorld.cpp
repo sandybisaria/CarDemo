@@ -4,8 +4,11 @@
 #include "Bezier.hpp"
 #include "../terrain/ShapeData.hpp"
 
+#include <iostream>
+
 CollisionWorld::CollisionWorld()
 	: maxSubSteps(24), fixedTimeStep(1. / 160.), oldDyn(0) /*Defaults according to Stuntrally settings*/ {
+	std::cout << "CONSTRUCTOR" << std::endl;
 	config = new btDefaultCollisionConfiguration();
 	dispatcher = new btCollisionDispatcher(config);
 
@@ -23,7 +26,7 @@ CollisionWorld::CollisionWorld()
 }
 
 CollisionWorld::~CollisionWorld() {
-//	clear();
+	clear();
 
 	delete world;
 	delete solver;

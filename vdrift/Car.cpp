@@ -111,7 +111,7 @@ bool Car::loadFromConfig(CollisionWorld& world) {
 	}
 
 	//TODO Load starting position/rotation from the scene
-	MathVector<double, 3> pos(0);
+	MathVector<double, 3> pos(0, 0, 0);
 	Quaternion<double> rot;
 
 	float stOfsY = 0.f;
@@ -258,6 +258,7 @@ void Car::updateModel() {
 
 	Ogre::Quaternion rot; rot = Axes::doQuatToOgre(dyn.getOrientation());
 	if (!isnan(rot.w) && !isnan(rot.x) && !isnan(rot.y) && !isnan(rot.z)) {
+		std::cout << "My orientation: " << rot << std::endl;
 		mainNode->setOrientation(rot);
 	}
 
@@ -266,11 +267,13 @@ void Car::updateModel() {
 
 		Ogre::Vector3 whPos = Axes::vectorToOgre(dyn.getWheelPosition(wp));
 		if (!isnan(whPos.x) && !isnan(whPos.y) && !isnan(whPos.z)) {
+			std::cout << "My wheel position: " << whPos << std::endl;
 			wheelNodes[w]->setPosition(whPos);
 		}
 
 		Ogre::Quaternion whRot; whRot = Axes::doWhQuatToOgre(dyn.getWheelOrientation(wp));
 		if (!isnan(whRot.w) && !isnan(whRot.x) && !isnan(whRot.y) && !isnan(whRot.z)) {
+			std::cout << "My wheel orientation: " << whRot << std::endl;
 			wheelNodes[w]->setOrientation(whRot);
 		}
 	}

@@ -13,7 +13,7 @@ public:
 		  inertiaCache(10.0), steerAngle(0.0), radius(0.3),
 		  feedback(0.0), angVel(0.0), camberDeg(0.0), fluidRes(0.0) {}
 
-	double getRollingResistance(const double vel, const double rollResFactor) const {
+	double getRollingResistance(double vel, double rollResFactor) const {
 		// Surface influence on rolling resistance
 		double rollRes = linRollRes * rollResFactor;
 
@@ -48,15 +48,15 @@ public:
 	}
 
 	double getSteerAngle() const { return steerAngle; }
-	void setSteerAngle(const double& sa) { steerAngle = sa; }
+	void setSteerAngle(double sa) { steerAngle = sa; }
 
-	void setRadius (const double& value) { radius = value; }
+	void setRadius (double value) { radius = value; }
 	double getRadius() const { return radius; }
 
-	void setRollHeight (const double& value) { rollHeight = value; }
+	void setRollHeight (double value) { rollHeight = value; }
 	double getRollHeight() const { return rollHeight; }
 
-	void setMass (const double& value) { mass = value; }
+	void setMass (double value) { mass = value; }
 	double getMass() const { return mass; }
 
 	void setInertia(double i) {

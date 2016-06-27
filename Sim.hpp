@@ -13,11 +13,12 @@ public:
 	void setup(Ogre::SceneManager* sceneMgr);
 	void update(float dt);
 
-	CollisionWorld getCollisionWorld() { return *world; }
+	CollisionWorld* getCollisionWorld() { return world; }
 
 private:
 	Ogre::SceneManager* mSceneMgr;
 
 	CollisionWorld* world;
-	Car* mCar;
+
+	Car* car;
 };

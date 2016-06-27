@@ -8,7 +8,7 @@ class LinearFrame {
 public:
 	LinearFrame() : invMass(1.0), haveOldForce(false), integrationStep(0) {}
 
-	void setMass(const double& mass) { invMass = 1.0 / mass; }
+	void setMass(double mass) { invMass = 1.0 / mass; }
 	const double getMass() const { return 1.0 / invMass; }
 
 	void setPosition(const MathVector<double, 3>& newPos) { pos = newPos; }
