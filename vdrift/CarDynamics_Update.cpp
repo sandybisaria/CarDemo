@@ -21,8 +21,6 @@ void CarDynamics::update() {
 	chassisRotation.rotateVector(centerOfMass);
 	chassisPosition = chassisCenterOfMass - centerOfMass;
 
-	std::cout << "UPDATE" << toMathVector<double>(chassis->getCenterOfMassPosition()) << std::endl;
-
 	//TODO updateBuoyancy()
 }
 
@@ -31,10 +29,6 @@ bool CarDynamics::synchronizeBody() {
 	MathVector<double, 3> w = toMathVector<double>(chassis->getAngularVelocity());
 	MathVector<double, 3> p = toMathVector<double>(chassis->getCenterOfMassPosition());
 	Quaternion<double> q = toMathQuaternion<double>(chassis->getOrientation());
-
-	btTransform tr;
-	chassis->getMotionState()->getWorldTransform(tr);
-	std::cout << "SYNCBODY" << p << chassisPosition << toMathVector<double>(tr.getOrigin()) << std::endl;
 
 	body.setPosition(p);
 	body.setOrientation(q);
@@ -78,8 +72,6 @@ void CarDynamics::tick(double dt) {
 void CarDynamics::synchronizeChassis() {
 	chassis->setLinearVelocity(toBulletVector(body.getVelocity()));
 	chassis->setAngularVelocity(toBulletVector(body.getAngularVelocity()));
-
-	std::cout << "SYNCCHAS" << body.getVelocity() << body.getAngularVelocity() << std::endl;
 }
 
 void CarDynamics::updateBody(double dt, double driveTorque[]) {
