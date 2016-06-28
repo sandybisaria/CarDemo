@@ -1,10 +1,9 @@
 #pragma once
 
 #include "CarConstants.hpp"
-#include "../Input.hpp"
-
 #include <vector>
 #include <cassert>
+#include "../CarInput.hpp"
 
 class CarControlMapLocal {
 public:

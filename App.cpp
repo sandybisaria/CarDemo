@@ -271,6 +271,7 @@ bool App::frameRenderingQueued(const Ogre::FrameEvent& evt) {
 	return true;
 }
 
+// To control the main camera
 void App::updateCamera(const Ogre::FrameEvent& evt) {
 	Ogre::Vector3 translation(Ogre::Vector3::ZERO);
 	if (mKeyboard->isKeyDown(OIS::KC_W)) {
@@ -282,7 +283,7 @@ void App::updateCamera(const Ogre::FrameEvent& evt) {
 	} if (mKeyboard->isKeyDown(OIS::KC_Q)) {
 		translation += Ogre::Vector3::NEGATIVE_UNIT_Y;
 	}
-	translation *= 0.01;
+//	translation *= 0.01;
 	mCameraNode->translate(translation, Ogre::Node::TS_LOCAL);
 
 	if (mKeyboard->isKeyDown(OIS::KC_A)) {

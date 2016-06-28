@@ -12,6 +12,8 @@ if (CMAKE_BUILD_TYPE STREQUAL "")
 endif ()
 
 set(CMAKE_DEBUG_POSTFIX "_d")
+# Note that CXX flags were explicitly overwritten to allow for
+# optimization-free debugging
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O0 -g -DNDEBUG")
 
 set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/dist")
@@ -20,6 +22,14 @@ set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/dist")
 find_package(OGRE REQUIRED)
 find_package(OIS REQUIRED)
 find_package(BULLET REQUIRED)
+
+option(build_gtests "Build and run gtests" ON)
+if (build_gtests)
+	find_package(GTest REQUIRED)
+	include_directories(${GTEST_INCLUDE_DIRS})
+	add_definitions(-DCOMPILE_UNIT_TESTS)
+	list(APPEND EXTLIBS ${GTEST_BOTH_LIBRARIES})
+endif()
 
 set(BOOST_COMPONENTS system thread filesystem wave)
 find_package(Boost COMPONENTS ${BOOST_COMPONENTS} REQUIRED QUIET)

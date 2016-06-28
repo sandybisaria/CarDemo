@@ -400,3 +400,11 @@ void VertexArray::rotate(float a, float x, float y, float z) {
 		q.rotateVector(vert);
     }
 }
+
+#ifdef COMPILE_UNIT_TESTS
+#include <gtest/gtest.h>
+
+TEST(VertexArray, VertexArrayFunctions) {
+	EXPECT_TRUE(true);
+}
+#endif

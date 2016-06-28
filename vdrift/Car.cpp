@@ -250,31 +250,45 @@ void Car::changeColor() {
 }
 
 void Car::updateModel() {
-	Ogre::Vector3 pos = Axes::vectorToOgre(dyn.getPosition());
+	// Main body
+	Ogre::Vector3 pos = Axes::vectorToOgre(dyn.getPosition()) + Ogre::Vector3::UNIT_Y;
 	if (!isnan(pos.x) && !isnan(pos.y) && !isnan(pos.z)) {
 		mainNode->setPosition(pos);
 		std::cout << "My position: " << pos << std::endl;
 	}
 
 	Ogre::Quaternion rot; rot = Axes::doQuatToOgre(dyn.getOrientation());
-	if (!isnan(rot.w) && !isnan(rot.x) && !isnan(rot.y) && !isnan(rot.z)) {
-		std::cout << "My orientation: " << rot << std::endl;
-		mainNode->setOrientation(rot);
-	}
+	std::cout << "My orientation: " << rot << std::endl;
+	mainNode->setOrientation(rot);
 
+	// Wheels
 	for (int w = 0; w < numWheels; w++) {
 		WheelPosition wp; wp = WheelPosition(w);
 
 		Ogre::Vector3 whPos = Axes::vectorToOgre(dyn.getWheelPosition(wp));
-		if (!isnan(whPos.x) && !isnan(whPos.y) && !isnan(whPos.z)) {
-			std::cout << "My wheel position: " << whPos << std::endl;
-			wheelNodes[w]->setPosition(whPos);
-		}
+		std::cout << "My wheel position: " << whPos << std::endl;
+		wheelNodes[w]->setPosition(whPos);
 
 		Ogre::Quaternion whRot; whRot = Axes::doWhQuatToOgre(dyn.getWheelOrientation(wp));
-		if (!isnan(whRot.w) && !isnan(whRot.x) && !isnan(whRot.y) && !isnan(whRot.z)) {
-			std::cout << "My wheel orientation: " << whRot << std::endl;
-			wheelNodes[w]->setOrientation(whRot);
+		std::cout << "My wheel orientation: " << whRot << std::endl;
+		wheelNodes[w]->setOrientation(whRot);
+	}
+
+	// Brakes
+	for (int w = 0; w < numWheels; w++) {
+		if (brakeNodes[w]) {
+			brakeNodes[w]->_setDerivedOrientation(mainNode->getOrientation());
+
+			// This transformation code is just so the brake mesh can have the same alignment as the wheel mesh
+			brakeNodes[w]->yaw(Ogre::Degree(-90), Ogre::Node::TS_LOCAL);
+			if (w%2 == 1) brakeNodes[w]->setScale(-1, 1, 1);
+
+			brakeNodes[w]->pitch(Ogre::Degree(180), Ogre::Node::TS_LOCAL);
+
+			// Turn only front wheels
+//			if (w < 2) brakeNodes[w]->yaw(-Ogre::Degree(posInfo.whSteerAng[w])); TODO Steering angle
+
+			std::cout << "My brake orientation: " << brakeNodes[w]->getOrientation() << std::endl;
 		}
 	}
 }

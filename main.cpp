@@ -1,11 +1,19 @@
-#include <iostream>
+#include "App.hpp"
 
 #include <OgreException.h>
 
-#include "App.hpp"
+#ifdef COMPILE_UNIT_TESTS
+#include <gtest/gtest.h>
+#endif
+
+#include <iostream>
 
 int main(int argc, char* argv[]) {
 
+#ifdef COMPILE_UNIT_TESTS
+	testing::InitGoogleTest(&argc, argv);
+	return RUN_ALL_TESTS();
+#else
 	Ogre::Root* root = OGRE_NEW Ogre::Root("", "../config/resources.cfg");
 	App* app = new App(root);
 
@@ -19,4 +27,5 @@ int main(int argc, char* argv[]) {
 	OGRE_DELETE root;
 
 	return 0;
+#endif
 }
