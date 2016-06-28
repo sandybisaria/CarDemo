@@ -59,6 +59,44 @@ public:
 			v[i] /= len;
 	}
 
+	/// Set the given matrix to a matrix representation of this quaternion.
+	/// No array bound checking is done.
+	/// The matrix type can be any type that is accessible with [].
+	template <typename T2>
+	void representAsMatrix4(T2& destMat) const {
+		T xx = v[0]*v[0];
+		T xy = v[0]*v[1];
+		T xz = v[0]*v[2];
+		T xw = v[0]*v[3];
+
+		T yy = v[1]*v[1];
+		T yz = v[1]*v[2];
+		T yw = v[1]*v[3];
+
+		T zz = v[2]*v[2];
+		T zw = v[2]*v[3];
+
+		destMat[0] = 1.0 - 2.0*(yy+zz);
+		destMat[1] = 2.0*(xy+zw);
+		destMat[2] = 2.0*(xz-yw);
+		destMat[3] = 0;
+
+		destMat[4] = 2.0*(xy-zw);
+		destMat[5] = 1.0-2.0*(xx+zz);
+		destMat[6] = 2.0*(yz+xw);
+		destMat[7] = 0;
+
+		destMat[8] = 2.0*(xz+yw);
+		destMat[9] = 2.0*(yz-xw);
+		destMat[10] = 1.0-2.0*(xx+yy);
+		destMat[11] = 0;
+
+		destMat[12] = 0;
+		destMat[13] = 0;
+		destMat[14] = 0;
+		destMat[15] = 1;
+	}
+
 	// Set the given matrix to a matrix representation of this quaternion.
 	// No array bound checking is done.
 	// The matrix type can be any type that is accessible with [].

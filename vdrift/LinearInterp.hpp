@@ -3,6 +3,8 @@
 #include "PairSorter.hpp"
 
 #include <cassert>
+#include <vector>
+#include <algorithm>
 
 template <typename T>
 class LinearInterp {

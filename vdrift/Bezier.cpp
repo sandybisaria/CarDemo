@@ -439,3 +439,32 @@ std::ostream& operator<<(std::ostream& os, const Bezier& b) {
 	os << "====" << std::endl;
 	return os;
 }
+
+#ifdef COMPILE_UNIT_TESTS
+#include <gtest/gtest.h>
+
+TEST(Bezier, BezierFunctions) {
+	MathVector<float, 3> p[4], l[4], r[4];
+	p[0].set(-1,0,0); p[1].set(-1,1,0); p[2].set(1,1,0); p[3].set(1,0,0);
+
+	Bezier b; b.deCasteljauHalveCurve(p, l, r);
+
+	EXPECT_EQ(l[0],(MathVector<float, 3>(-1, 0, 0)));
+	EXPECT_EQ(l[1],(MathVector<float, 3>(-1, 0.5, 0)));
+	EXPECT_EQ(l[2],(MathVector<float, 3>(-0.5, 0.75, 0)));
+	EXPECT_EQ(l[3],(MathVector<float, 3>(0, 0.75, 0)));
+
+	EXPECT_EQ(r[3],(MathVector<float, 3>(1, 0, 0)));
+	EXPECT_EQ(r[2],(MathVector<float, 3>(1, 0.5, 0)));
+	EXPECT_EQ(r[1],(MathVector<float, 3>(0.5, 0.75, 0)));
+	EXPECT_EQ(r[0],(MathVector<float, 3>(0, 0.75, 0)));
+
+	//TODO Commented due to "stack smashing" error
+//	b.setFromCorners(MathVector<float, 3>(1, 0, 1),
+//					 MathVector<float, 3>(-1, 0, 1),
+//					 MathVector<float, 3>(1, 0, -1),
+//					 MathVector<float, 3>(-1,0,-1));
+//	EXPECT_FALSE(b.checkForProblems());
+}
+
+#endif

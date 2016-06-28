@@ -126,7 +126,7 @@ public:
 	MathVector<T, dimension> operator+(const MathVector<T, dimension>& other) const {
 		MathVector<T, dimension> output;
 		for (size_t i = 0; i < dimension; i++) {
-			output.v[i] = v[i] + output.v[i];
+			output.v[i] = v[i] + other.v[i];
 		}
 		return output;
 	}
@@ -134,7 +134,7 @@ public:
 	MathVector<T, dimension> operator-(const MathVector<T, dimension>& other) const {
 		MathVector<T, dimension> output;
 		for (size_t i = 0; i < dimension; i++) {
-			output.v[i] = v[i] - output.v[i];
+			output.v[i] = v[i] - other.v[i];
 		}
 		return output;
 	}
@@ -190,18 +190,16 @@ public:
 	template <typename T2>
 	MathVector(const MathVector<T2, 3>& other) { *this = other; }
 
-	inline const T magnitude() const { return sqrt(magnitudeSquared()); }
-	inline const T magnitudeSquared() const { return v.x*v.x + v.y*v.y + v.z*v.z; }
+	const T magnitude() const { return sqrt(magnitudeSquared()); }
+	const T magnitudeSquared() const { return v.x*v.x + v.y*v.y + v.z*v.z; }
 
-	inline void set(const T val) { v.x = v.y = v.z = val; }
-	inline void set(const T nx, const T ny, const T nz) {
+	void set(const T val) { v.x = v.y = v.z = val; }
+	void set(const T nx, const T ny, const T nz) {
 		v.x = nx;
 		v.y = ny;
 		v.z = nz;
 	}
-	inline void set(const T* arr) {
-		std::memcpy(&v, arr, sizeof(MathVectorXYZ));
-	}
+	void set(const T* arr) { std::memcpy(&v, arr, sizeof(MathVectorXYZ)); }
 
 	MathVector<T, 3> normalized() const {
 		const T mag = magnitude();

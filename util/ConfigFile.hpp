@@ -40,6 +40,7 @@ public:
 	~ConfigFile();
 
 	bool load(std::string filename);
+	bool load(std::istream& f);
 
 	// getParam methods return true if param was found
 	bool getParam(std::string param, std::string& outVar) const;

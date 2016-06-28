@@ -6,7 +6,6 @@
 
 // -----------------------------------------------------------------------------
 // ConfigVariable methods
-
 ConfigVariable::ConfigVariable()
 	: mSection(""), mName("") {
 	initVals();
@@ -74,7 +73,6 @@ void ConfigVariable::set(std::string newVal) {
 
 // -----------------------------------------------------------------------------
 // ConfigFile methods
-
 ConfigFile::ConfigFile() {
 
 }
@@ -92,10 +90,12 @@ bool ConfigFile::load(std::string filename) {
 
 	std::ifstream f;
 	f.open(filename.c_str());
-	if (!f) {
-		return false;
-	}
+	if (!f) return false;
 
+	return load(f);
+}
+
+bool ConfigFile::load(std::istream& f) {
 	std::string curSection = "";
 	const int MAX_CHAR = 1024;
 	char trashChar[MAX_CHAR];
@@ -313,3 +313,82 @@ const ConfigVariable* ConfigFile::getVariable(std::string param) const {
 	const ConfigVariable* v = variables.Get(param);
 	return v;
 }
+
+// -----------------------------------------------------------------------------
+// Testing
+#ifdef COMPILE_UNIT_TESTS
+#include <gtest/gtest.h>
+
+TEST(ConfigFile, ConfigFileFunctions) {
+	std::stringstream inStream;
+	inStream << "\n#comment on the FIRST LINE??\n\n"
+				"variable outside of=a section\n\n"
+				"test section numero UNO\n"
+				"look at me = 23.4\n\n"
+				"i'm so great=   BANANA\n"
+				"#break!\n\n"
+				"[ section    dos??]\n"
+				"why won't you = breeeak #trying to break it\n\n"
+				"what about ] # this malformed thing???\n"
+				"nope works = fine.\n"
+				"even vectors = 2.1,0.9,GAMMA\n"
+				"this is a duplicate = 0\n"
+				"this is a duplicate = 1\n"
+				"random = intermediary\n"
+				"this is a duplicate = 2\n";
+
+	ConfigFile testConfig; testConfig.load(inStream);
+
+	std::string tStr = "notfound";
+	EXPECT_TRUE(testConfig.getParam("variable outside of", tStr));
+	EXPECT_EQ(tStr, "a section");
+
+	tStr = "notfound";
+	EXPECT_TRUE(testConfig.getParam(".variable outside of", tStr));
+	EXPECT_EQ(tStr, "a section");
+
+	tStr = "notfound";
+	EXPECT_TRUE(testConfig.getParam("section    dos??.why won't you", tStr));
+	EXPECT_EQ(tStr, "breeeak");
+
+	tStr = "notfound";
+	EXPECT_TRUE(testConfig.getParam("variable outside of", tStr));
+	EXPECT_EQ(tStr, "a section");
+
+	tStr = "notfound";
+	EXPECT_TRUE(testConfig.getParam(".variable outside of", tStr));
+	EXPECT_EQ(tStr, "a section");
+
+	tStr = "notfound";
+	EXPECT_FALSE(testConfig.getParam("nosection.novariable", tStr));
+	EXPECT_EQ(tStr, "notfound");
+
+	tStr = "notfound";
+	float vec[3];
+	EXPECT_TRUE(testConfig.getParam("what about.even vectors", vec));
+	EXPECT_EQ(vec[0], 2.1f);
+	EXPECT_EQ(vec[1], 0.9f);
+	EXPECT_EQ(vec[2], 0.f);
+
+	std::list<std::string> list1;
+	testConfig.getSectionList(list1);
+	list1.sort();
+
+	std::list<std::string>::iterator i = list1.begin();
+	EXPECT_EQ(*i, ""); ++i;
+	EXPECT_EQ(*i, "section    dos??"); ++i;
+	EXPECT_EQ(*i, "test section numero UNO"); ++i;
+	EXPECT_EQ(*i, "what about"); ++i;
+	EXPECT_TRUE(i == list1.end());
+
+	std::list<std::string> list2;
+	testConfig.getParamList(list2, "test section numero UNO");
+	list2.sort();
+
+	std::list<std::string>::iterator j = list2.begin();
+	EXPECT_EQ(*j, "i'm so great"); ++j;
+	EXPECT_EQ(*j, "look at me"); ++j;
+	EXPECT_TRUE(j == list2.end());
+}
+
+#endif

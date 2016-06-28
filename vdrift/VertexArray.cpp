@@ -405,6 +405,79 @@ void VertexArray::rotate(float a, float x, float y, float z) {
 #include <gtest/gtest.h>
 
 TEST(VertexArray, VertexArrayFunctions) {
-	EXPECT_TRUE(true);
+	VertexArray testarray;
+
+	const float* ptr;
+	int ptrnum;
+	float somevec[3];
+	somevec[0] = somevec[2] = 0;
+	somevec[1] = 1000.0;
+	testarray.setNormals(somevec, 3);
+	testarray.getNormals(ptr, ptrnum);
+	EXPECT_EQ(ptr[1], 1000.0);
+	EXPECT_EQ(ptrnum, 3);
+	testarray.setNormals(NULL, 0);
+	testarray.getNormals(ptr, ptrnum);
+	EXPECT_EQ(ptrnum, 0);
+	EXPECT_EQ(ptr, (float*)NULL);
+
+	// By similarity, the vertex and face assignment functions are OK if the above normal test is OK
+	testarray.setTexCoordSets(2);
+	EXPECT_EQ(testarray.getTexCoordSets(), 2);
+	testarray.getTexCoords(0, ptr, ptrnum);
+	EXPECT_EQ(ptrnum, 0);
+	EXPECT_EQ(ptr, (float*)NULL);
+	testarray.setTexCoords(1, somevec, 2);
+	testarray.getTexCoords(1, ptr, ptrnum);
+	EXPECT_EQ(ptrnum, 2);
+	EXPECT_EQ(ptr[1], 1000.0);
+
+	testarray.clear();
+	testarray.setNormals(somevec, 3);
+	VertexArray otherarray(testarray);
+	otherarray.getNormals(ptr, ptrnum);
+	EXPECT_EQ(ptr[1], 1000.0);
+	EXPECT_EQ(ptrnum, 3);
+	otherarray.clear();
+	otherarray.getNormals(ptr, ptrnum);
+	EXPECT_EQ(ptrnum, 0);
+	otherarray = testarray;
+	otherarray.getNormals(ptr, ptrnum);
+	EXPECT_EQ(ptr[1], 1000.0);
+	EXPECT_EQ(ptrnum, 3);
+
+	VertexArray addarray;
+	otherarray.clear();
+	testarray.clear();
+	testarray.setNormals(somevec, 3);
+	otherarray.setNormals(somevec, 3);
+	addarray = testarray + otherarray;
+	addarray.getNormals(ptr, ptrnum);
+	EXPECT_EQ(ptrnum, 6);
+	EXPECT_EQ(ptr[1], 1000.0);
+	EXPECT_EQ(ptr[4], 1000.0);
+
+	testarray.clear();
+	VertexArray facearray1, facearray2;
+	int someint[3];
+	someint[0] = 0;
+	someint[1] = 1;
+	someint[2] = 2;
+	facearray1.setFaces(someint, 3);
+	facearray2.setFaces(someint, 3);
+	testarray = facearray1 + facearray2;
+	const int* ptri;
+	testarray.getFaces(ptri, ptrnum);
+	EXPECT_EQ(ptrnum, 6);
+	EXPECT_EQ(ptri[1], 1);
+	EXPECT_EQ(ptri[4], 1);
+	testarray.clear();
+	facearray1.setVertices(somevec, 3);
+	facearray2.setVertices(somevec, 3);
+	testarray = facearray1 + facearray2;
+	testarray.getFaces(ptri, ptrnum);
+	EXPECT_EQ(ptrnum, 6);
+	EXPECT_EQ(ptri[1], 1);
+	EXPECT_EQ(ptri[4], 2);
 }
 #endif
