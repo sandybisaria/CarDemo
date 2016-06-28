@@ -6,6 +6,8 @@ class Scene;
 #include "vdrift/CollisionWorld.hpp"
 #include "vdrift/Car.hpp"
 
+#include "CarInput.hpp"
+
 #include "OgreSceneManager.h"
 
 class Sim {
@@ -25,6 +27,7 @@ private:
 
 	CollisionWorld* world;
 	Car* car;
+	CarInput* carInput;
 
 	int frameRate; //TODO Configurable
 	int targetTime, frame;

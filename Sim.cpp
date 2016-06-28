@@ -2,12 +2,13 @@
 
 Sim::Sim()
 	: mSceneMgr(0),
-	  world(0), car(0),
+	  world(0), car(0), carInput(0),
 	  frameRate(60), targetTime(0), frame(0) {
 }
 
 Sim::~Sim() {
 	delete world;
+	delete carInput;
 }
 
 void Sim::setup(Ogre::SceneManager* sceneMgr) {
@@ -18,6 +19,8 @@ void Sim::setup(Ogre::SceneManager* sceneMgr) {
 
 	car = new Car(0);
 	car->setup("360", mSceneMgr, *world);
+
+	carInput = new CarInput(this);
 }
 
 void Sim::update(float dt) {

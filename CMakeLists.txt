@@ -23,7 +23,7 @@ find_package(OGRE REQUIRED)
 find_package(OIS REQUIRED)
 find_package(BULLET REQUIRED)
 
-option(build_gtests "Build and run gtests" ON)
+option(build_gtests "Build and run gtests" OFF)
 if (build_gtests)
 	find_package(GTest REQUIRED)
 	include_directories(${GTEST_INCLUDE_DIRS})

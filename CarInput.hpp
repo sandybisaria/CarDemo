@@ -1,5 +1,7 @@
 #pragma once
 
+class Sim;
+
 namespace PlayerActions {
 	enum PlayerActions {
 		THROTTLE, BRAKE,
@@ -11,3 +13,14 @@ namespace PlayerActions {
 		NumPlayerActions
 	};
 }
+
+// Based on Stuntrally's CInput class
+class CarInput {
+private:
+	Sim* mSim;
+
+	float playerInputState[PlayerActions::NumPlayerActions];
+
+public:
+	CarInput(Sim* sim);
+};
