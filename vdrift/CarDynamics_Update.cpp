@@ -2,10 +2,12 @@
 
 // Last function executed (after integration) in Bullet's stepSimulation
 void CarDynamics::updateAction(btCollisionWorld* collisionWorld, btScalar dt) {
-	synchronizeBody(); // Obtain velocity/position orientation after dt
+	bool success = synchronizeBody(); // Obtain velocity/position orientation from Bullet after dt
+	if (!success) return; // If values invalid
+
 	updateWheelContacts(); // Given new velocity/position
-	tick(dt); // Run internal simulation
-	synchronizeChassis(); // Update velocity
+	tick(dt); // Run internal simulation of transmission, body, driveline
+	synchronizeChassis(); // Update velocity on Bullet
 }
 
 void CarDynamics::update() {
@@ -24,7 +26,7 @@ void CarDynamics::update() {
 	//TODO updateBuoyancy()
 }
 
-void CarDynamics::synchronizeBody() {
+bool CarDynamics::synchronizeBody() {
 	MathVector<double, 3> v = toMathVector<double>(chassis->getLinearVelocity());
 	MathVector<double, 3> w = toMathVector<double>(chassis->getAngularVelocity());
 	MathVector<double, 3> p = toMathVector<double>(chassis->getCenterOfMassPosition());
@@ -38,6 +40,8 @@ void CarDynamics::synchronizeBody() {
 	body.setOrientation(q);
 	body.setVelocity(v);
 	body.setAngularVelocity(w);
+
+	return true;
 }
 
 void CarDynamics::updateWheelContacts() {
@@ -74,6 +78,8 @@ void CarDynamics::tick(double dt) {
 void CarDynamics::synchronizeChassis() {
 	chassis->setLinearVelocity(toBulletVector(body.getVelocity()));
 	chassis->setAngularVelocity(toBulletVector(body.getAngularVelocity()));
+
+	std::cout << "SYNCCHAS" << body.getVelocity() << body.getAngularVelocity() << std::endl;
 }
 
 void CarDynamics::updateBody(double dt, double driveTorque[]) {

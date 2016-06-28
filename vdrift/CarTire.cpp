@@ -44,7 +44,7 @@ void CarTire::lookUpSigmaHatAlphaHat(double normForce, double& sh, double& ah) c
 
 		blend = (nf - HAT_LOAD * (lBound + 1)) / HAT_LOAD;
 		sh = sigmaHat.at(lBound) * (1.0 - blend) + sigmaHat.at(lBound+1) * blend;
-		sh = alphaHat.at(lBound) * (1.0 - blend) + alphaHat.at(lBound+1) * blend;
+		ah = alphaHat.at(lBound) * (1.0 - blend) + alphaHat.at(lBound+1) * blend; // MAJOR TYPO FIXED AHH
 	}
 }
 

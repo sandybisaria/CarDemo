@@ -134,7 +134,7 @@ private:
 	bool wheelDriven(int i) const { return (1 << i) & drive; } // Sorry for the magic function
 
 	// Updater methods
-	void synchronizeBody();
+	bool synchronizeBody(); // False if any position is invalid
 	void updateWheelContacts();
 	void tick(double dt); // Update simulation
 	void synchronizeChassis();
