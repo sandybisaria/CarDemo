@@ -15,12 +15,13 @@ namespace PlayerActions {
 }
 
 // Based on Stuntrally's CInput class
-class CarInput {
+class CInput {
 private:
 	Sim* mSim;
 
 	float playerInputState[PlayerActions::NumPlayerActions];
 
 public:
-	CarInput(Sim* sim);
+	CInput(Sim* sim);
 };
+

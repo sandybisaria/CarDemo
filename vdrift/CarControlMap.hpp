@@ -3,7 +3,8 @@
 #include "CarConstants.hpp"
 #include <vector>
 #include <cassert>
-#include "../CarInput.hpp"
+
+#include "../CInput.hpp"
 
 class CarControlMapLocal {
 public:

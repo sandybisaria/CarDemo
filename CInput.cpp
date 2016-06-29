@@ -1,6 +1,6 @@
-#include "CarInput.hpp"
+#include "CInput.hpp"
 
-CarInput::CarInput(Sim* sim)
+CInput::CInput(Sim* sim)
 	: mSim(sim) {
 	for (int a = 0; a < PlayerActions::NumPlayerActions; a++) {
 		playerInputState[a] = 0;

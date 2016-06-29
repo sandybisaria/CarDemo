@@ -1,7 +1,7 @@
 #include "Sim.hpp"
 
 Sim::Sim()
-	: mSceneMgr(0),
+	: mSceneMgr(0), scene(0),
 	  world(0), car(0), carInput(0),
 	  frameRate(60), targetTime(0), frame(0) {
 }
@@ -20,7 +20,7 @@ void Sim::setup(Ogre::SceneManager* sceneMgr) {
 	car = new Car(0);
 	car->setup("360", mSceneMgr, *world);
 
-	carInput = new CarInput(this);
+	carInput = new CInput(this);
 }
 
 void Sim::update(float dt) {
