@@ -13,8 +13,9 @@ public:
 	// Default makes an S2000-like car
 	CarEngine();
 
-	double realPowTorqueMul; // .car params
+	double realPowTorqueMul; // .car params TODO Not used?
 
+	//TODO Make private ASAP
 	double getTorqueCurve(const double curThrottle, const double curRPM) const;
 	double getFrictionTorque(double curAngVel, double fricFactor, double throttlePos);
 
@@ -43,6 +44,10 @@ public:
 	double getFuelConsumption() const { return fuelConsumption; }
 
 	void integrateStep1(double dt) { crankshaft.integrateStep1(dt); }
+
+	void computeForces();
+	void applyForces();
+
 	void integrateStep2(double dt) { crankshaft.integrateStep2(dt); }
 
 	const double getRPM() const { return crankshaft.getAngularVelocity()[0] * 30 / M_PI; }
@@ -74,9 +79,6 @@ public:
 
 	// Sum of all torque (except clutch forces) acting on engine)
 	double getTorque() const { return combustionTorque + frictionTorque; }
-
-	void computeForces();
-	void applyForces();
 
 	// Set torque curve using vector of (RPM, torque) pairs.
 	// Also recalculate engine friction.

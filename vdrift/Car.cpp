@@ -81,6 +81,7 @@ void Car::handleInputs(const std::vector<float>& inputs, float dt) {
 	dyn->shiftGear(gearChange);
 
 	float throttle = !rear ? inputs[CarInput::THROTTLE] : inputs[CarInput::BRAKE];
+	throttle = 1;
 	dyn->setThrottle(throttle);
 
 	float clutch = 1 - inputs[CarInput::CLUTCH];
