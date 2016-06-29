@@ -13,6 +13,7 @@
 
 Car::Car(int id)
 	: mId(id), mSceneMgr(0), mainNode(0),
+	  dyn(0),
 	  carColor(0, 1, 0) {
 	setNumWheels(DEF_WHEEL_COUNT);
 }
@@ -28,6 +29,8 @@ Car::~Car() {
 		mSceneMgr->destroyEntity(entitiesToDelete[i]);
 	}
 	entitiesToDelete.clear();
+
+	delete dyn;
 }
 
 void Car::setup(std::string carName, Ogre::SceneManager* sceneMgr, CollisionWorld& world) {
@@ -35,49 +38,53 @@ void Car::setup(std::string carName, Ogre::SceneManager* sceneMgr, CollisionWorl
 	resGrpId = mCarName + "_" + Ogre::StringConverter::toString(mId);
 	carPath = "../data/cars/" + mCarName;
 
-	if (!loadFromConfig(world)){
-		return; //TODO With error
-	}
+	dyn = new CarDynamics();
+
+	if (!loadFromConfig(world)) { return; } //TODO With error
 
 	mSceneMgr = sceneMgr;
 	loadModel();
 }
 
+void Car::updatePreviousVelocity() { dyn->updatePreviousVelocity(); }
+
 void Car::update(float dt) {
-	dyn.update();
+	dyn->update();
 
 	updateModel();
 	updateLightMap();
 }
 
+double Car::getSpeedDir() { return dyn->getSpeedDir(); }
+
 void Car::handleInputs(const std::vector<float>& inputs, float dt) {
 	assert(inputs.size() == CarInput::ALL);
 
-	int curGear = dyn.getTransmission().getGear();
+	int curGear = dyn->getTransmission().getGear();
 	bool rear = curGear == -1; // Is car in reverse?
 
 	// We assume that we use -1 when trying to drive in reverse; change in the future...
 	float brake = !rear? inputs[CarInput::THROTTLE] : inputs[CarInput::BRAKE];
-	dyn.setBrake(brake);
+	dyn->setBrake(brake);
 
-	dyn.setHandBrake(inputs[CarInput::HANDBRAKE]);
+	dyn->setHandBrake(inputs[CarInput::HANDBRAKE]);
 
 	float steerValue = inputs[CarInput::STEER_RIGHT];
 	if (std::abs(inputs[CarInput::STEER_LEFT]) > std::abs(inputs[CarInput::STEER_RIGHT]))
 		steerValue = -inputs[CarInput::STEER_LEFT];
-	dyn.setSteering(steerValue, 0.81 * 0.7); //TODO Hard-coded value based on default settings
+	dyn->setSteering(steerValue, 0.81 * 0.7); //TODO Hard-coded value based on default settings
 
 	int gearChange = 0;
 	if (inputs[CarInput::SHIFT_UP]   == 1.0) gearChange =  1.0;
 	if (inputs[CarInput::SHIFT_DOWN] == 1.0) gearChange = -1.0;
 	int newGear = curGear + gearChange;
-	dyn.shiftGear(gearChange);
+	dyn->shiftGear(gearChange);
 
 	float throttle = !rear ? inputs[CarInput::THROTTLE] : inputs[CarInput::BRAKE];
-	dyn.setThrottle(throttle);
+	dyn->setThrottle(throttle);
 
 	float clutch = 1 - inputs[CarInput::CLUTCH];
-	dyn.setClutch(clutch);
+	dyn->setClutch(clutch);
 
 	std::cout << throttle << " " << steerValue << std::endl;
 }
@@ -106,40 +113,40 @@ bool Car::loadFromConfig(CollisionWorld& world) {
 
 	// Load car collision params (Stuntrally puts it outside of CARDYNAMICS so...
 	// com
-	dyn.comOfsL = 0.f;  cf.getParam("collision.com_ofs_L", dyn.comOfsL);
-	dyn.comOfsH = 0.f;  cf.getParam("collision.com_ofs_H", dyn.comOfsH);
+	dyn->comOfsL = 0.f;  cf.getParam("collision.com_ofs_L", dyn->comOfsL);
+	dyn->comOfsH = 0.f;  cf.getParam("collision.com_ofs_H", dyn->comOfsH);
 	// dim
-	dyn.collR   = 0.3f;  cf.getParam("collision.radius", 	 dyn.collR);
-	dyn.collR2m = 0.6f;  cf.getParam("collision.radius2mul", dyn.collR2m);
-	dyn.collH   = 0.45f; cf.getParam("collision.height", 	 dyn.collH);
-	dyn.collW   = 0.5f;  cf.getParam("collision.width",  	 dyn.collW);
+	dyn->collR   = 0.3f;  cf.getParam("collision.radius", 	 dyn->collR);
+	dyn->collR2m = 0.6f;  cf.getParam("collision.radius2mul",dyn->collR2m);
+	dyn->collH   = 0.45f; cf.getParam("collision.height", 	 dyn->collH);
+	dyn->collW   = 0.5f;  cf.getParam("collision.width",  	 dyn->collW);
 	// ofs
-	dyn.collLofs = 0.f;  cf.getParam("collision.offsetL", dyn.collLofs);
-	dyn.collWofs = 0.f;  cf.getParam("collision.offsetW", dyn.collWofs);
-	dyn.collHofs = 0.f;  cf.getParam("collision.offsetH", dyn.collHofs);
-	dyn.collLofs -= dyn.comOfsL;
-	dyn.collHofs -= dyn.comOfsH;
+	dyn->collLofs = 0.f;  cf.getParam("collision.offsetL", dyn->collLofs);
+	dyn->collWofs = 0.f;  cf.getParam("collision.offsetW", dyn->collWofs);
+	dyn->collHofs = 0.f;  cf.getParam("collision.offsetH", dyn->collHofs);
+	dyn->collLofs -= dyn->comOfsL;
+	dyn->collHofs -= dyn->comOfsH;
 	// L
-	dyn.collPosLFront = 1.9f; cf.getParam("collision.posLfront", dyn.collPosLFront);
-	dyn.collPosLBack = -1.9f; cf.getParam("collision.posLrear",  dyn.collPosLBack);
+	dyn->collPosLFront = 1.9f; cf.getParam("collision.posLfront", dyn->collPosLFront);
+	dyn->collPosLBack = -1.9f; cf.getParam("collision.posLrear",  dyn->collPosLBack);
 	// w
-	dyn.collFrWMul  = 0.2f;   cf.getParam("collision.FrWmul",  dyn.collFrWMul);
-	dyn.collFrHMul  = 1.0f;   cf.getParam("collision.FrHmul",  dyn.collFrHMul);
-	dyn.collTopWMul = 0.8f;   cf.getParam("collision.TopWmul", dyn.collTopWMul);
+	dyn->collFrWMul  = 0.2f;   cf.getParam("collision.FrWmul",  dyn->collFrWMul);
+	dyn->collFrHMul  = 1.0f;   cf.getParam("collision.FrHmul",  dyn->collFrHMul);
+	dyn->collTopWMul = 0.8f;   cf.getParam("collision.TopWmul", dyn->collTopWMul);
 	// Top L pos
-	dyn.collTopFr    = 0.4f;  cf.getParam("collision.TopFr",    dyn.collTopFr);
-	dyn.collTopMid   =-0.3f;  cf.getParam("collision.TopMid",   dyn.collTopMid);
-	dyn.collTopBack  =-1.1f;  cf.getParam("collision.TopBack",  dyn.collTopBack);
+	dyn->collTopFr    = 0.4f;  cf.getParam("collision.TopFr",    dyn->collTopFr);
+	dyn->collTopMid   =-0.3f;  cf.getParam("collision.TopMid",   dyn->collTopMid);
+	dyn->collTopBack  =-1.1f;  cf.getParam("collision.TopBack",  dyn->collTopBack);
 	// Top h mul
-	dyn.collTopFrHm  = 0.2f;  cf.getParam("collision.TopFrHm",  dyn.collTopFrHm);
-	dyn.collTopMidHm = 0.4f;  cf.getParam("collision.TopMidHm", dyn.collTopMidHm);
-	dyn.collTopBackHm= 0.2f;  cf.getParam("collision.TopBackHm",dyn.collTopBackHm);
+	dyn->collTopFrHm  = 0.2f;  cf.getParam("collision.TopFrHm",  dyn->collTopFrHm);
+	dyn->collTopMidHm = 0.4f;  cf.getParam("collision.TopMidHm", dyn->collTopMidHm);
+	dyn->collTopBackHm= 0.2f;  cf.getParam("collision.TopBackHm",dyn->collTopBackHm);
 
-	dyn.collFriction = 0.4f;  cf.getParam("collision.friction",  dyn.collFriction);
-	dyn.collFlTrigH  = 0.f;   cf.getParam("collision.fluidTrigH",dyn.collFlTrigH);
-	dyn.collFlTrigH -= dyn.comOfsH;
+	dyn->collFriction = 0.4f;  cf.getParam("collision.friction",  dyn->collFriction);
+	dyn->collFlTrigH  = 0.f;   cf.getParam("collision.fluidTrigH",dyn->collFlTrigH);
+	dyn->collFlTrigH -= dyn->comOfsH;
 
-	if (!dyn.load(cf)) {
+	if (!dyn->load(cf)) {
 		std::cerr << "CarDynamics load failed" << std::endl;
 		return false; //TODO Error if not all car params found
 	}
@@ -150,9 +157,9 @@ bool Car::loadFromConfig(CollisionWorld& world) {
 
 	float stOfsY = 0.f;
 	cf.getParam("collision.start-offsetY", stOfsY);
-	pos[2] += stOfsY - 0.4 + dyn.comOfsH;
+	pos[2] += stOfsY - 0.4 + dyn->comOfsH;
 
-	dyn.init(pos, rot, world);
+	dyn->init(pos, rot, world);
 
 	return true;
 }
@@ -285,11 +292,11 @@ void Car::changeColor() {
 
 void Car::updateModel() {
 	// Main body
-	Ogre::Vector3 pos = Axes::vectorToOgre(dyn.getPosition()) + Ogre::Vector3::UNIT_Y;
+	Ogre::Vector3 pos = Axes::vectorToOgre(dyn->getPosition()) + Ogre::Vector3::UNIT_Y;
 //	std::cout << "My position: " << pos << std::endl;
 	mainNode->setPosition(pos);
 
-	Ogre::Quaternion rot; rot = Axes::doQuatToOgre(dyn.getOrientation());
+	Ogre::Quaternion rot; rot = Axes::doQuatToOgre(dyn->getOrientation());
 //	std::cout << "My orientation: " << rot << std::endl;
 	mainNode->setOrientation(rot);
 
@@ -297,11 +304,11 @@ void Car::updateModel() {
 	for (int w = 0; w < numWheels; w++) {
 		WheelPosition wp; wp = WheelPosition(w);
 
-		Ogre::Vector3 whPos = Axes::vectorToOgre(dyn.getWheelPosition(wp));
+		Ogre::Vector3 whPos = Axes::vectorToOgre(dyn->getWheelPosition(wp));
 //		std::cout << "My wheel position: " << whPos << std::endl;
 		wheelNodes[w]->setPosition(whPos);
 
-		Ogre::Quaternion whRot; whRot = Axes::doWhQuatToOgre(dyn.getWheelOrientation(wp));
+		Ogre::Quaternion whRot; whRot = Axes::doWhQuatToOgre(dyn->getWheelOrientation(wp));
 //		std::cout << "My wheel orientation: " << whRot << std::endl;
 		wheelNodes[w]->setOrientation(whRot);
 	}

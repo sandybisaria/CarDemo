@@ -1,7 +1,8 @@
 #pragma once
 
-#include "../Sim.hpp"
 class Sim;
+
+#include "../Sim.hpp"
 
 #include "ShapeData.hpp"
 

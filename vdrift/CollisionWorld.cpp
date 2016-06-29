@@ -249,6 +249,7 @@ bool CollisionWorld::castRay(const MathVector<float, 3>& position, const MathVec
 					break;
 
 				case SU_Terrain:
+					surf = sim->getTerrainSurface("Asphalt"); //TODO Hard-coded for now
 					break;
 
 				case SU_Fluid:

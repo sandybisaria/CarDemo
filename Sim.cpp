@@ -1,7 +1,7 @@
 #include "Sim.hpp"
 
-Sim::Sim()
-	: mSceneMgr(0), scene(0),
+Sim::Sim(App* app)
+	: mSceneMgr(0), scene(0), mApp(app),
 	  world(0), car(0), carInput(0),
 	  frameRate(60), targetTime(0), frame(0) {
 }
@@ -58,6 +58,8 @@ void Sim::update(float dt) {
 //		targetTime -= tickPeriod;
 //	}
 }
+
+TerrainSurface* Sim::getTerrainSurface(std::string name) { return mApp->getTerrainSurface(name); }
 
 void Sim::keyPressed(const OIS::KeyEvent& ke) {
 	carInput->keyPressed(ke);

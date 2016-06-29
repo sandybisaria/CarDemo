@@ -1,12 +1,15 @@
 #pragma once
 
-#include <btBulletCollisionCommon.h>
-#include <btBulletDynamicsCommon.h>
+class Sim;
 
 #include "MathVector.hpp"
 #include "CarDynamics.hpp"
-class CarDynamics;
 #include "CollisionContact.hpp"
+
+#include "../Sim.hpp"
+
+#include <btBulletCollisionCommon.h>
+#include <btBulletDynamicsCommon.h>
 
 #include <OgreVector3.h>
 
@@ -51,7 +54,7 @@ public:
 	void update(double dt);
 	CarDynamics* oldDyn;
 
-	class Sim* sim;
+	Sim* sim;
 
 	void setMaxSubSteps(int ms) { maxSubSteps = ms; }
 	void setFixedTimeStep(double ft) { fixedTimeStep = ft; }

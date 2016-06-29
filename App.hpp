@@ -28,6 +28,8 @@ public:
 
 	void run();
 
+	TerrainSurface* getTerrainSurface(std::string name) { return &surfaces.at(surfaceMap.at(name)); }
+
 private:
 	bool setup();
 

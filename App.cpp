@@ -158,7 +158,7 @@ void App::setMaterialFactoryDefaults() {
 }
 
 void App::setupSim() {
-	mSim = new Sim();
+	mSim = new Sim(this);
 	mSim->setup(mSceneMgr);
 }
 

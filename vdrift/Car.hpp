@@ -1,5 +1,8 @@
 #pragma once
 
+class CarDynamics;
+class CollisionWorld;
+
 #include "CarDynamics.hpp"
 #include "../shiny/Main/MaterialInstance.hpp"
 #include "CollisionWorld.hpp"
@@ -18,11 +21,12 @@ public:
 
 	void setup(std::string carName, Ogre::SceneManager* sceneMgr, CollisionWorld& world);
 
-	void updatePreviousVelocity() { dyn.updatePreviousVelocity(); }
+	void updatePreviousVelocity();
 	void update(float dt);
 	void handleInputs(const std::vector<float>& inputs, float dt);
 
-	double getSpeedDir() { return dyn.getSpeedDir(); }
+	// Interface methods
+	double getSpeedDir();
 
 	virtual void requestedConfiguration(sh::MaterialInstance* m, const std::string& configuration);
 	virtual void createdConfiguration(sh::MaterialInstance* m, const std::string& configuration);
@@ -49,7 +53,7 @@ private:
 	enum eMaterials {mtrCarBody, mtrCarBrake, numMaterials};
 	std::string mtrNames[numMaterials];
 
-	CarDynamics dyn;
+	CarDynamics* dyn;
 
 	Ogre::SceneManager* mSceneMgr;
 

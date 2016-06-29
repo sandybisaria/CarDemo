@@ -1,13 +1,18 @@
 #pragma once
 
-#include "terrain/Scene.hpp"
+class App;
 class Scene;
+class Car;
+
+#include "terrain/Scene.hpp"
 
 #include "vdrift/CollisionWorld.hpp"
 #include "vdrift/Car.hpp"
+
 #include "vdrift/CarControlMap.hpp"
 
 #include "CInput.hpp"
+#include "App.hpp"
 
 #include "OgreSceneManager.h"
 
@@ -15,7 +20,7 @@ class Scene;
 
 class Sim {
 public:
-	Sim();
+	Sim(App* app);
 	~Sim();
 
 	void setup(Ogre::SceneManager* sceneMgr);
@@ -25,10 +30,14 @@ public:
 
 	Scene* scene;
 
+	TerrainSurface* getTerrainSurface(std::string name);
+
 	void keyPressed(const OIS::KeyEvent& ke);
 	void keyReleased(const OIS::KeyEvent& ke);
 
 private:
+	App* mApp;
+
 	Ogre::SceneManager* mSceneMgr;
 
 	CollisionWorld* world;

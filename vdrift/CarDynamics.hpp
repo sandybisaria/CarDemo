@@ -1,5 +1,7 @@
 #pragma once
 
+class CollisionWorld;
+
 #include "MathVector.hpp"
 #include "CarEngine.hpp"
 #include "CarClutch.hpp"
@@ -13,7 +15,6 @@
 #include "RigidBody.hpp"
 #include "AABB.hpp"
 #include "CollisionWorld.hpp"
-class CollisionWorld;
 #include "CarConstants.hpp"
 #include "CollisionContact.hpp"
 
@@ -26,6 +27,8 @@ class CollisionWorld;
 #include <sstream>
 #include <cassert>
 #include <vector>
+
+class Car;
 
 class CarDynamics
 	: public btActionInterface {
