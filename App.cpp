@@ -229,11 +229,50 @@ bool App::loadSurfaces() {
 		if (!params.getParam(*sec + "." + "Tire", tireFile))
 			tireFile = "Default"; // Default surface if not found
 		surf.tireName = tireFile;
-		//TODO tire_map of GAME??
+		if (!loadTire(surf.tireName)) return false;
+		surf.tire = getTire(surf.tireName);
 
 		surfaces.push_back(surf);
 		surfaceMap[surf.name] = (int)surfaces.size(); //+1, 0 = not found
 	}
+
+	return true;
+}
+
+bool App::loadTire(std::string name) {
+	std::string tirePath = "../data/cars/common/" + name + ".tire";
+	ConfigFile tireParams;
+	if (!tireParams.load(tirePath)) return false;
+
+	CarTire tire;
+	tire.name = name;
+
+	float value;
+
+	for (int i = 0; i < 15; ++i) {
+		int numinfile = i;
+		if (i == 11)		numinfile = 111;
+		else if (i == 12)	numinfile = 112;
+		else if (i > 12)	numinfile -= 1;
+		std::stringstream str;  str << "params.a" << numinfile;
+		if (!tireParams.getParam(str.str(), value))  return false;
+		tire.lateral[i] = value;
+	}
+	for (int i = 0; i < 11; ++i) {
+		std::stringstream str;  str << "params.b" << i;
+		if (!tireParams.getParam(str.str(), value))  return false;
+		tire.longitudinal[i] = value;
+	}
+	for (int i = 0; i < 18; ++i) {
+		std::stringstream str;  str << "params.c" << i;
+		if (!tireParams.getParam(str.str(), value))  return false;
+		tire.aligning[i] = value;
+	}
+
+	tires.push_back(tire);
+	tireMap[tire.name] = (int)tires.size(); //+1, 0 = not found
+
+	tire.calculateSigmaHatAlphaHat();
 
 	return true;
 }

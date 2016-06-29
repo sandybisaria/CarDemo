@@ -40,7 +40,7 @@ void Car::setup(std::string carName, Ogre::SceneManager* sceneMgr, CollisionWorl
 
 	dyn = new CarDynamics();
 
-	if (!loadFromConfig(world)) { return; } //TODO With error
+	if (!loadFromConfig(world)) return; //TODO With error
 
 	mSceneMgr = sceneMgr;
 	loadModel();

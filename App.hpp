@@ -4,6 +4,7 @@
 #include "Sim.hpp"
 
 #include "vdrift/TerrainSurface.hpp"
+#include "vdrift/CarTire.hpp"
 
 #include "shiny/Main/Factory.hpp"
 
@@ -29,6 +30,7 @@ public:
 	void run();
 
 	TerrainSurface* getTerrainSurface(std::string name) { return &surfaces.at(surfaceMap.at(name)); }
+	CarTire* getTire(std::string name) { return &tires.at(tireMap.at(name)); }
 
 private:
 	bool setup();
@@ -41,6 +43,7 @@ private:
 
 	void setupScene();
 	bool loadSurfaces();
+	bool loadTire(std::string name);
 
 	void setupMaterials();
 	void setMaterialFactoryDefaults();
@@ -62,6 +65,9 @@ private:
 
 	std::vector<TerrainSurface> surfaces;
 	std::map<std::string, int> surfaceMap; // Map surface name to ID
+
+	std::vector<CarTire> tires;
+	std::map<std::string, int> tireMap; // Map tire name to ID
 
 	sh::Factory* mFactory;
 

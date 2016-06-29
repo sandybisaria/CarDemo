@@ -252,11 +252,23 @@ bool CarDynamics::load(ConfigFile& cf) {
 			if (!cf.getParam(searchStr + "rebound", rebound)) return false;
 			suspension[wl].setRebound(rebound); suspension[wr].setRebound(rebound);
 
-			//TODO Load from suspension file
 			std::vector<std::pair<double, double> > damper, spring;
-			cf.getPoints("suspension-" + pos, "damper-factor", damper);
+
+			//FIXME Load from suspension file
+			std::string file;
+			if (cf.getParam(searchStr + "factors-file", file)) {
+				std::string fullPath = "../data/cars/common/" + file + ".susp";
+				ConfigFile suspParams;
+				if (!suspParams.load(fullPath)) return false;
+
+				suspParams.getPoints("suspension", "damper-factor", damper); if (damper.size() == 0) return false;
+				suspParams.getPoints("suspension", "spring-factor", spring); if (spring.size() == 0) return false;
+			} else { // Load points
+				cf.getPoints("suspension-" + pos, "damper-factor", damper); if (damper.size() == 0) return false;
+				cf.getPoints("suspension-" + pos, "spring-factor", spring); if (spring.size() == 0) return false;
+			}
+
 			suspension[wl].setDamperFactorPoints(damper); suspension[wr].setDamperFactorPoints(damper);
-			cf.getPoints("suspension-" + pos, "spring-factor", spring);
 			suspension[wl].setSpringFactorPoints(spring); suspension[wr].setSpringFactorPoints(spring);
 
 			if (!cf.getParam(searchStr + "travel", travel)) return false;

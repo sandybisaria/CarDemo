@@ -6,6 +6,7 @@
 #include <vector>
 #include <algorithm>
 #include <string>
+#include <cassert>
 
 // Loaded from a .tire file
 class CarTire {
@@ -35,7 +36,6 @@ public:
 
 	static CarTire* none(); // Default CarTire that "won't crash"
 
-private:
 	void findSigmaHatAlphaHat(double load, double& outputSigmaHat, double& outputAlphaHat, int iterations = 400);
 
 	// Constants
