@@ -1,5 +1,7 @@
 #include "CarDynamics.hpp"
 
+#include <iostream>
+
 // Last function executed (after integration) in Bullet's stepSimulation
 void CarDynamics::updateAction(btCollisionWorld* collisionWorld, btScalar dt) {
 	bool success = synchronizeBody(); // Obtain velocity/position orientation from Bullet after dt
@@ -34,6 +36,8 @@ bool CarDynamics::synchronizeBody() {
 	body.setOrientation(q);
 	body.setVelocity(v);
 	body.setAngularVelocity(w);
+	//
+	//	std::cout << "VELOCITY GET: " << v << std::endl;
 
 	return true;
 }
@@ -72,6 +76,8 @@ void CarDynamics::tick(double dt) {
 void CarDynamics::synchronizeChassis() {
 	chassis->setLinearVelocity(toBulletVector(body.getVelocity()));
 	chassis->setAngularVelocity(toBulletVector(body.getAngularVelocity()));
+//
+//	std::cout << "VELOCITY SYNC: " << body.getVelocity() << std::endl;
 }
 
 void CarDynamics::updateBody(double dt, double driveTorque[]) {

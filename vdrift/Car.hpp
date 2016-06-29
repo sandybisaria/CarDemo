@@ -5,10 +5,10 @@
 #include "CollisionWorld.hpp"
 #include "../util/Axes.hpp"
 
-#include <iostream>
-
 #include <OgreSceneManager.h>
 #include <OgreSceneNode.h>
+
+#include <vector>
 
 class Car
 	: public sh::MaterialInstanceListener {
@@ -20,6 +20,9 @@ public:
 
 	void updatePreviousVelocity() { dyn.updatePreviousVelocity(); }
 	void update(float dt);
+	void handleInputs(const std::vector<float>& inputs, float dt);
+
+	double getSpeedDir() { return dyn.getSpeedDir(); }
 
 	virtual void requestedConfiguration(sh::MaterialInstance* m, const std::string& configuration);
 	virtual void createdConfiguration(sh::MaterialInstance* m, const std::string& configuration);

@@ -71,6 +71,9 @@ public:
 	double getSpeed() const { return body.getVelocity().magnitude(); }
 	double getSpeedDir() const;
 
+	// Driveline state access
+	const CarTransmission& getTransmission() const { return transmission; }
+
 	// Wheel state access
 	Quaternion<double> getWheelOrientation(WheelPosition wp) const;
 	MathVector<double, 3> getWheelPosition(WheelPosition wp) const;

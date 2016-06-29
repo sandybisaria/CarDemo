@@ -9,6 +9,8 @@
 #include <OgreRoot.h>
 #include <OgreEntity.h>
 
+#include <iostream> //TODO DEL
+
 Car::Car(int id)
 	: mId(id), mSceneMgr(0), mainNode(0),
 	  carColor(0, 1, 0) {
@@ -46,6 +48,38 @@ void Car::update(float dt) {
 
 	updateModel();
 	updateLightMap();
+}
+
+void Car::handleInputs(const std::vector<float>& inputs, float dt) {
+	assert(inputs.size() == CarInput::ALL);
+
+	int curGear = dyn.getTransmission().getGear();
+	bool rear = curGear == -1; // Is car in reverse?
+
+	// We assume that we use -1 when trying to drive in reverse; change in the future...
+	float brake = !rear? inputs[CarInput::THROTTLE] : inputs[CarInput::BRAKE];
+	dyn.setBrake(brake);
+
+	dyn.setHandBrake(inputs[CarInput::HANDBRAKE]);
+
+	float steerValue = inputs[CarInput::STEER_RIGHT];
+	if (std::abs(inputs[CarInput::STEER_LEFT]) > std::abs(inputs[CarInput::STEER_RIGHT]))
+		steerValue = -inputs[CarInput::STEER_LEFT];
+	dyn.setSteering(steerValue, 0.81 * 0.7); //TODO Hard-coded value based on default settings
+
+	int gearChange = 0;
+	if (inputs[CarInput::SHIFT_UP]   == 1.0) gearChange =  1.0;
+	if (inputs[CarInput::SHIFT_DOWN] == 1.0) gearChange = -1.0;
+	int newGear = curGear + gearChange;
+	dyn.shiftGear(gearChange);
+
+	float throttle = !rear ? inputs[CarInput::THROTTLE] : inputs[CarInput::BRAKE];
+	dyn.setThrottle(throttle);
+
+	float clutch = 1 - inputs[CarInput::CLUTCH];
+	dyn.setClutch(clutch);
+
+	std::cout << throttle << " " << steerValue << std::endl;
 }
 
 void Car::requestedConfiguration(sh::MaterialInstance* m, const std::string& configuration) {
@@ -252,13 +286,11 @@ void Car::changeColor() {
 void Car::updateModel() {
 	// Main body
 	Ogre::Vector3 pos = Axes::vectorToOgre(dyn.getPosition()) + Ogre::Vector3::UNIT_Y;
-	if (!isnan(pos.x) && !isnan(pos.y) && !isnan(pos.z)) {
-		mainNode->setPosition(pos);
-		std::cout << "My position: " << pos << std::endl;
-	}
+//	std::cout << "My position: " << pos << std::endl;
+	mainNode->setPosition(pos);
 
 	Ogre::Quaternion rot; rot = Axes::doQuatToOgre(dyn.getOrientation());
-	std::cout << "My orientation: " << rot << std::endl;
+//	std::cout << "My orientation: " << rot << std::endl;
 	mainNode->setOrientation(rot);
 
 	// Wheels
@@ -266,11 +298,11 @@ void Car::updateModel() {
 		WheelPosition wp; wp = WheelPosition(w);
 
 		Ogre::Vector3 whPos = Axes::vectorToOgre(dyn.getWheelPosition(wp));
-		std::cout << "My wheel position: " << whPos << std::endl;
+//		std::cout << "My wheel position: " << whPos << std::endl;
 		wheelNodes[w]->setPosition(whPos);
 
 		Ogre::Quaternion whRot; whRot = Axes::doWhQuatToOgre(dyn.getWheelOrientation(wp));
-		std::cout << "My wheel orientation: " << whRot << std::endl;
+//		std::cout << "My wheel orientation: " << whRot << std::endl;
 		wheelNodes[w]->setOrientation(whRot);
 	}
 
@@ -288,7 +320,7 @@ void Car::updateModel() {
 			// Turn only front wheels
 //			if (w < 2) brakeNodes[w]->yaw(-Ogre::Degree(posInfo.whSteerAng[w])); TODO Steering angle
 
-			std::cout << "My brake orientation: " << brakeNodes[w]->getOrientation() << std::endl;
+//			std::cout << "My brake orientation: " << brakeNodes[w]->getOrientation() << std::endl;
 		}
 	}
 }

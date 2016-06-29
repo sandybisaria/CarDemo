@@ -305,6 +305,8 @@ void App::windowClosed(Ogre::RenderWindow* rw) {
 }
 
 bool App::keyPressed(const OIS::KeyEvent& ke) {
+	mSim->keyPressed(ke);
+
 	switch (ke.key) {
 	case OIS::KC_ESCAPE:
 		mShutDown = true;
@@ -318,5 +320,7 @@ bool App::keyPressed(const OIS::KeyEvent& ke) {
 }
 
 bool App::keyReleased(const OIS::KeyEvent& ke) {
+	mSim->keyReleased(ke);
+
 	return true;
 }

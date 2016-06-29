@@ -28,6 +28,10 @@ void Sim::update(float dt) {
 	if (dt > 0) world->update(dt); // Update physics
 	car->update(dt); // Update model
 
+	const std::vector<float>& inputs = localMap.processInput(carInput->getPlayerInputState(), car->getSpeedDir(),
+															 0.f, 0.f);
+	car->handleInputs(inputs, dt);
+
 	//TODO How Stuntrally updates the game... however, this does not work
 //	const float minFPS = 10.f; // Minimum acceptable fps
 //	const unsigned int maxTicks = (int) (1.f / (minFPS * frameRate));
@@ -53,4 +57,12 @@ void Sim::update(float dt) {
 //		curTicks++;
 //		targetTime -= tickPeriod;
 //	}
+}
+
+void Sim::keyPressed(const OIS::KeyEvent& ke) {
+	carInput->keyPressed(ke);
+}
+
+void Sim::keyReleased(const OIS::KeyEvent& ke) {
+	carInput->keyReleased(ke);
 }
