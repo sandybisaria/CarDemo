@@ -1,5 +1,7 @@
 #pragma once
 
+#include <map>
+#include <cassert>
 #include <cmath>
 #define _USE_MATH_DEFINES
 
