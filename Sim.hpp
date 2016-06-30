@@ -49,6 +49,6 @@ private:
 
 	BtOgre::DebugDrawer* debugDraw;
 
-	int frameRate; //TODO Configurable
+	const double frameRate; //TODO Configurable
 	int targetTime, frame;
 };

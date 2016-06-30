@@ -15,16 +15,15 @@ public:
 	const MathVector<float, 3>& getPosition() const { return position; }
 	const MathVector<float, 3>& getNormal() const { return normal; }
 	float getDepth() const { return depth; }
-	const TerrainSurface* getSurfacePtr() const { return surface; }
 	const TerrainSurface& getSurface() const { return *surface; }
 	const Bezier* getPatch() const { return patch; }
 	const btCollisionObject* getCollisionObject() const { return colObj; }
 
 	// Set contact data (used by ray cast)
-	void set(const MathVector<float, 3>& p, const MathVector<float, 3>& n, float d,
-			 const TerrainSurface* s, const Bezier* b, const btCollisionObject* c) {
+	void set(const MathVector<float, 3>& pos, const MathVector<float, 3>& norm, float dist,
+			 const TerrainSurface* ts, const Bezier* b, const btCollisionObject* c) {
 		assert(s != NULL);
-		position = p; normal = n; depth = d; surface = s; patch = b; colObj = c;
+		position = pos; normal = norm; depth = dist; surface = ts; patch = b; colObj = c;
 	}
 
 	// Update/interpolate contact

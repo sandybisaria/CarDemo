@@ -48,7 +48,7 @@ void Car::setup(std::string carName, Ogre::SceneManager* sceneMgr, CollisionWorl
 
 void Car::updatePreviousVelocity() { dyn->updatePreviousVelocity(); }
 
-void Car::update(float dt) {
+void Car::update() {
 	dyn->update();
 	updateModel();
 	updateLightMap();
@@ -56,7 +56,7 @@ void Car::update(float dt) {
 
 double Car::getSpeedDir() { return dyn->getSpeedDir(); }
 
-void Car::handleInputs(const std::vector<float>& inputs, float dt) {
+void Car::handleInputs(const std::vector<float>& inputs) {
 	assert(inputs.size() == CarInput::ALL);
 
 	int curGear = dyn->getTransmission().getGear();
@@ -85,8 +85,6 @@ void Car::handleInputs(const std::vector<float>& inputs, float dt) {
 
 	float clutch = 1 - inputs[CarInput::CLUTCH];
 	dyn->setClutch(clutch);
-
-	std::cout << throttle << " " << steerValue << std::endl;
 }
 
 void Car::requestedConfiguration(sh::MaterialInstance* m, const std::string& configuration) {

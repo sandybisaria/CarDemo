@@ -3,7 +3,7 @@
 Sim::Sim(App* app)
 	: mSceneMgr(0), scene(0), mApp(app),
 	  world(0), car(0), carInput(0),
-	  frameRate(60), targetTime(0), frame(0),
+	  frameRate(1.f / 60.f), targetTime(0), frame(0),
 	  debugDraw(NULL) {
 }
 
@@ -33,11 +33,11 @@ void Sim::setup(Ogre::SceneManager* sceneMgr) {
 void Sim::update(float dt) {
 	car->updatePreviousVelocity(); // Was in the loop for fluids...
 	if (dt > 0) world->update(dt); // Update physics
-	car->update(dt); // Update model
+	car->update(); // Update model
 
 	const std::vector<float>& inputs = localMap.processInput(carInput->getPlayerInputState(), car->getSpeedDir(),
 															 0.f, 0.f);
-	car->handleInputs(inputs, dt);
+	car->handleInputs(inputs);
 
 	if (debugDraw) {
 		debugDraw->setDebugMode(1);
@@ -62,12 +62,20 @@ void Sim::update(float dt) {
 //
 //		// Advance game logic
 //		car->updatePreviousVelocity(); // Was in the loop for fluids...
-//		if (dt > 0) world->update(tickPeriod); // Update physics
-//		car->update(tickPeriod); // Update model
-//		//TODO Handle inputs
+//		if (tickPeriod > 0) world->update(tickPeriod); // Update physics
+//
+//		const std::vector<float>& inputs = localMap.processInput(carInput->getPlayerInputState(), car->getSpeedDir(),
+//																 0.f, 0.f);
+//		car->handleInputs(inputs);
 //
 //		curTicks++;
 //		targetTime -= tickPeriod;
+//	}
+//	car->update(); // Update model
+//
+//	if (debugDraw) {
+//		debugDraw->setDebugMode(1);
+//		debugDraw->step();
 //	}
 }
 

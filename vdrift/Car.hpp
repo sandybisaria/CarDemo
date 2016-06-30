@@ -22,8 +22,8 @@ public:
 	void setup(std::string carName, Ogre::SceneManager* sceneMgr, CollisionWorld& world);
 
 	void updatePreviousVelocity();
-	void update(float dt);
-	void handleInputs(const std::vector<float>& inputs, float dt);
+	void update();
+	void handleInputs(const std::vector<float>& inputs);
 
 	// Interface methods
 	double getSpeedDir();
