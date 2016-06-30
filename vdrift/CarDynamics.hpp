@@ -90,7 +90,7 @@ public:
 	//TODO Add traction control (ABS and TCS)
 
 	// Set steering angle to "val", where -1.0 = maximum left and 1.0 = maximum right
-	void setSteering(const double val, const float rangeMul);
+	void setSteering(const double val, const float rangeMul); //TODO Determine typical rangeMul in-game
 
 	// Collision params
 	float collR, collR2m, collW, collH,
@@ -228,6 +228,8 @@ private:
 	btAlignedObjectArray<btTypedConstraint*> constraints;
 
 #ifdef COMPILE_UNIT_TESTS
-	FRIEND_TEST(CarDynamics, CarDynamicsCalculateMass);
+	FRIEND_TEST(CarDynamics, CalculateMass);
+	FRIEND_TEST(CarDynamics, GetSpeedMPS);
+	FRIEND_TEST(CarDynamics, GetSteerAngle);
 #endif
 };
