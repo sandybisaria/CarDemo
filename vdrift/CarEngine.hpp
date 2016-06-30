@@ -6,14 +6,12 @@
 #include "Matrix3.hpp"
 #include "LinearInterp.hpp"
 
-#include <map>
-
 class CarEngine {
 public:
 	// Default makes an S2000-like car
 	CarEngine();
 
-	double realPowTorqueMul; // .car params TODO Not used?
+	double realPowTorqueMul; //TODO Is not used or even assigned to!
 
 	//TODO Make private ASAP
 	double getTorqueCurve(const double curThrottle, const double curRPM) const;
@@ -108,7 +106,6 @@ private:
 	double friction; // Friction coefficient from engine; calculated algorithmically
 	double fricCoeffB;
 
-	std::map<double, double> torqueMap; // Set of RPMs that map to torque values
 	double mass;
 	MathVector<double, 3> position;
 	Spline<double> torqueCurve;

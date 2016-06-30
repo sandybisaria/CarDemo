@@ -28,6 +28,10 @@ class CollisionWorld;
 #include <cassert>
 #include <vector>
 
+#ifdef COMPILE_UNIT_TESTS
+#include <gtest/gtest.h>
+#endif
+
 class Car;
 
 class CarDynamics
@@ -192,6 +196,10 @@ private:
 	double maxAngle;
 	double angularDamping;
 
+	// Traction control state
+	bool absOn, tcsOn;
+	std::vector<int> absActive, tcsActive;
+
 	// Chassis state
 	btRigidBody* chassis;
 	btRigidBody* whTrigs;
@@ -214,4 +222,8 @@ private:
 	btAlignedObjectArray<btRigidBody*> rigids;
 	btAlignedObjectArray<btActionInterface*> actions;
 	btAlignedObjectArray<btTypedConstraint*> constraints;
+
+#ifdef COMPILE_UNIT_TESTS
+	FRIEND_TEST(CarDynamics, CarDynamicsCalculateMass);
+#endif
 };

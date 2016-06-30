@@ -11,6 +11,8 @@ class Car;
 
 #include "vdrift/CarControlMap.hpp"
 
+#include "btOgre/BtOgreDebug.h"
+
 #include "CInput.hpp"
 #include "App.hpp"
 
@@ -44,6 +46,8 @@ private:
 	Car* car;
 	CInput* carInput;
 	CarControlMapLocal localMap;
+
+	BtOgre::DebugDrawer* debugDraw;
 
 	int frameRate; //TODO Configurable
 	int targetTime, frame;

@@ -37,8 +37,6 @@ bool CarDynamics::synchronizeBody() {
 	body.setVelocity(v);
 	body.setAngularVelocity(w);
 
-	std::cout << "VELOCITY GET: " << v << std::endl;
-
 	return true;
 }
 

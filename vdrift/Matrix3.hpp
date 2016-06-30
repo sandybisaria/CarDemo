@@ -282,3 +282,12 @@ private:
 	T data[9];
 	T absVal(const T& val) const {	return (val < 0) ? -val : val; }
 };
+
+template <typename T>
+std::ostream& operator<<(std::ostream& os, const Matrix3<T>& v) {
+	for (size_t i = 0; i < 8; i++) {
+		os << v[i] << ", ";
+	}
+	os << v[8];
+	return os;
+}

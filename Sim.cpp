@@ -3,12 +3,14 @@
 Sim::Sim(App* app)
 	: mSceneMgr(0), scene(0), mApp(app),
 	  world(0), car(0), carInput(0),
-	  frameRate(60), targetTime(0), frame(0) {
+	  frameRate(60), targetTime(0), frame(0),
+	  debugDraw(NULL) {
 }
 
 Sim::~Sim() {
 	delete world;
 	delete carInput;
+	delete debugDraw;
 }
 
 void Sim::setup(Ogre::SceneManager* sceneMgr) {
@@ -21,6 +23,11 @@ void Sim::setup(Ogre::SceneManager* sceneMgr) {
 	car->setup("360", mSceneMgr, *world);
 
 	carInput = new CInput(this);
+
+	// Debug drawing
+	debugDraw = new BtOgre::DebugDrawer(mSceneMgr->getRootSceneNode(), world->getDynamicsWorld());
+	world->getDynamicsWorld()->setDebugDrawer(debugDraw);
+	world->getDynamicsWorld()->getDebugDrawer()->setDebugMode(1);
 }
 
 void Sim::update(float dt) {
@@ -31,6 +38,11 @@ void Sim::update(float dt) {
 	const std::vector<float>& inputs = localMap.processInput(carInput->getPlayerInputState(), car->getSpeedDir(),
 															 0.f, 0.f);
 	car->handleInputs(inputs, dt);
+
+	if (debugDraw) {
+		debugDraw->setDebugMode(1);
+		debugDraw->step();
+	}
 
 	//TODO How Stuntrally updates the game... however, this does not work
 //	const float minFPS = 10.f; // Minimum acceptable fps

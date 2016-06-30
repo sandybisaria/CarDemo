@@ -1,6 +1,6 @@
 #pragma once
 
-#include <algorithm>
+#include "CarConstants.hpp"
 
 class CarDifferential {
 public:
@@ -51,10 +51,6 @@ public:
 	const double& getSide2Torque() const { return side2Torque; }
 
 private:
-	double clamp(double val, double min, double max) const {
-		return std::max(std::min(val, max), min);
-	}
-
 	// Constants
 	double finalDrive; // Gear ratio
 	double antiSlip; // For modeling of speed-sensitive limited-slip differentials.

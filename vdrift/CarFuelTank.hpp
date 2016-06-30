@@ -12,8 +12,8 @@ public:
 	}
 
 	void setCapacity(double c) { capacity = c; }
-	void setDensity(double d) { density = d; }
-	void setVolume(double v) { volume = v; }
+	void setDensity(double d) { density = d; updateMass(); }
+	void setVolume(double v) { volume = v; updateMass(); }
 	void setPosition(const MathVector<double, 3>& p) { position = p; }
 	MathVector<double, 3> getPosition() const { return position; }
 	double getMass() const { return mass; }

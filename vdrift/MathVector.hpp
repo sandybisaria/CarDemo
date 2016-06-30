@@ -267,7 +267,7 @@ public:
 	}
 
 	template <typename T2>
-	inline bool operator != (const MathVector<T2,3> & other) const {
+	inline bool operator!=(const MathVector<T2,3> & other) const {
 		return (v.x != other[0] || v.y != other[1] || v.z != other[2]);
 	}
 

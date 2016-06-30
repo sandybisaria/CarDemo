@@ -8,7 +8,8 @@ CarDynamics::CarDynamics()
 	  drive(AWD), prevVel(0, 0, 0),
 	  autoclutch(true), autoshift(true), autorear(true), shifted(true),
 	  shiftTime(0.2), remShiftTime(0.0), lastAutoClutch(1.0), gearToShift(0),
-	  steerValue(0.f), maxAngle(45.0), angularDamping(0.4) {
+	  steerValue(0.f), maxAngle(45.0), angularDamping(0.4),
+	  absOn(false), tcsOn(false) {
 	setNumWheels(DEF_WHEEL_COUNT);
 }
 
@@ -19,13 +20,9 @@ CarDynamics::~CarDynamics() {
 void CarDynamics::setNumWheels(int nw) {
 	numWheels = nw;
 
-	brakes.resize(numWheels);
-	suspension.resize(numWheels);
-	wheels.resize(numWheels);
-	wheelVels.resize(numWheels);
-	wheelPos.resize(numWheels);
-	wheelRots.resize(numWheels);
-	wheelContact.resize(numWheels);
+	brakes.resize(numWheels); suspension.resize(numWheels); wheels.resize(numWheels);
+	wheelVels.resize(numWheels); wheelPos.resize(numWheels); wheelRots.resize(numWheels);
+	wheelContact.resize(numWheels); absActive.resize(numWheels, false); tcsActive.resize(numWheels, false);
 }
 
 bool CarDynamics::load(ConfigFile& cf) {
@@ -36,11 +33,9 @@ bool CarDynamics::load(ConfigFile& cf) {
 
 	int version = 2;
 	cf.getParam("version", version);
-	if (version > 2)
-		return false; //TODO Error: Unsupported version
+	if (version > 2) return false; //TODO Error: Unsupported version
 
 	float tempVec[ConfigVariable::V_SIZE];
-
 	// Load engine params
 	{
 		float mass, rpmLimit, inertia, friction, startRPM, stallRPM, fuelCons;
@@ -60,7 +55,7 @@ bool CarDynamics::load(ConfigFile& cf) {
 		if (!cf.getParam("engine.start-rpm", startRPM)) return false;
 		engine.setStartRPM(startRPM);
 
-		if (!cf.getParam("engine.stall-rpm", startRPM)) return false;
+		if (!cf.getParam("engine.stall-rpm", stallRPM)) return false;
 		engine.setStallRPM(stallRPM);
 
 		if (!cf.getParam("engine.fuel-consumption", fuelCons)) return false;
@@ -94,23 +89,20 @@ bool CarDynamics::load(ConfigFile& cf) {
 			str.width(2); str.fill('0'); str << curveNum;
 			torqueStr = str.str();
 		}
-
 		if (torques.size() <= 1) return false;
-
 		engine.setTorqueCurve(rpmLimit, torques);
 
 		// Load clutch params
 		{
-			float mul;
-			if (!cf.getParam("clutch.max-torque-mul", mul)) return false;
-			clutch.setMaxTorque(maxTorque * mul);
+			float mul2;
+			if (!cf.getParam("clutch.max-torque-mul", mul2)) return false;
+			clutch.setMaxTorque(maxTorque * mul2);
 		}
 
-		mul = 1;
-		if (cf.getParam("engine.real-po-tq-mul", mul))
-			engine.realPowTorqueMul = mul;
-
-		//TODO Skipped engine.sound-vol-mul
+//		mul = 1;
+//		if (cf.getParam("engine.real-po-tq-mul", mul))
+//			engine.realPowTorqueMul = mul;
+		//TODO Skipped engine.sound-vol-mul and engine.real-po-tq-mul
 	}
 
 	// Load transmission params
@@ -151,6 +143,8 @@ bool CarDynamics::load(ConfigFile& cf) {
 			cf.getParam("diff-front.torque-dec", aTqDec);
 			diffFront.setFinalDrive(1.0); diffFront.setAntiSlip(a, aTq, aTqDec);
 
+			cf.getParam("diff-center.final-drive", finalDrive);
+			cf.getParam("diff-center.anti-slip", a);
 			cf.getParam("diff-center.torque", aTq);
 			cf.getParam("diff-center.torque-dec", aTqDec);
 			diffCenter.setFinalDrive(finalDrive); diffCenter.setAntiSlip(a, aTq, aTqDec);
@@ -200,7 +194,7 @@ bool CarDynamics::load(ConfigFile& cf) {
 			brakes[wl].setBias(bias); brakes[wr].setBias(bias);
 
 			if (!cf.getParam(searchStr + "max-pressure", maxPressure)) return false;
-			brakes[wl].setMaxPressure(maxPressure); brakes[wr].setMaxPressure(maxPressure);
+			brakes[wl].setMaxPressure(maxPressure * bias); brakes[wr].setMaxPressure(maxPressure * bias);
 		}
 	}
 
@@ -222,22 +216,18 @@ bool CarDynamics::load(ConfigFile& cf) {
 		if (version == 2) versionConvert(tempVec[0], tempVec[1], tempVec[2]);
 		position.set(tempVec[0], tempVec[1], tempVec[2]);
 		fuelTank.setPosition(position);
+
+		// Note that the fuel tank does not need to be added to the set of mass-only particles
 	}
 
 	// Load the suspension
 	{
 		for (int i = 0; i < numWheels / 2; i++) {
-			std::string pos = "front", possh = "F";
-			WheelPosition wl = FRONT_LEFT, wr = FRONT_RIGHT;
-			if (i >= 1) {
-				pos = "rear"; possh = "R"; wl = REAR_LEFT; wr = REAR_RIGHT;
-			}
+			std::string pos = "front", possh = "F"; WheelPosition wl = FRONT_LEFT, wr = FRONT_RIGHT;
+			if (i >= 1) { pos = "rear"; possh = "R"; wl = REAR_LEFT; wr = REAR_RIGHT; }
 
-			if (i == 2) {
-				wl = REAR2_LEFT; wr = REAR2_RIGHT;
-			} else if (i == 3) {
-				wl = REAR3_LEFT; wr = REAR3_RIGHT;
-			}
+				   if (i == 2) { wl = REAR2_LEFT; wr = REAR2_RIGHT;
+			} else if (i == 3) { wl = REAR3_LEFT; wr = REAR3_RIGHT;	}
 
 			std::string searchStr = "suspension-" + pos + ".";
 
@@ -253,8 +243,6 @@ bool CarDynamics::load(ConfigFile& cf) {
 			suspension[wl].setRebound(rebound); suspension[wr].setRebound(rebound);
 
 			std::vector<std::pair<double, double> > damper, spring;
-
-			//FIXME Load from suspension file
 			std::string file;
 			if (cf.getParam(searchStr + "factors-file", file)) {
 				std::string fullPath = "../data/cars/common/" + file + ".susp";
@@ -291,15 +279,13 @@ bool CarDynamics::load(ConfigFile& cf) {
 			MathVector<double, 3> vec;
 
 			if (!cf.getParam("suspension-" + possh + "L.hinge", hinge)) return false;
-			for (int i = 0; i < 3; i++)
-				hinge[i] = std::max(std::min(hinge[i], 100.f), -100.f);
+			for (int i = 0; i < 3; i++) hinge[i] = clamp(hinge[i], -100, 100);
 			if (version == 2) versionConvert(hinge[0], hinge[1], hinge[2]);
 			vec.set(hinge[0], hinge[1], hinge[2]);
 			suspension[wl].setHinge(vec);
 
 			if (!cf.getParam("suspension-" + possh + "R.hinge", hinge)) return false;
-			for (int i = 0; i < 3; i++)
-				hinge[i] = std::max(std::min(hinge[i], 100.f), -100.f);
+			for (int i = 0; i < 3; i++) hinge[i] = clamp(hinge[i], -100, 100);
 			if (version == 2) versionConvert(hinge[0], hinge[1], hinge[2]);
 			vec.set(hinge[0], hinge[1], hinge[2]);
 			suspension[wr].setHinge(vec);
@@ -334,8 +320,7 @@ bool CarDynamics::load(ConfigFile& cf) {
 
 		// Rotational inertia param is located in the tire section
 		float front, rear;
-		if (cf.getParam("tire-both.rotational-inertia", front)) {
-			rear = front;
+		if (cf.getParam("tire-both.rotational-inertia", front)) { rear = front;
 		} else {
 			if (!cf.getParam("tire-front.rotational-inertia", front)) return false;
 			if (!cf.getParam("tire-rear.rotational-inertia", rear)) return false;
@@ -477,7 +462,7 @@ bool CarDynamics::load(ConfigFile& cf) {
 void CarDynamics::init(MathVector<double, 3> pos, Quaternion<double> rot, CollisionWorld& world) {
 	this->world = &world;
 
-	MathVector<double, 3> zero((double)0);
+	MathVector<double, 3> zero(0.f);
 
 	body.setPosition(pos); body.setOrientation(rot);
 	body.setInitialForce(zero); body.setInitialTorque(zero);
@@ -501,10 +486,10 @@ void CarDynamics::init(MathVector<double, 3> pos, Quaternion<double> rot, Collis
 	// Assuming the vehicle is not a sphere... of course
 	// y is length, x is width, h is height
 	btCollisionShape* chassisShape;
-	{
+	{	// y| length; x- width; z^ height
 		btScalar w = size.getX() * 0.2, r = size.getZ() * 0.3, h = 0.45;
 
-		//TODO I think this is what the Stuntrally devs meant (based on their formatting)
+		//TODO I think this is what the Stuntrally devs meant, but investigate to be sure
 		btScalar l0 = 0.f, w0 = 0.f, h0 = 0.f;
 		if (collR > 0.f) { r = collR; l0 = collLofs; }
 		if (collW > 0.f) { w = collW; w0 = collWofs; }
@@ -536,8 +521,7 @@ void CarDynamics::init(MathVector<double, 3> pos, Quaternion<double> rot, Collis
 		rad[i] = r2;  posi[i] = btVector3( collTopBack,-w*wt, h*collTopBackHm);  ++i;  // top rear
 		rad[i] = r2;  posi[i] = btVector3( collTopBack, w*wt, h*collTopBackHm);  ++i;
 
-		for (i=0; i < numSph; ++i)
-			posi[i] += origin;
+		for (i = 0; i < numSph; ++i) posi[i] += origin;
 		chassisShape = new btMultiSphereShape(posi, rad, numSph);
 		chassisShape->setMargin(0.02f);
 	}
@@ -617,7 +601,7 @@ void CarDynamics::removeBullet() {
 
 		world->getDynamicsWorld()->removeRigidBody(body);
 
-//		ShapeData* sd = (ShapeData*)body->getUserPointer(); TODO When ready
+//		ShapeData* sd = (ShapeData*)body->getUserPointer();
 //		delete sd;
 //		delete body; TODO Commented due to double free error
 	}
@@ -631,7 +615,7 @@ void CarDynamics::removeBullet() {
 			for (c = 0; c < cs->getNumChildShapes(); ++c)
 				delete cs->getChildShape(c);
 		}
-//		ShapeData* sd = (ShapeData*)shape->getUserPointer(); TODO
+//		ShapeData* sd = (ShapeData*)shape->getUserPointer();
 //		delete sd;
 //		delete shape; TODO Commented due to double free error
 	}

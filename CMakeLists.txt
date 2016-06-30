@@ -53,6 +53,9 @@ add_subdirectory(shiny)
 list(APPEND EXTLIBS "shiny")
 list(APPEND EXTLIBS "shiny.OgrePlatform")
 
+add_subdirectory(btOgre)
+list(APPEND EXTLIBS "btOgre")
+
 # Header files
 file(GLOB HDRS
 	*.hpp
