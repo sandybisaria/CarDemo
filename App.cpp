@@ -199,6 +199,9 @@ bool App::loadSurfaces() {
 	surfaces.clear();
 	surfaceMap.clear();
 
+	tires.clear();
+	tireMap.clear();
+
 	std::string path = "../data/scene/surfaces.cfg";
 	ConfigFile params;
 	if (!params.load(path)) return false;
@@ -206,13 +209,15 @@ bool App::loadSurfaces() {
 	std::list<std::string> secList;
 	params.getSectionList(secList);
 	for (std::list<std::string>::const_iterator sec = secList.begin(); sec != secList.end(); sec++) {
-		TerrainSurface surf;
-		surf.name = *sec;
-		surfaces.push_back(surf);
-		surfaceMap[surf.name] = (int)surfaces.size() - 1; //+1, 0 = not found
+//		TerrainSurface surf;
+//		surf.name = *sec;
+//		surfaces.push_back(surf);
+//		surfaceMap[surf.name] = (int)surfaces.size() - 1; //+1, 0 = not found
 
-		TerrainSurface* ts = getTerrainSurface(*sec);
+		TerrainSurface* ts = new TerrainSurface();
 		ts->name = *sec;
+		surfaces.push_back(*ts);
+		surfaceMap[ts->name] = (int)surfaces.size() - 1;
 
 		int id;
 		params.getParam(*sec + ".ID", id); // For sound..?
@@ -249,13 +254,15 @@ bool App::loadTire(std::string name) {
 	ConfigFile tireParams;
 	if (!tireParams.load(tirePath)) return false;
 
-	CarTire tire;
-	tire.name = name;
-	tires.push_back(tire);
-	tireMap[tire.name] = (int)tires.size() - 1;
+//	CarTire tire;
+//	tire.name = name;
+//	tires.push_back(tire);
+//	tireMap[tire.name] = (int)tires.size() - 1;
 
-	CarTire* t = getTire(name);
+	CarTire* t = new CarTire();
 	t->name = name;
+	tires.push_back(*t);
+	tireMap[t->name] = (int)tires.size() - 1;
 
 	float value;
 	for (int i = 0; i < 15; ++i) {
