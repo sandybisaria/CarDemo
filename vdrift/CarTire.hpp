@@ -8,6 +8,9 @@
 #include <string>
 #include <cassert>
 
+#include <cmath>
+#define _USE_MATH_DEFINES
+
 // Loaded from a .tire file
 class CarTire {
 public:
@@ -18,6 +21,7 @@ public:
 		user = 0;
 	}
 
+	void findSigmaHatAlphaHat(double load, double& outputSigmaHat, double& outputAlphaHat, int iterations = 400) const;
 	void lookUpSigmaHatAlphaHat(double normForce, double& sh, double& ah) const;
 	void calculateSigmaHatAlphaHat(int tableSize = 20);
 
@@ -35,8 +39,6 @@ public:
 	double getOptimumSteeringAngle(double load) const;
 
 	static CarTire* none(); // Default CarTire that "won't crash"
-
-	void findSigmaHatAlphaHat(double load, double& outputSigmaHat, double& outputAlphaHat, int iterations = 400);
 
 	// Constants
 	std::vector<double> longitudinal; // Params of longitudinal Pacejka equation; series b

@@ -2,8 +2,9 @@
 
 #include <iostream>
 
-void CarTire::findSigmaHatAlphaHat(double load, double& outputSigmaHat, double& outputAlphaHat, int iterations) {
+void CarTire::findSigmaHatAlphaHat(double load, double& outputSigmaHat, double& outputAlphaHat, int iterations) const {
 	double x, y, ymax, junk, x4 = 4.0 / iterations, x40 = 40.0 / iterations;
+
 	ymax = 0;
 	for (x = -2; x < 2; x += x4) {
 		y = PacejkaFx(x, load, 1.0, junk);
@@ -32,10 +33,10 @@ void CarTire::lookUpSigmaHatAlphaHat(double normalForce, double& sh, double& ah)
 	double nf = normalForce * 0.001;
 	if (nf < HAT_LOAD) {
 		sh = sigmaHat[0];
-		ah = sigmaHat[0];
+		ah = alphaHat[0];
 	} else if (nf >= HAT_LOAD*HAT_ITERATIONS) {
 		sh = sigmaHat[HAT_ITERATIONS-1];
-		ah = sigmaHat[HAT_ITERATIONS-1];
+		ah = alphaHat[HAT_ITERATIONS-1];
 	} else {
 		int lbound;
 		double blend;
@@ -300,3 +301,83 @@ CarTire* CarTire::none() {
 	return &s;
 
 }
+
+#ifdef COMPILE_UNIT_TESTS
+#include <gtest/gtest.h>
+
+TEST(CarTire, CarTireFunctions) {
+	CarTire s;
+
+	// Asphalt
+	int i=0;
+	s.lateral[i++] = 1.61;
+	s.lateral[i++] = -0;
+	s.lateral[i++] = 2775;
+	s.lateral[i++] = 2220;
+	s.lateral[i++] = 19.6;
+	s.lateral[i++] = 0.013;
+	s.lateral[i++] = -0.14;
+	s.lateral[i++] = 0.14;
+	s.lateral[i++] = 0.019;
+	s.lateral[i++] = -0.019;
+	s.lateral[i++] = -0.18;
+	s.lateral[i++] = 0;
+	s.lateral[i++] = 0;
+	s.lateral[i++] = 0;
+	s.lateral[i++] = 0;
+	i = 0;
+	s.longitudinal[i++] = 1.73;
+	s.longitudinal[i++] = -0.49;
+	s.longitudinal[i++] = 3439;
+	s.longitudinal[i++] = 279;
+	s.longitudinal[i++] = 470;
+	s.longitudinal[i++] = 0;
+	s.longitudinal[i++] = 0.0008;
+	s.longitudinal[i++] = 0.005;
+	s.longitudinal[i++] = -0.024;
+	s.longitudinal[i++] = 0;
+	s.longitudinal[i++] = 0;
+	i = 0;
+	s.aligning[i++] = 2.10;
+	s.aligning[i++] = -3.9;
+	s.aligning[i++] = -3.9;
+	s.aligning[i++] = -1.26;
+	s.aligning[i++] = -8.20;
+	s.aligning[i++] = 0.025;
+	s.aligning[i++] = 0;
+	s.aligning[i++] = 0.044;
+	s.aligning[i++] = -0.58;
+	s.aligning[i++] = 0.18;
+	s.aligning[i++] = 0.043;
+	s.aligning[i++] = 0.048;
+	s.aligning[i++] = -0.0035;
+	s.aligning[i++] = -0.18;
+	s.aligning[i++] = 0.14;
+	s.aligning[i++] = -1.029;
+	s.aligning[i++] = 0.27;
+	s.aligning[i++] = -1.1;
+
+	s.calculateSigmaHatAlphaHat();
+
+	double si(0), a(0);
+	s.lookUpSigmaHatAlphaHat(700, si, a);
+	EXPECT_NEAR(si, 0.112, 0.0001); EXPECT_NEAR(a, 19.9, 0.0001);
+
+	s.lookUpSigmaHatAlphaHat(350, si, a);
+	EXPECT_NEAR(si, 0.12, 0.0001); EXPECT_NEAR(a, 19.9, 0.0001);
+
+	si = 0; a = 0;
+	s.findSigmaHatAlphaHat(500, si, a);
+	EXPECT_NEAR(si, -0.01, 0.0001); EXPECT_NEAR(a, 19.9, 0.0001);
+
+	EXPECT_NEAR(s.getMaximumFx(600), 2063.2236, 0.0001); EXPECT_NEAR(s.getMaximumFy(400, 6), 1110, 0.0001);
+	EXPECT_NEAR(s.getMaximumMz(450, 3), 78.2426761, 0.0001); EXPECT_NEAR(s.getOptimumSteeringAngle(578), 19.9, 0.0001);
+
+	MathVector<double, 3> force = s.getForce(350, 0.5, MathVector<double, 3>(1, 10, 1), 5, 3, NULL);
+	EXPECT_NEAR(force[0], 269.377661, 0.0001); EXPECT_NEAR(force[1], 37.269936, 0.0001); EXPECT_NEAR(force[2], -60.0887612, 0.0001);
+
+	force = s.getForce(1000, 0.78, MathVector<double, 3>(11, 17, 29), 8, 6, NULL);
+	EXPECT_NEAR(force[0], -1276.11745, 0.0001); EXPECT_NEAR(force[1], 1034.7809, 0.0001); EXPECT_NEAR(force[2], -305.611505, 0.0001);
+}
+
+#endif

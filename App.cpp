@@ -188,7 +188,7 @@ void App::setupScene() {
 	mCamera->setAspectRatio(Ogre::Real(vp->getActualWidth() /
 									   vp->getActualHeight()));
 
-	if (!loadSurfaces()) ; //TODO Error: Can't load surfaces
+	if (!loadSurfaces()) return; //TODO Error: Can't load surfaces
 
 	//TODO Set up GUI?
 	mScene = new Scene(mSceneMgr);
@@ -208,32 +208,37 @@ bool App::loadSurfaces() {
 	for (std::list<std::string>::const_iterator sec = secList.begin(); sec != secList.end(); sec++) {
 		TerrainSurface surf;
 		surf.name = *sec;
+		surfaces.push_back(surf);
+		surfaceMap[surf.name] = (int)surfaces.size() - 1; //+1, 0 = not found
+
+		TerrainSurface* ts = getTerrainSurface(*sec);
+		ts->name = *sec;
 
 		int id;
 		params.getParam(*sec + ".ID", id); // For sound..?
-		surf.setType(id);
+		ts->setType(id);
 
 		float temp = 0.0;
-		params.getParam(*sec + ".BumpWaveLength", temp);	surf.bumpWavelength = temp;
-		params.getParam(*sec + ".BumpAmplitude", temp);		surf.bumpAmplitude = temp;
+		params.getParam(*sec + ".BumpWaveLength", temp);	ts->bumpWavelength = temp;
+		params.getParam(*sec + ".BumpAmplitude", temp);		ts->bumpAmplitude = temp;
 
-		params.getParam(*sec + ".FrictionTread", temp);		surf.friction = temp;
-		if (params.getParam(*sec + ".FrictionX", temp))  	surf.frictionX = temp;
-		if (params.getParam(*sec + ".FrictionY", temp))  	surf.frictionY = temp;
+		params.getParam(*sec + ".FrictionTread", temp);		ts->friction = temp;
+		if (params.getParam(*sec + ".FrictionX", temp))  	ts->frictionX = temp;
+		if (params.getParam(*sec + ".FrictionY", temp))  	ts->frictionY = temp;
 
-		if (params.getParam(*sec + ".RollResistance", temp))surf.rollingResist = temp;
-		params.getParam(*sec + ".RollingDrag", temp);		surf.rollingDrag = temp;
+		if (params.getParam(*sec + ".RollResistance", temp))ts->rollingResist = temp;
+		params.getParam(*sec + ".RollingDrag", temp);		ts->rollingDrag = temp;
 
 		// Tire
 		std::string tireFile;
 		if (!params.getParam(*sec + "." + "Tire", tireFile))
 			tireFile = "Default"; // Default surface if not found
-		surf.tireName = tireFile;
-		if (!loadTire(surf.tireName)) return false;
-		surf.tire = getTire(surf.tireName);
+		ts->tireName = tireFile;
 
-		surfaces.push_back(surf);
-		surfaceMap[surf.name] = (int)surfaces.size(); //+1, 0 = not found
+		if (tireMap.find(ts->tireName) == tireMap.end())
+			if (!loadTire(ts->tireName)) return false;
+
+		ts->tire = getTire(ts->tireName);
 	}
 
 	return true;
@@ -246,9 +251,13 @@ bool App::loadTire(std::string name) {
 
 	CarTire tire;
 	tire.name = name;
+	tires.push_back(tire);
+	tireMap[tire.name] = (int)tires.size() - 1;
+
+	CarTire* t = getTire(name);
+	t->name = name;
 
 	float value;
-
 	for (int i = 0; i < 15; ++i) {
 		int numinfile = i;
 		if (i == 11)		numinfile = 111;
@@ -256,24 +265,20 @@ bool App::loadTire(std::string name) {
 		else if (i > 12)	numinfile -= 1;
 		std::stringstream str;  str << "params.a" << numinfile;
 		if (!tireParams.getParam(str.str(), value))  return false;
-		tire.lateral[i] = value;
+		t->lateral[i] = value;
 	}
 	for (int i = 0; i < 11; ++i) {
 		std::stringstream str;  str << "params.b" << i;
 		if (!tireParams.getParam(str.str(), value))  return false;
-		tire.longitudinal[i] = value;
+		t->longitudinal[i] = value;
 	}
 	for (int i = 0; i < 18; ++i) {
 		std::stringstream str;  str << "params.c" << i;
 		if (!tireParams.getParam(str.str(), value))  return false;
-		tire.aligning[i] = value;
+		t->aligning[i] = value;
 	}
 
-	tires.push_back(tire);
-	tireMap[tire.name] = (int)tires.size(); //+1, 0 = not found
-
-	tire.calculateSigmaHatAlphaHat();
-
+	t->calculateSigmaHatAlphaHat();
 	return true;
 }
 
