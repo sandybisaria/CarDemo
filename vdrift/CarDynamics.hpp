@@ -80,6 +80,7 @@ public:
 	// Wheel state access
 	Quaternion<double> getWheelOrientation(WheelPosition wp) const;
 	MathVector<double, 3> getWheelPosition(WheelPosition wp) const;
+	double getWheelSteerAngle(WheelPosition wp) const { return wheels[wp].getSteerAngle(); }
 
 	//TODO Add traction control (ABS and TCS)
 

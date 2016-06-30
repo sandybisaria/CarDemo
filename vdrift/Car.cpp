@@ -50,7 +50,6 @@ void Car::updatePreviousVelocity() { dyn->updatePreviousVelocity(); }
 
 void Car::update(float dt) {
 	dyn->update();
-
 	updateModel();
 	updateLightMap();
 }
@@ -288,17 +287,15 @@ void Car::changeColor() {
 		}
 	}
 
-	//Refer to CarModel::ChangeClr
+	// Refer to CarModel::ChangeClr
 }
 
 void Car::updateModel() {
 	// Main body
-	Ogre::Vector3 pos = Axes::vectorToOgre(dyn->getPosition()) + Ogre::Vector3::UNIT_Y;
-//	std::cout << "My position: " << pos << std::endl;
+	Ogre::Vector3 pos = Axes::vectorToOgre(dyn->getPosition());
 	mainNode->setPosition(pos);
 
 	Ogre::Quaternion rot; rot = Axes::doQuatToOgre(dyn->getOrientation());
-//	std::cout << "My orientation: " << rot << std::endl;
 	mainNode->setOrientation(rot);
 
 	// Wheels
@@ -306,17 +303,16 @@ void Car::updateModel() {
 		WheelPosition wp; wp = WheelPosition(w);
 
 		Ogre::Vector3 whPos = Axes::vectorToOgre(dyn->getWheelPosition(wp));
-//		std::cout << "My wheel position: " << whPos << std::endl;
 		wheelNodes[w]->setPosition(whPos);
 
 		Ogre::Quaternion whRot; whRot = Axes::doWhQuatToOgre(dyn->getWheelOrientation(wp));
-//		std::cout << "My wheel orientation: " << whRot << std::endl;
 		wheelNodes[w]->setOrientation(whRot);
 	}
 
 	// Brakes
 	for (int w = 0; w < numWheels; w++) {
 		if (brakeNodes[w]) {
+			WheelPosition wp; wp = WheelPosition(w);
 			brakeNodes[w]->_setDerivedOrientation(mainNode->getOrientation());
 
 			// This transformation code is just so the brake mesh can have the same alignment as the wheel mesh
@@ -326,9 +322,7 @@ void Car::updateModel() {
 			brakeNodes[w]->pitch(Ogre::Degree(180), Ogre::Node::TS_LOCAL);
 
 			// Turn only front wheels
-//			if (w < 2) brakeNodes[w]->yaw(-Ogre::Degree(posInfo.whSteerAng[w])); TODO Steering angle
-
-//			std::cout << "My brake orientation: " << brakeNodes[w]->getOrientation() << std::endl;
+			if (w < 2) brakeNodes[w]->yaw(-Ogre::Degree(dyn->getWheelSteerAngle(wp)));
 		}
 	}
 }
