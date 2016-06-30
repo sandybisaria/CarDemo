@@ -22,29 +22,29 @@ double CarDynamics::getSpeedMPS() const {
 
 	if (drive == RWD) return (whRL + whRR) * 0.5 * wheels[REAR_LEFT].getRadius();
 	else {
-		assert(drive == AWD);
-		return ((whFL + whFR) * 0.5 * wheels[FRONT_LEFT].getRadius() +
-				(whRL + whRR) * 0.5 * wheels[REAR_LEFT].getRadius()) * 0.5;
+		// drive == AWD
+		return ((whFL + whFR) * 0.25 * wheels[FRONT_LEFT].getRadius()) +
+			   ((whRL + whRR) * 0.25 * wheels[ REAR_LEFT].getRadius());
 	}
 }
 
 void CarDynamics::setSteering(const double val, const float rangeMul) {
-	//TODO Dmg
-
+	//Ignored damage
 	steerValue = val;
-	double steerAngle = val * maxAngle * rangeMul; // Steering angle in degs
+
+	double steerAngle = val * maxAngle * rangeMul; // Steering angle in degrees
 	if (numWheels == 2) {
 		wheels[FRONT_LEFT].setSteerAngle(steerAngle);
 		return;
 	}
 
 	// Ackerman steering geometry
-	bool ax2 = numWheels >= 6; // Two front steering axles?
-	int iMax = ax2 ? 2 : 1;
+	bool ax2 = numWheels >= 6; // Two front steering axles
+	int iMax = ax2 ? 2 : 1; // One iteration per axle
 	for (int i = 0; i < iMax; i++) {
 		WheelPosition wl, wr, rear;
-		if (i == 0) { wl = FRONT_LEFT; wr = FRONT_RIGHT; rear = REAR_LEFT; }
-		else { wl = REAR_LEFT; wr = REAR_RIGHT; rear = REAR2_LEFT; }
+		if (i == 0) { wl = FRONT_LEFT; wr = FRONT_RIGHT; rear =  REAR_LEFT; }
+		else 		{ wl =  REAR_LEFT; wr =  REAR_RIGHT; rear = REAR2_LEFT; }
 
 		double alpha = std::abs(steerAngle * M_PI / 180.0); // Outside wheel steering angle in rads
 
@@ -67,7 +67,7 @@ void CarDynamics::updateTransmission(double dt) {
 	driveshaftRPM = calculateDriveshaftRPM();
 
 	if (autoshift) {
-		//TODO Ignoring vehicle damange
+		//Ignoring vehicle damange
 		int gear = nextGear();
 		double mps = getSpeedMPS();
 		if (gear <= 0 && mps > 3)
@@ -91,7 +91,7 @@ void CarDynamics::updateTransmission(double dt) {
 	}
 
 	remShiftTime -= dt;
-	if (remShiftTime < 0) remShiftTime = 0;
+	remShiftTime = std::max(remShiftTime, 0.0);
 
 	if (remShiftTime <= shiftTime * 0.5 && !shifted) {
 		shifted = true;
@@ -151,7 +151,7 @@ double CarDynamics::calculateDriveshaftRPM() const {
 }
 
 double CarDynamics::calculateDriveshaftSpeed() {
-	for (int i = 0; i < numWheels; ++i) assert(!isnan(wheels[WheelPosition(i)].getAngularVelocity()));
+	for (int i = 0; i < numWheels; ++i) assert(!isnan(wheels[i].getAngularVelocity()));
 
 	double driveshaftSpeed = 0.0;
 	double whFL = wheels[FRONT_LEFT].getAngularVelocity();
@@ -167,7 +167,7 @@ double CarDynamics::calculateDriveshaftSpeed() {
 		driveshaftSpeed = diffRear.calculateDriveshaftSpeed(whRL, whRR);
 	else if (drive == AWD)
 		driveshaftSpeed = diffCenter.calculateDriveshaftSpeed(diffFront.calculateDriveshaftSpeed(whFL, whFR),
-															  diffRear.calculateDriveshaftSpeed(whRL, whRR));
+															   diffRear.calculateDriveshaftSpeed(whRL, whRR));
 
 	return driveshaftSpeed;
 }
@@ -202,7 +202,7 @@ void CarDynamics::calculateDriveTorque(double driveTorque[], double clutchTorque
 		driveTorque[REAR_RIGHT] = diffRear.getSide2Torque();
 	}
 
-	for (int i = 0; i < numWheels; i++) assert(!isnan(driveTorque[WheelPosition(i)]));
+	for (int i = 0; i < numWheels; i++) assert(!isnan(driveTorque[i]));
 }
 
 // 0 for no change, -1 for shift down, 1 for shift up
@@ -210,8 +210,7 @@ int CarDynamics::nextGear() const {
 	int gear = transmission.getGear();
 
 	double avgSlide = 0;
-	float avgWhHeight = 0; //TODO Will leave as 0 as don't have fluids
-
+	float avgWhHeight = 0;
 	for (int i = 0; i < numWheels; i++) {
 		double sl = fabs(wheels[i].slips.slide);
 		avgSlide += sl;
@@ -257,7 +256,7 @@ double CarDynamics::autoClutch(double lastClutch, double dt) const {
 	// Take into account locked brakes
 	bool willLock = true;
 	for (int i = 0; i < numWheels; i++) {
-		if (wheelDriven(WheelPosition(i))) willLock = willLock && brakes[i].willLock();
+		if (wheelDriven(i)) willLock = willLock && brakes[i].willLock();
 	}
 	if (willLock) return 0;
 
@@ -270,7 +269,7 @@ double CarDynamics::autoClutch(double lastClutch, double dt) const {
 	double thresh = threshold * (maxRPM / 7000.0) * ((1.0 - gearEffect) + gearFactor * gearEffect) + stallRPM;
 	if (clutch.isLocked()) thresh *= 0.5;
 	double cl = (rpm - stallRPM) / (thresh - stallRPM);
-	cl = std::min(std::max(cl, 0.), 1.);
+	cl = clamp(cl, 0.f, 1.f);
 
 	double newAuto = cl * shiftAutoClutch();
 
@@ -292,7 +291,7 @@ double CarDynamics::shiftAutoClutch() const {
 
 double CarDynamics::shiftAutoClutchThrottle(double throttle, double dt) {
 	if (remShiftTime > 0.0) {
-		if (engine.getRPM() <driveshaftRPM && engine.getRPM() < engine.getMaxRPM()) {
+		if (engine.getRPM() < driveshaftRPM && engine.getRPM() < engine.getMaxRPM()) {
 			remShiftTime += dt;
 			return 1.0;
 		} else {
@@ -328,7 +327,6 @@ MathVector<double, 3> CarDynamics::updateSuspension(int i, double dt) {
 						   (suspension[i].getDisplacement() - suspension[otherI].getDisplacement());
 
 	if (isnan(antiRollForce)) antiRollForce = 0.f;
-	assert(!isnan(antiRollForce));
 
 	MathVector<double, 3> suspForce(0, 0, antiRollForce + springDampForce);
 	getBodyOrientation().rotateVector(suspForce);
@@ -340,14 +338,14 @@ void CarDynamics::interpolateWheelContacts(double dt) {
 	for (int i = 0; i < numWheels; i++) {
 		MathVector<float, 3> rayStart = localToWorld(wheels[i].getExtendedPosition());
 		rayStart = rayStart - rayDir * wheels[i].getRadius();
-		getWheelContact(WheelPosition(i)).castRay(rayStart, rayDir, 1.5f); //TODO From "par.cpp" (raylen)
+		wheelContact[i].castRay(rayStart, rayDir, 1.5f); //From "par.cpp" (raylen)
 	}
 }
 
 void CarDynamics::applyEngineTorqueToBody() {
 	MathVector<double, 3> engineTorque(-engine.getTorque(), 0, 0);
 	getBodyOrientation().rotateVector(engineTorque);
-	applyTorque(engineTorque * 0.1); // Unwanted in jumps...
+	applyTorque(engineTorque * 0.1); // Unwanted in jumps...?
 }
 
 void CarDynamics::applyAerodynamicsToBody() {
@@ -388,11 +386,11 @@ MathVector<double, 3> CarDynamics::applyTireForce(int i, const double normalForc
 	const MathVector<double, 3> surfaceNorm = wheelCon.getNormal();
 
 	// Camber relative to surface (clockwise in wheel heading direction)
-	MathVector<double, 3> wheelAxis(0,1,0);
+	MathVector<double, 3> wheelAxis(0, 1, 0);
 	wheelSpace.rotateVector(wheelAxis); // Aheel axis in world space (wheel plane normal)
 	double camberSin = wheelAxis.dot(surfaceNorm);
 	double camberRad = asin(camberSin);
-	wheel.setCamberDeg(camberRad * 180.0/M_PI);
+	wheel.setCamberDeg(camberRad * 180.0 / M_PI);
 
 	// Tire space (SAE Tire Coordinate System)
 	// Surface normal is z-axis
@@ -419,7 +417,7 @@ MathVector<double, 3> CarDynamics::applyTireForce(int i, const double normalForc
 	frictionForce[0] *= surface.frictionX;
 	frictionForce[1] *= surface.frictionY;
 
-	//TODO Ignoring feedback
+	//Ignoring feedback
 
 	// Friction force in world space
 	MathVector<double, 3> worldFrictionForce = xAxis * frictionForce[0] + yAxis * frictionForce[1];
@@ -448,7 +446,7 @@ void CarDynamics::applyWheelTorque(double dt, double driveTorque, int i, MathVec
 	double frictionTorque = tireFriction[0] * wheel.getRadius();
 	double wheelTorque = driveTorque - frictionTorque;
 	double lockUpTorque = wheel.getLockUpTorque(dt) - wheelTorque; // Torque needed to lock up the wheel
-	double angVel = wheel.getAngularVelocity(); if (angVel < 0.0) angVel = -angVel;
+	double angVel = fabs(wheel.getAngularVelocity());
 	double brakeTorque = brake.getTorque() + wheel.fluidRes * angVel; // Fluid resistance
 
 	// Brake and rolling resistance torque should never exceed lock up torque
@@ -457,7 +455,7 @@ void CarDynamics::applyWheelTorque(double dt, double driveTorque, int i, MathVec
 	} else if (lockUpTorque < 0 && lockUpTorque < -brakeTorque) {
 		brake.setWillLock(false); wheelTorque -= brakeTorque;
 	} else {
-		brake.setWillLock(true); wheelTorque = wheel.getLockUpTorque(dt);
+		brake.setWillLock(true);  wheelTorque = wheel.getLockUpTorque(dt);
 	}
 
 
@@ -483,5 +481,81 @@ void CarDynamics::applyWheelTorque(double dt, double driveTorque, int i, MathVec
 			(-getBodyOrientation()).rotateVector(v);
 			applyTorque(v);
 		}
+	}
+}
+
+// Anti-lock braking system
+void CarDynamics::doABS(int i, double normalForce) {
+	WheelPosition wp = WheelPosition(i);
+	double brakeThresh = 0.1;
+	double brakeSetting = brakes[i].getBrakeFactor();
+
+	// Brake setting must be past threshold
+	if (brakeSetting > brakeThresh) {
+		double maxSpeed = 0;
+		for (int j = 0; j < numWheels; j++) {
+			maxSpeed = std::max(maxSpeed, wheels[i].getAngularVelocity());
+		}
+
+		// Wheels must be moving fast enough
+		if (maxSpeed > 6.0) {
+			double sp(0), ah(0); // sp is the ideal slip ratio given tire loading
+			getTire(wp)->lookUpSigmaHatAlphaHat(normalForce, sp, ah);
+
+			double error = -wheels[i].slips.slide - sp;
+			double thresholdEng = 0.0, thresholdDis = -sp / 2.0;
+
+			if (error > thresholdEng && !absActive[i]) absActive[i] = true;
+			if (error < thresholdDis &&  absActive[i]) absActive[i] = false;
+		} else {
+			absActive[i] = false;
+		}
+	} else {
+		absActive[i] = false;
+	}
+
+	if (absActive[i]) brakes[wp].setBrakeFactor(0.0);
+}
+
+// Traction control system
+void CarDynamics::doTCS(int i, double normalForce) {
+	double gasThresh = 0.1;
+	double gas = engine.getThrottle();
+
+	// Throttle must be past threshold
+	if (gas > gasThresh) {
+		// See if we're spinning faster than the rest of the wheels
+		double maxSpinDiff = 0;
+		double myRotationalSpeed = wheels[i].getAngularVelocity();
+		for (int j = 0; j < numWheels; j++) {
+			double spinDiff = myRotationalSpeed - wheels[j].getAngularVelocity();
+			spinDiff = fabs(spinDiff);
+			maxSpinDiff = std::max(spinDiff, maxSpinDiff);
+		}
+
+		// Don't engage if all wheels are moving at the same rate
+		if (maxSpinDiff > 1.0) {
+			double sp(0), ah(0);
+			getTire(WheelPosition(i))->lookUpSigmaHatAlphaHat(normalForce, sp, ah);
+
+			double sense = transmission.getGear() < 0 ? -1.0 : 1.0;
+
+			double error = wheels[i].slips.slide * sense - sp;
+			double thresholdEng = 0.0, thresholdDis = -sp / 2.0;
+
+			if (error > thresholdEng && !tcsActive[i]) tcsActive[i] = true;
+			if (error < thresholdDis &&  tcsActive[i]) tcsActive[i] = false;
+
+			if (tcsActive[i]) {
+				double curClutch = clamp(clutch.getClutch(), 0, 1);
+				gas -= error * 10.0 * curClutch;
+				gas = clamp(gas, 0, 1);
+				engine.setThrottle(gas);
+			}
+		} else {
+			tcsActive[i] = false;
+		}
+	} else {
+		tcsActive[i] = false;
 	}
 }

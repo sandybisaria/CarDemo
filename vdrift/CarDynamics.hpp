@@ -45,6 +45,7 @@ public:
 	void init(MathVector<double, 3> pos, Quaternion<double> rot, CollisionWorld& world);
 
 	void alignWithGround();
+	CarTire* getTire(WheelPosition wp) const { return wheelContact[wp].getSurface().tire; }
 
 	// Bullet interface
 	virtual void updateAction(btCollisionWorld* collisionWorld, btScalar deltaTimeStep);
@@ -199,6 +200,9 @@ private:
 	// Traction control state
 	bool absOn, tcsOn;
 	std::vector<int> absActive, tcsActive;
+
+	void doABS(int i, double normalForce);
+	void doTCS(int i, double normalForce);
 
 	// Chassis state
 	btRigidBody* chassis;

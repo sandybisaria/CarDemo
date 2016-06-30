@@ -10,7 +10,7 @@ double CarDynamics::getSpeedDir() const {
 	getBodyOrientation().rotateVector(v);
 
 	double vel = body.getVelocity().dot(v); // Car body vel in local car dir
-	return sqrt(vel * vel); //TODO Should this be fabs?
+	return fabs(vel);
 }
 
 Quaternion<double> CarDynamics::getWheelOrientation(WheelPosition wp) const {
@@ -34,8 +34,8 @@ MathVector<double, 3> CarDynamics::getWheelPosition(WheelPosition wp, double dis
 }
 
 MathVector<double, 3> CarDynamics::getLocalWheelPosition(WheelPosition wp, double displacementPercent) const {
-	const MathVector<double, 3>& wheelExt = wheels[wp].getExtendedPosition();
-	const MathVector<double, 3>& hinge = suspension[wp].getHinge();
+	MathVector<double, 3> wheelExt = wheels[wp].getExtendedPosition();
+	MathVector<double, 3> hinge = suspension[wp].getHinge();
 	MathVector<double, 3> relWheelExt = wheelExt - hinge;
 	MathVector<double, 3> up(0, 0, 1);
 	MathVector<double, 3> rotAxis = up.cross(relWheelExt.normalized());
@@ -79,14 +79,15 @@ Quaternion<double> CarDynamics::getWheelSteeringAndSuspensionOrientation(WheelPo
 
 MathVector<double, 3> CarDynamics::localToWorld(const MathVector<double, 3>& local) const {
 	MathVector<double, 3> position = local - centerOfMass;
-	body.getOrientation().rotateVector(position);
+	getBodyOrientation().rotateVector(position);
 	return position + body.getPosition();
 }
 
 void CarDynamics::updateWheelTransform() {
 	for (int i = 0; i < numWheels; i++) {
-		wheelPos[i] = getWheelPositionAtDisplacement(WheelPosition(i), suspension[i].getDisplacementPercent());
-		wheelRots[i] = getBodyOrientation() * getWheelSteeringAndSuspensionOrientation(WheelPosition(i));
+		WheelPosition wp; wp = WheelPosition(i);
+		wheelPos[i] = getWheelPositionAtDisplacement(wp, suspension[i].getDisplacementPercent());
+		wheelRots[i] = getBodyOrientation() * getWheelSteeringAndSuspensionOrientation(wp);
 	}
 }
 

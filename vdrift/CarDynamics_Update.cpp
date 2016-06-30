@@ -46,7 +46,7 @@ void CarDynamics::updateWheelContacts() {
 		CollisionContact& wheelCon = wheelContact[i];
 		MathVector<float, 3> rayStart = localToWorld(wheels[i].getExtendedPosition());
 		rayStart = rayStart - rayDir * wheels[i].getRadius();
-		float rayLen = 1.5;
+		float rayLen = 1.5f;
 
 		world->castRay(rayStart, rayDir, rayLen, chassis, wheelCon, this, i, false); // False because we have car collisions
 	}
@@ -57,17 +57,16 @@ void CarDynamics::tick(double dt) {
 	// Must happen before updateDriveline
 	updateTransmission(dt);
 
-	const int numReps = 30; //TODO Would be from SETTINGS
+	const int numReps = 60; //TODO Going off of game-default.cfg!
 	const float internalDt = dt / numReps;
 	for (int i = 0; i < numReps; i++) {
 		double driveTorque[MAX_WHEEL_COUNT];
 		updateDriveline(internalDt, driveTorque);
 		updateBody(internalDt, driveTorque);
-		//TODO Ignoring feedback var
 	}
 
 	fuelTank.consume(engine.fuelRate() * dt);
-	//TODO Ignoring fHitTime;
+	//TODO Technically the mass should update...
 }
 
 
@@ -75,27 +74,27 @@ void CarDynamics::synchronizeChassis() {
 	chassis->setLinearVelocity(toBulletVector(body.getVelocity()));
 	chassis->setAngularVelocity(toBulletVector(body.getAngularVelocity()));
 
-	std::cout << "VELOCITY SYNC: " << body.getVelocity() << std::endl;
+//	std::cout << "VELOCITY SYNC: " << body.getVelocity() << std::endl;
 }
 
 void CarDynamics::updateBody(double dt, double driveTorque[]) {
 	body.integrateStep1(dt);
-	//TODO Skipping camera body, camera bounce
+	//Skipping camera body, camera bounce
 
 	updateWheelVelocity();
 	applyEngineTorqueToBody();
 	applyAerodynamicsToBody();
 
-	//TODO Care about scene damage, wind, car flips, boosts?
+	//Don't care about scene damage, wind, car flips, boosts
 
 	int i;
-	double normalForce;
+	double normalForce[MAX_WHEEL_COUNT];
 	for (i = 0; i < numWheels; i++) {
 		MathVector<double, 3> suspForce = updateSuspension(i, dt);
-		normalForce = suspForce.dot(wheelContact[i].getNormal());
-		if (normalForce < 0) normalForce = 0;
+		normalForce[i] = suspForce.dot(wheelContact[i].getNormal());
+		if (normalForce[i] < 0) normalForce[i] = 0;
 
-		MathVector<double, 3> tireFriction = applyTireForce(i, normalForce, wheelRots[i]);
+		MathVector<double, 3> tireFriction = applyTireForce(i, normalForce[i], wheelRots[i]);
 		applyWheelTorque(dt, driveTorque[i], i, tireFriction, wheelRots[i]);
 	}
 
@@ -108,5 +107,8 @@ void CarDynamics::updateBody(double dt, double driveTorque[]) {
 
 	interpolateWheelContacts(dt);
 
-	//TODO Add ABS and TCS
+	for (i = 0; i < numWheels; i++) {
+		if (absOn) doABS(i, normalForce[i]);
+		if (tcsOn) doTCS(i, normalForce[i]);
+	}
 }
