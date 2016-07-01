@@ -75,6 +75,7 @@ void CarDynamics::updateTransmission(double dt) {
 		else if (gear >= 0 && mps < -3)
 			gear = -1;
 		else if (autorear && shifted && remShiftTime <= 0) {
+			// Auto-rear gear
 			double gas = engine.getThrottle() * 0.8;
 			gas -= brakes[0].getBrakeFactor();
 
@@ -83,8 +84,9 @@ void CarDynamics::updateTransmission(double dt) {
 
 			const double spdMarg = 2.0;
 			const double spd = getSpeed();
-			if (g < -0.5 && spd < spdMarg && gear == 1) gear = -1;
-			else if (g < -0.5 && spd < spdMarg && gear == -1) gear = 1;
+
+				 if (g < -0.5 && spd < spdMarg && gear ==  1) gear = -1;
+			else if (g < -0.5 && spd < spdMarg && gear == -1) gear =  1;
 		}
 
 		shiftGear(gear);

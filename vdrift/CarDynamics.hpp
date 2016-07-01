@@ -122,9 +122,11 @@ private:
 	enum { FWD = 3, RWD = 12, AWD = 15 } drive;
 	double driveshaftRPM;
 
-	bool autoclutch, autoshift, autorear, shifted; //TODO Configurable in settings
+	bool autoclutch, autoshift, autorear, shifted;
 	double shiftTime, remShiftTime, lastAutoClutch;
-	int gearToShift; // Analog to shift_gear
+	int gearToShift;
+	// "shifted" is false if the transmission has not shifted to "gearToShift" yet.
+	// It is set to true when it has
 
 	// Wheel state
 	int numWheels;

@@ -42,6 +42,8 @@ void Car::setup(std::string carName, Ogre::SceneManager* sceneMgr, CollisionWorl
 
 	if (!loadFromConfig(world)) return; //TODO With error
 
+	dyn->shiftGear(1); // Start off in first gear!
+
 	mSceneMgr = sceneMgr;
 	loadModel();
 }
@@ -63,7 +65,7 @@ void Car::handleInputs(const std::vector<float>& inputs) {
 	bool rear = curGear == -1; // Is car in reverse?
 
 	// We assume that we use -1 when trying to drive in reverse; change in the future...
-	float brake = !rear? inputs[CarInput::THROTTLE] : inputs[CarInput::BRAKE];
+	float brake = !rear? inputs[CarInput::BRAKE] : inputs[CarInput::THROTTLE];
 	dyn->setBrake(brake);
 
 	dyn->setHandBrake(inputs[CarInput::HANDBRAKE]);
@@ -77,18 +79,15 @@ void Car::handleInputs(const std::vector<float>& inputs) {
 	if (inputs[CarInput::SHIFT_UP]   == 1.0) gearChange =  1.0;
 	if (inputs[CarInput::SHIFT_DOWN] == 1.0) gearChange = -1.0;
 	int newGear = curGear + gearChange;
-	dyn->shiftGear(gearChange);
+	dyn->shiftGear(newGear);
 
 	float throttle = !rear ? inputs[CarInput::THROTTLE] : inputs[CarInput::BRAKE];
-	throttle = 1;
 	dyn->setThrottle(throttle);
 
 	float clutch = 1 - inputs[CarInput::CLUTCH];
 	dyn->setClutch(clutch);
-}
 
-void Car::requestedConfiguration(sh::MaterialInstance* m, const std::string& configuration) {
-
+	std::cout << "Thr" << throttle << "Clu" << clutch << "Gea" << newGear << "Ste" << steerValue << "Bra" << brake << std::endl;
 }
 
 void Car::createdConfiguration(sh::MaterialInstance* m, const std::string& configuration) {
@@ -110,24 +109,24 @@ bool Car::loadFromConfig(CollisionWorld& world) {
 		setNumWheels(nw);
 
 	// Load car collision params (Stuntrally puts it outside of CARDYNAMICS so...
-	// com
+	// Common offsets
 	dyn->comOfsL = 0.f;  cf.getParam("collision.com_ofs_L", dyn->comOfsL);
 	dyn->comOfsH = 0.f;  cf.getParam("collision.com_ofs_H", dyn->comOfsH);
-	// dim
+	// Collision dimension
 	dyn->collR   = 0.3f;  cf.getParam("collision.radius", 	 dyn->collR);
 	dyn->collR2m = 0.6f;  cf.getParam("collision.radius2mul",dyn->collR2m);
 	dyn->collH   = 0.45f; cf.getParam("collision.height", 	 dyn->collH);
 	dyn->collW   = 0.5f;  cf.getParam("collision.width",  	 dyn->collW);
-	// ofs
+	// Offsets
 	dyn->collLofs = 0.f;  cf.getParam("collision.offsetL", dyn->collLofs);
 	dyn->collWofs = 0.f;  cf.getParam("collision.offsetW", dyn->collWofs);
 	dyn->collHofs = 0.f;  cf.getParam("collision.offsetH", dyn->collHofs);
 	dyn->collLofs -= dyn->comOfsL;
 	dyn->collHofs -= dyn->comOfsH;
-	// L
+	// Length
 	dyn->collPosLFront = 1.9f; cf.getParam("collision.posLfront", dyn->collPosLFront);
 	dyn->collPosLBack = -1.9f; cf.getParam("collision.posLrear",  dyn->collPosLBack);
-	// w
+	// width
 	dyn->collFrWMul  = 0.2f;   cf.getParam("collision.FrWmul",  dyn->collFrWMul);
 	dyn->collFrHMul  = 1.0f;   cf.getParam("collision.FrHmul",  dyn->collFrHMul);
 	dyn->collTopWMul = 0.8f;   cf.getParam("collision.TopWmul", dyn->collTopWMul);
@@ -135,11 +134,11 @@ bool Car::loadFromConfig(CollisionWorld& world) {
 	dyn->collTopFr    = 0.4f;  cf.getParam("collision.TopFr",    dyn->collTopFr);
 	dyn->collTopMid   =-0.3f;  cf.getParam("collision.TopMid",   dyn->collTopMid);
 	dyn->collTopBack  =-1.1f;  cf.getParam("collision.TopBack",  dyn->collTopBack);
-	// Top h mul
+	// Top H multiplier
 	dyn->collTopFrHm  = 0.2f;  cf.getParam("collision.TopFrHm",  dyn->collTopFrHm);
 	dyn->collTopMidHm = 0.4f;  cf.getParam("collision.TopMidHm", dyn->collTopMidHm);
 	dyn->collTopBackHm= 0.2f;  cf.getParam("collision.TopBackHm",dyn->collTopBackHm);
-
+	// Friction
 	dyn->collFriction = 0.4f;  cf.getParam("collision.friction",  dyn->collFriction);
 	dyn->collFlTrigH  = 0.f;   cf.getParam("collision.fluidTrigH",dyn->collFlTrigH);
 	dyn->collFlTrigH -= dyn->comOfsH;
@@ -185,6 +184,7 @@ void Car::loadModel() {
 	// Create wheels and brakes
 	//TODO Add support for custom wheel types, as in CarModel::Create()
 	for (int w = 0; w < numWheels; w++) {
+		// Wheel nodes are parented to the root!
 		wheelNodes[w] = mSceneMgr->getRootSceneNode()->createChildSceneNode();
 		forDeletion(wheelNodes[w]);
 		wheelNodes[w]->attachObject(loadPart("wheel", w));
@@ -204,6 +204,8 @@ void Car::loadModel() {
 }
 
 void Car::loadMaterials() {
+#define idToString Ogre::StringConverter::toString(mId)
+
 	std::string carBodyMtr = "car_body";
 	if (Ogre::MaterialManager::getSingleton().resourceExists(carBodyMtr + "_" + mCarName)) {
 		carBodyMtr += "_" + mCarName;
@@ -217,9 +219,8 @@ void Car::loadMaterials() {
 	mtrNames[mtrCarBrake] = carBrakeMtr;
 
 	for (int i=0; i < 1; ++i) {
-		sh::Factory::getInstance().destroyMaterialInstance(mtrNames[i] + Ogre::StringConverter::toString(mId));
-		sh::MaterialInstance* m = sh::Factory::getInstance().createMaterialInstance(mtrNames[i] + Ogre::StringConverter::toString(mId),
-																					mtrNames[i]);
+		sh::Factory::getInstance().destroyMaterialInstance(mtrNames[i] + idToString);
+		sh::MaterialInstance* m = sh::Factory::getInstance().createMaterialInstance(mtrNames[i] + idToString, mtrNames[i]);
 
 		m->setListener(this);
 
@@ -237,7 +238,7 @@ void Car::loadMaterials() {
 			m->setProperty("reflMap", sh::makeProperty<sh::StringValue>(new sh::StringValue(mCarName + "_" + v)));
 		}
 
-		mtrNames[i] = mtrNames[i] + Ogre::StringConverter::toString(mId);
+		mtrNames[i] = mtrNames[i] + idToString;
 	}
 
 	updateLightMap();
@@ -246,8 +247,8 @@ void Car::loadMaterials() {
 Ogre::Entity* Car::loadPart(std::string partType, int partId) {
 	std::string extPartType = "_" + partType;
 
-	Ogre::Entity* entity = mSceneMgr->createEntity(resGrpId + extPartType +
-												   (partId != -1 ? Ogre::StringConverter::toString(partId) : ""),
+	// partId has default value of -1 if not passed in
+	Ogre::Entity* entity = mSceneMgr->createEntity(resGrpId + extPartType + (partId != -1 ? Ogre::StringConverter::toString(partId) : ""),
 												   mCarName + extPartType + ".mesh", resGrpId);
 	forDeletion(entity);
 
@@ -302,7 +303,6 @@ void Car::updateModel() {
 		WheelPosition wp; wp = WheelPosition(w);
 
 		Ogre::Vector3 whPos = Axes::vectorToOgre(dyn->getWheelPosition(wp));
-		std::cout << "In update" << whPos << std::endl;
 		wheelNodes[w]->setPosition(whPos);
 
 		Ogre::Quaternion whRot; whRot = Axes::doWhQuatToOgre(dyn->getWheelOrientation(wp));

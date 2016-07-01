@@ -73,8 +73,6 @@ void CarDynamics::tick(double dt) {
 void CarDynamics::synchronizeChassis() {
 	chassis->setLinearVelocity(toBulletVector(body.getVelocity()));
 	chassis->setAngularVelocity(toBulletVector(body.getAngularVelocity()));
-
-//	std::cout << "VELOCITY SYNC: " << body.getVelocity() << std::endl;
 }
 
 void CarDynamics::updateBody(double dt, double driveTorque[]) {
