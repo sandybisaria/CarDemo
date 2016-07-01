@@ -236,5 +236,6 @@ private:
 	FRIEND_TEST(CarDynamics, ApplyAerodynamicsToBody);
 	FRIEND_TEST(CarDynamics, UpdateSuspension);
 	FRIEND_TEST(CarDynamics, ApplyTireForce);
+	FRIEND_TEST(CarDynamics, GetWheelSteeringAndSuspensionOrientation);
 #endif
 };

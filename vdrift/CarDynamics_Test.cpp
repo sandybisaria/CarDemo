@@ -133,4 +133,22 @@ TEST(CarDynamics, ApplyTireForce) {
 	//TODO Finish test case
 }
 
+TEST(CarDynamics, GetWheelSteeringAndSuspensionOrientation) {
+	CarDynamics dyn;
+
+	CarWheel& wheel = dyn.wheels[0]; wheel.setSteerAngle(15);
+	CarSuspension& susp = dyn.suspension[0]; susp.setCamber(-1.f); susp.setToe(0.2);
+
+	Quaternion<double> res = dyn.getWheelSteeringAndSuspensionOrientation(WheelPosition(0));
+	Quaternion<double> expected(0.0086498776, 0.00115414008, -0.132251354, 0.991177798);
+	for (int i = 0; i < 4; i++) { EXPECT_NEAR_HP(res[i], expected[i]); }
+
+	CarWheel& wheel1 = dyn.wheels[1]; wheel1.setSteerAngle(-5);
+	CarSuspension& susp1 = dyn.suspension[1]; susp1.setCamber(-1.f); susp1.setToe(0.2);
+
+	res = dyn.getWheelSteeringAndSuspensionOrientation(WheelPosition(1));
+	expected = Quaternion<double>(-0.00871755214, 0.000395861726, 0.0453612608, 0.998932532);
+	for (int i = 0; i < 4; i++) { EXPECT_NEAR_HP(res[i], expected[i]); }
+}
+
 #endif

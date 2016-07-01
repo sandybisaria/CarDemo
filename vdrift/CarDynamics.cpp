@@ -51,7 +51,6 @@ MathVector<double, 3> CarDynamics::getLocalWheelPosition(WheelPosition wp, doubl
 	hingeRotate.rotateVector(localWheelPos);
 
 	return localWheelPos + hinge;
-
 }
 
 // World-space position of wheel center when suspension is compressed by the displacement percent (1.0 = fully compressed)
@@ -70,7 +69,7 @@ Quaternion<double> CarDynamics::getWheelSteeringAndSuspensionOrientation(WheelPo
 	camber.rotate(camberRot, 1, 0, 0);
 
 	Quaternion<double> toe;
-	double toeRot = -suspension[wp].getToe() * M_PI / 180.0;
+	double toeRot = suspension[wp].getToe() * M_PI / 180.0;
 	if (wp % 2 == 0) toeRot = -toeRot;
 	toe.rotate(toeRot, 0, 0, 1);
 

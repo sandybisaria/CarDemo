@@ -188,7 +188,8 @@ void App::setupScene() {
 	mCamera->setAspectRatio(Ogre::Real(vp->getActualWidth() /
 									   vp->getActualHeight()));
 
-	if (!loadSurfaces()) return; //TODO Error: Can't load surfaces
+	if (!loadSurfaces())
+		return; //TODO Error: Can't load surfaces
 
 	//TODO Set up GUI?
 	mScene = new Scene(mSceneMgr);
