@@ -232,10 +232,11 @@ private:
 #ifdef COMPILE_UNIT_TESTS
 	FRIEND_TEST(CarDynamics, CalculateMass);
 	FRIEND_TEST(CarDynamics, GetSpeedMPS);
-	FRIEND_TEST(CarDynamics, GetSteerAngle);
+	FRIEND_TEST(CarDynamics, SetSteering);
 	FRIEND_TEST(CarDynamics, ApplyAerodynamicsToBody);
 	FRIEND_TEST(CarDynamics, UpdateSuspension);
 	FRIEND_TEST(CarDynamics, ApplyTireForce);
 	FRIEND_TEST(CarDynamics, GetWheelSteeringAndSuspensionOrientation);
+	FRIEND_TEST(CarDynamics, GetLocalWheelPosition);
 #endif
 };

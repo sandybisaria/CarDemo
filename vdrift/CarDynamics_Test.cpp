@@ -47,7 +47,7 @@ TEST(CarDynamics, GetSpeedMPS) {
 	EXPECT_NEAR_HP(dyn.getSpeedMPS(), 464);
 }
 
-TEST(CarDynamics, GetSteerAngle) {
+TEST(CarDynamics, SetSteering) {
 	CarDynamics dyn;
 
 	dyn.maxAngle = 40;
@@ -148,6 +148,28 @@ TEST(CarDynamics, GetWheelSteeringAndSuspensionOrientation) {
 
 	res = dyn.getWheelSteeringAndSuspensionOrientation(WheelPosition(1));
 	expected = Quaternion<double>(-0.00871755214, 0.000395861726, 0.0453612608, 0.998932532);
+	for (int i = 0; i < 4; i++) { EXPECT_NEAR_HP(res[i], expected[i]); }
+}
+
+TEST(CarDynamics, GetLocalWheelPosition) {
+	CarDynamics dyn;
+
+	CarWheel& wheel = dyn.wheels[0];
+	wheel.setExtendedPosition(MathVector<double, 3>(-0.8345, 1.12, -0.37));
+
+	CarSuspension& susp = dyn.suspension[0]; susp.setTravel(0.22);
+	susp.setHinge(MathVector<double, 3>(-0.60, 1.12, -0.30));
+
+	MathVector<double, 3> res = dyn.getLocalWheelPosition(WheelPosition(0), 0.5);
+	MathVector<double, 3> expected = MathVector<double, 3>(-0.842289085, 1.12, -0.265558027);
+	for (int i = 0; i < 4; i++) { EXPECT_NEAR_HP(res[i], expected[i]); }
+
+	res = dyn.getLocalWheelPosition(WheelPosition(0), 0.1);
+	expected = MathVector<double, 3>(-0.839653157, 1.12, -0.349564246);
+	for (int i = 0; i < 4; i++) { EXPECT_NEAR_HP(res[i], expected[i]); }
+
+	res = dyn.getLocalWheelPosition(WheelPosition(0), 1.f);
+	expected = MathVector<double, 3>(-0.805248213, 1.12, -0.166720515);
 	for (int i = 0; i < 4; i++) { EXPECT_NEAR_HP(res[i], expected[i]); }
 }
 

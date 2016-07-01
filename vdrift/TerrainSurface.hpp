@@ -43,6 +43,6 @@ public:
 };
 
 //TODO Will making char[][] fix this?
-const static std::string terrTypeName[TerrainSurface::NumTypes + 1] {
-	"[none]", "Asphalt", "Grass", "Gravel", "Concrete", "Sand", "Cobbles", "[all]"
-};
+//const static std::string terrTypeName[TerrainSurface::NumTypes + 1] {
+//	"[none]", "Asphalt", "Grass", "Gravel", "Concrete", "Sand", "Cobbles", "[all]"
+//};
