@@ -28,6 +28,9 @@ public:
 	void setup(Ogre::SceneManager* sceneMgr);
 	void update(float dt);
 
+	Ogre::Vector3 getCameraPosition();
+	Ogre::Quaternion getCameraOrientation();
+
 	CollisionWorld* getCollisionWorld() { return world; }
 
 	Scene* scene;
@@ -49,6 +52,6 @@ private:
 
 	BtOgre::DebugDrawer* debugDraw;
 
-	const double frameRate; //TODO Configurable
-	int targetTime, frame;
+	const double frameRate;
+	int targetTime;
 };

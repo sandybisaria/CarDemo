@@ -73,8 +73,9 @@ void Scene::createBulletTerrain() {
 	Ogre::Terrain* baseTerrain = mTerrainGroup->getTerrain(0, 0);
 	btHeightfieldTerrainShape* hfShape = new btHeightfieldTerrainShape(
 			baseTerrain->getSize(), baseTerrain->getSize(),
-			baseTerrain->getHeightData(), 1, baseTerrain->getMinHeight(), baseTerrain->getMaxHeight(),
+			baseTerrain->getHeightData(), 1, 0, 0, //baseTerrain->getMinHeight(), baseTerrain->getMaxHeight(),
 			2, PHY_FLOAT, false);
+	// Min and max height were set to 0 to force the terrain to be completely flat
 	hfShape->setUseDiamondSubdivision(true);
 
 	float metersBetweenVerts = baseTerrain->getWorldSize() / (baseTerrain->getSize() - 1);

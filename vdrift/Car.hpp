@@ -27,6 +27,8 @@ public:
 
 	// Interface methods
 	double getSpeedDir();
+	Ogre::Vector3 getPosition() { return mainNode->getPosition(); }
+	Ogre::Quaternion getOrientation() { return mainNode->getOrientation(); }
 
 	virtual void requestedConfiguration(sh::MaterialInstance* m, const std::string& configuration) { }
 	virtual void createdConfiguration(sh::MaterialInstance* m, const std::string& configuration);

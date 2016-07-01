@@ -342,6 +342,9 @@ void App::updateCamera(const Ogre::FrameEvent& evt) {
 	} if (mKeyboard->isKeyDown(OIS::KC_D)) {
 		mCameraNode->yaw(Ogre::Radian(-0.005), Ogre::Node::TS_LOCAL);
 	}
+
+//	std::cout << mSim->getCameraPosition() << std::endl;
+//	std::cout << mSim->getCameraOrientation() << std::endl;
 }
 
 void App::windowClosed(Ogre::RenderWindow* rw) {

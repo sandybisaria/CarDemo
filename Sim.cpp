@@ -3,7 +3,7 @@
 Sim::Sim(App* app)
 	: mSceneMgr(0), scene(0), mApp(app),
 	  world(0), car(0), carInput(0),
-	  frameRate(1.f / 60.f), targetTime(0), frame(0),
+	  frameRate(1.f / 60.f), targetTime(0),
 	  debugDraw(NULL) {
 }
 
@@ -58,8 +58,6 @@ void Sim::update(float dt) {
 //
 //	// Increment game logic by as many tick periods necessary
 //	while (targetTime > tickPeriod && curTicks < maxTicks) {
-//		frame++;
-//
 //		// Advance game logic
 //		car->updatePreviousVelocity(); // Was in the loop for fluids...
 //		if (tickPeriod > 0) world->update(tickPeriod); // Update physics
@@ -77,6 +75,14 @@ void Sim::update(float dt) {
 //		debugDraw->setDebugMode(1);
 //		debugDraw->step();
 //	}
+}
+
+Ogre::Vector3 Sim::getCameraPosition() {
+	return car->getPosition();
+}
+
+Ogre::Quaternion Sim::getCameraOrientation() {
+	return car->getOrientation();
 }
 
 TerrainSurface* Sim::getTerrainSurface(std::string name) { return mApp->getTerrainSurface(name); }
