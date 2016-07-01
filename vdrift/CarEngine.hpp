@@ -11,9 +11,8 @@ public:
 	// Default makes an S2000-like car
 	CarEngine();
 
-	double realPowTorqueMul; //TODO Is not used or even assigned to!
+	double realPowTorqueMul; //TODO Is not used or even assigned to
 
-	//TODO Make private ASAP
 	double getTorqueCurve(const double curThrottle, const double curRPM) const;
 	double getFrictionTorque(double curAngVel, double fricFactor, double throttlePos);
 

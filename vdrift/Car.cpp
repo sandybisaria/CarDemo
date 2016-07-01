@@ -9,7 +9,7 @@
 #include <OgreRoot.h>
 #include <OgreEntity.h>
 
-#include <iostream> //TODO DEL
+#include <iostream>
 
 Car::Car(int id)
 	: mId(id), mSceneMgr(0), mainNode(0),
@@ -87,7 +87,7 @@ void Car::handleInputs(const std::vector<float>& inputs) {
 	float clutch = 1 - inputs[CarInput::CLUTCH];
 	dyn->setClutch(clutch);
 
-	std::cout << "Thr" << throttle << "Clu" << clutch << "Gea" << newGear << "Ste" << steerValue << "Bra" << brake << std::endl;
+//	std::cout << "Thr" << throttle << "Clu" << clutch << "Gea" << newGear << "Ste" << steerValue << "Bra" << brake << std::endl;
 }
 
 void Car::createdConfiguration(sh::MaterialInstance* m, const std::string& configuration) {
@@ -173,8 +173,8 @@ void Car::loadModel() {
 	Ogre::SceneNode* carNode = mainNode->createChildSceneNode();
 	forDeletion(carNode);
 
-	//TODO Allow for camera to follow car (using FollowCamera class)?
-	//TODO Create car reflection (using CarReflection class)?
+	//TODO Allow for camera to follow car (based on FollowCamera class)?
+	//TODO Create car reflection (based on CarReflection class)?
 
 	// Create car body, interior, and glass
 	carNode->attachObject(loadPart("body"));
@@ -224,7 +224,7 @@ void Car::loadMaterials() {
 
 		m->setListener(this);
 
-		// Change textures for the car
+		// Set texture properties for the car
 		if (m->hasProperty("diffuseMap")) {
 			std::string v = sh::retrieveValue<sh::StringValue>(m->getProperty("diffuseMap"), 0).get();
 			m->setProperty("diffuseMap", sh::makeProperty<sh::StringValue>(new sh::StringValue(mCarName + "_" + v)));
@@ -266,8 +266,8 @@ void Car::changeColor() {
 //	float c_h = pSet->gui.car_hue[i], c_s = pSet->gui.car_sat[i],
 //		  c_v = pSet->gui.car_val[i], gloss = pSet->gui.car_gloss[i], refl = pSet->gui.car_refl[i];
 //	carColor.setHSB(1-c_h, c_s, c_v);  //set, mini pos clr
+	//TODO Hard-coded color, glossiness, and reflectiveness; will need to add setting later
 
-	//TODO Hard-coded color; will need to add setting later
 	Ogre::MaterialPtr mtr = Ogre::MaterialManager::getSingleton().getByName(mtrNames[mtrCarBody]);
 	if (!mtr.isNull()) {
 		Ogre::Material::TechniqueIterator techIt = mtr->getTechniqueIterator();
@@ -315,9 +315,9 @@ void Car::updateModel() {
 			WheelPosition wp; wp = WheelPosition(w);
 			brakeNodes[w]->_setDerivedOrientation(mainNode->getOrientation());
 
-			// This transformation code is just so the brake mesh can have the same alignment as the wheel mesh
+			// This transformation code is needed so the brake mesh can have the same alignment as the wheel mesh
 			brakeNodes[w]->yaw(Ogre::Degree(-90), Ogre::Node::TS_LOCAL);
-			if (w%2 == 1) brakeNodes[w]->setScale(-1, 1, 1);
+			if (w % 2 == 1) brakeNodes[w]->setScale(-1, 1, 1);
 
 			brakeNodes[w]->pitch(Ogre::Degree(180), Ogre::Node::TS_LOCAL);
 
@@ -348,5 +348,5 @@ void Car::updateLightMap() {
 		}
 	}
 
-	//Refer to CarModel::UpdateLightMap
+	// Refer to CarModel::UpdateLightMap
 }

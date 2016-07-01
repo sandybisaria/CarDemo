@@ -37,6 +37,7 @@ public:
 
 	TerrainSurface* getTerrainSurface(std::string name);
 
+	// Explicitly called by the App
 	void keyPressed(const OIS::KeyEvent& ke);
 	void keyReleased(const OIS::KeyEvent& ke);
 

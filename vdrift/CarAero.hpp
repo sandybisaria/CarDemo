@@ -21,7 +21,7 @@ public:
 
 	const MathVector<double, 3>& getPosition() const { return pos; }
 
-	// If updStats, then liftVec and dragVec will be updated during calculations
+	// If updStats == true, then liftVec and dragVec will be updated during calculations
 	MathVector<double, 3> getForce(const MathVector<double, 3>& bodyspaceWindVec, bool updStats = true) const {
 		MathVector<double, 3> dragV = bodyspaceWindVec * bodyspaceWindVec.magnitude() * 0.5 *
 									  airDens * dragCoeff * dragFrontArea;

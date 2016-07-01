@@ -29,6 +29,7 @@ public:
 
 	void run();
 
+	// Some resources are loaded during the App setup
 	TerrainSurface* getTerrainSurface(std::string name) { return &surfaces.at(surfaceMap.at(name)); }
 	CarTire* getTire(std::string name) { return &tires.at(tireMap.at(name)); }
 
@@ -43,7 +44,7 @@ private:
 
 	void setupScene();
 	bool loadSurfaces();
-	bool loadTire(std::string name);
+	bool loadTire(std::string name); // Each surface has its own tire type
 
 	void setupMaterials();
 	void setMaterialFactoryDefaults();

@@ -11,7 +11,7 @@ public:
 
 
 	float friction, frictionX, frictionY; // frictionX and frictionY are multipliers
-	float bumpWavelength, bumpAmplitude; //TODO Do we need "2" versions too?
+	float bumpWavelength, bumpAmplitude; // Omitted the "2" versions
 	float rollingDrag, rollingResist;
 
 	TYPE type;
@@ -19,7 +19,7 @@ public:
 	std::string tireName;
 	CarTire* tire;
 
-	static CarTire* TIRE_DEFAULT; //TODO Set in GAME::LoadTires (or its analog)
+	static CarTire* TIRE_DEFAULT; // Assigned during App::loadSurfaces
 
 	TerrainSurface()
 		: friction(1.0f), frictionX(1.0f), frictionY(1.0f),

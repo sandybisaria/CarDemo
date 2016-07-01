@@ -30,12 +30,13 @@ public:
 	Ogre::Vector3 getPosition() { return mainNode->getPosition(); }
 	Ogre::Quaternion getOrientation() { return mainNode->getOrientation(); }
 
+	// MaterialInstanceListener methods
 	virtual void requestedConfiguration(sh::MaterialInstance* m, const std::string& configuration) { }
 	virtual void createdConfiguration(sh::MaterialInstance* m, const std::string& configuration);
 
 private:
-	bool loadFromConfig(CollisionWorld& world);
-	void loadModel();
+	bool loadFromConfig(CollisionWorld& world); // Load .car file
+	void loadModel(); // Instantiate model nodes and meshes
 	void loadMaterials();
 
 	Ogre::Entity* loadPart(std::string partType, int partId = -1);

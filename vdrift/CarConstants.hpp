@@ -30,6 +30,7 @@ namespace CarInput {
 	};
 }
 
+// To convert between different .car file formats
 static void versionConvert(float& x, float& y, float& z) {
 	float tx = x, ty = y, tz = z;
 	x = ty;  y = -tx;  z = tz;
