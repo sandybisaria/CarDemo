@@ -150,7 +150,7 @@ bool Car::loadFromConfig(CollisionWorld& world) {
 	}
 
 	//TODO Load starting position/rotation from the scene
-	MathVector<double, 3> pos(0, 0, 0);
+	MathVector<double, 3> pos(0, 0, 1);
 	Quaternion<double> rot;
 
 	float stOfsY = 0.f;
@@ -183,13 +183,13 @@ void Car::loadModel() {
 	carNode->attachObject(loadPart("glass"));
 
 	// Create wheels and brakes
+	//TODO Add support for custom wheel types, as in CarModel::Create()
 	for (int w = 0; w < numWheels; w++) {
-		wheelNodes[w] = mainNode->createChildSceneNode();
+		wheelNodes[w] = mSceneMgr->getRootSceneNode()->createChildSceneNode();
 		forDeletion(wheelNodes[w]);
-		//TODO Add support for custom wheel types, as in CarModel::Create()
 		wheelNodes[w]->attachObject(loadPart("wheel", w));
 
-		brakeNodes[w] = mainNode->createChildSceneNode();
+		brakeNodes[w] = wheelNodes[w]->createChildSceneNode();
 		forDeletion(brakeNodes[w]);
 		brakeNodes[w]->attachObject(loadPart("brake", w));
 	}
@@ -289,6 +289,7 @@ void Car::changeColor() {
 }
 
 void Car::updateModel() {
+
 	// Main body
 	Ogre::Vector3 pos = Axes::vectorToOgre(dyn->getPosition());
 	mainNode->setPosition(pos);
@@ -301,6 +302,7 @@ void Car::updateModel() {
 		WheelPosition wp; wp = WheelPosition(w);
 
 		Ogre::Vector3 whPos = Axes::vectorToOgre(dyn->getWheelPosition(wp));
+		std::cout << "In update" << whPos << std::endl;
 		wheelNodes[w]->setPosition(whPos);
 
 		Ogre::Quaternion whRot; whRot = Axes::doWhQuatToOgre(dyn->getWheelOrientation(wp));

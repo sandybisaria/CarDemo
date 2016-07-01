@@ -28,18 +28,17 @@ public:
 	double getDisplacementPercent() const { return displacement / travel; } // 0.0 = fully extended; 1.0 = fully compressed
 
 	double getForce() const { return force; }
-	const double getForce(double displacement, double velocity) {
+	const double getForce(double displacement, double vel) {
 		double damping = bounce;
-		if (velocity < 0)
-			damping = rebound;
+		if (vel < 0) damping = rebound;
 
-		double dampFactor = damperFactors.interpolate(std::abs(velocity));
+		double dampFactor = damperFactors.interpolate(std::abs(vel));
 		double springFactor = springFactors.interpolate(displacement);
 
 		// Compressed -> spring force pushes car in positive z direction
 		double springForce = -displacement * springConstant * springFactor;
 		// Increasing compression -> damp force pushes car in positive z direction;
-		double dampForce = -velocity * damping * dampFactor;
+		double dampForce = -vel * damping * dampFactor;
 
 		double force = springForce + dampForce;
 		return force;

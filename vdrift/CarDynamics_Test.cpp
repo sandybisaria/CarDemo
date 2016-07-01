@@ -70,4 +70,67 @@ TEST(CarDynamics, GetSteerAngle) {
 	EXPECT_NEAR_HP(dyn.wheels[3].getSteerAngle(),		   0);
 }
 
+TEST(CarDynamics, ApplyAerodynamicsToBody) {
+	CarDynamics dyn; dyn.centerOfMass = MathVector<double, 3>(-1, -1, -1);
+	RigidBody& body = dyn.body;
+	body.setOrientation(Quaternion<double>(1, 1, 1, 1));
+	body.setVelocity(MathVector<double, 3>(2, 2, 2));
+	body.setInitialForce(MathVector<double, 3>(0.f));
+	body.setInitialTorque(MathVector<double, 3>(0.f));
+
+	CarAero drag, wingFront, wingRear;
+	drag.set(MathVector<double, 3>(0, 0.15, 0), 1.6, 0.20, 0, 0, 0);
+	wingFront.set(MathVector<double, 3>(0, 1.45, 0.2), 0, 0, 0.8, -3.6, 0.95);
+	wingFront.set(MathVector<double, 3>(0, -1.45, 0.2), 0, 0, 0.8, -4.7, 0.95);
+
+	dyn.chassis = new btRigidBody(0, NULL, NULL); dyn.chassis->setAngularVelocity(btVector3(2, 2, 2));
+	dyn.rotCoeff[0] = 200.0; dyn.rotCoeff[1] = 400.0; dyn.rotCoeff[2] = 900.0; dyn.rotCoeff[3] = 2.5;
+
+	for (int i = 0; i < 1000; i++) {
+		body.integrateStep1(0.01);
+		dyn.applyAerodynamicsToBody();
+		body.integrateStep2(0.01);
+	}
+	MathVector<double, 3> angVel = body.getAngularVelocity(), force = body.getForce(), torque = body.getTorque();
+	MathVector<double, 3> a(-17718.2757, -14840.0938, -15735.7441), b(0.f), c(-1865.92672, -1972.83195, -994.02445);
+	EXPECT_NEAR_HP(angVel[0], a[0]); EXPECT_NEAR_HP(angVel[1], a[1]); EXPECT_NEAR_HP(angVel[2], a[2]);
+	EXPECT_NEAR_HP(force[0],  b[0]); EXPECT_NEAR_HP(force[1],  b[1]); EXPECT_NEAR_HP(force[2],  b[2]);
+	EXPECT_NEAR_HP(torque[0], c[0]); EXPECT_NEAR_HP(torque[1], c[1]); EXPECT_NEAR_HP(torque[2], c[2]);
+
+	body.setInitialForce(MathVector<double, 3>(0.f)); body.setInitialTorque(MathVector<double, 3>(0.f));
+	dyn.aerodynamics.push_back(drag); dyn.aerodynamics.push_back(wingFront); dyn.aerodynamics.push_back(wingRear);
+	dyn.chassis->setAngularVelocity(btVector3(2, 2, 2));
+	for (int i = 0; i < 1000; i++) {
+		body.integrateStep1(0.01);
+		dyn.applyAerodynamicsToBody();
+		body.integrateStep2(0.01);
+	}
+	angVel = body.getAngularVelocity(), force = body.getForce(), torque = body.getTorque();
+	MathVector<double, 3> d(-34603.9238, -30323.9887, -31650.5396), e(-0.00480414042, -0.0051854746, -0.00856019825), f(-1786.2993, -977.643803, -1996.46943);
+	EXPECT_NEAR_HP(angVel[0], d[0]); EXPECT_NEAR_HP(angVel[1], d[1]); EXPECT_NEAR_HP(angVel[2], d[2]);
+	EXPECT_NEAR_HP(force[0],  e[0]); EXPECT_NEAR_HP(force[1],  e[1]); EXPECT_NEAR_HP(force[2],  e[2]);
+	EXPECT_NEAR_HP(torque[0], f[0]); EXPECT_NEAR_HP(torque[1], f[1]); EXPECT_NEAR_HP(torque[2], f[2]);
+}
+
+TEST(CarDynamics, UpdateSuspension) {
+	CarDynamics dyn; dyn.body.setOrientation(Quaternion<double>(1, 2, 3, 4));
+
+	dyn.suspension[0].setAntiRollK(8000); dyn.suspension[0].setTravel(0.22);
+	dyn.suspension[1].setAntiRollK(8000); dyn.suspension[1].setTravel(0.22);
+	dyn.wheels[0].setRadius(0.32);
+
+	TerrainSurface surface; surface.bumpWavelength = 0.17; surface.bumpAmplitude = 16.16;
+
+	CollisionContact contact;
+	contact.set(MathVector<double, 3>(0.0757, 0.0757, 0.0757), MathVector<double, 3>(0.f), 0.1, &surface, NULL, NULL);
+	dyn.wheelContact[0] = contact;
+
+	MathVector<double, 3> res = dyn.updateSuspension(0, 0.01);
+	EXPECT_NEAR_HP(res[0], 565400); EXPECT_NEAR_HP(res[1], 102800); EXPECT_NEAR_HP(res[2], 514000);
+}
+
+TEST(CarDynamics, ApplyTireForce) {
+	//TODO Finish test case
+}
+
 #endif

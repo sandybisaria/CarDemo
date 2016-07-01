@@ -309,7 +309,7 @@ MathVector<double, 3> CarDynamics::updateSuspension(int i, double dt) {
 
 	double phase = 0;
 	if (surface.bumpWavelength > 0.0001) phase = 2 * M_PI * (posX + posY) / surface.bumpWavelength;
-	double shift = 2.0 * sin(phase * sqrt(2)); //TODO Assume the "1.414214" is meant to be this
+	double shift = 2.0 * sin(phase * sqrt(2));
 	double amplitude = 0.25 * surface.bumpAmplitude;
 	double bumpOffset = amplitude * (sin(phase + shift) + sin(phase * sqrt(2)) - 2.0);
 

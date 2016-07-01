@@ -24,6 +24,7 @@ Quaternion<double> CarDynamics::getWheelOrientation(WheelPosition wp) const {
 MathVector<double, 3> CarDynamics::getWheelPosition(WheelPosition wp) const {
 	MathVector<double, 3> localPos = getLocalWheelPosition(wp, suspension[wp].getDisplacementPercent());
 	chassisRotation.rotateVector(localPos);
+	std::cout << "GetWheelPos " << chassisPosition << " -" << wp << "- " << localPos << std::endl;
 	return localPos + chassisPosition;
 }
 
