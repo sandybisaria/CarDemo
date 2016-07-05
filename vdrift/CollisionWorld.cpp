@@ -4,28 +4,32 @@
 #include "Bezier.hpp"
 #include "../terrain/ShapeData.hpp"
 
+#include "../util/Axes.hpp"
+#include "../util/ToBullet.hpp"
+
 void DynamicsWorld::solveConstraints(btContactSolverInfo& solverInfo) {
 	btDiscreteDynamicsWorld::solveConstraints(solverInfo);
 
-	int numManifolds = getDispatcher()->getNumManifolds();
-	for (int i=0; i < numManifolds; ++i) {
-		btPersistentManifold* contactManifold =  getDispatcher()->getManifoldByIndexInternal(i);
-		const btCollisionObject* bA = contactManifold->getBody0();
-		const btCollisionObject* bB = contactManifold->getBody1();
-
-		void *pA = bA->getUserPointer(), *pB = bB->getUserPointer();
-		{
-			ShapeData* sdA = (ShapeData*)pA, *sdB = (ShapeData*)pB, *sdCar=0, *sdFluid=0, *sdWheel=0;
-			if (sdA) {
-				if (sdA->type == ShapeType::Car) 		sdCar = sdA;
-				else if (sdA->type == ShapeType::Fluid) sdFluid = sdA;
-				else if (sdA->type == ShapeType::Wheel) sdWheel = sdA;
-			}
-			if (sdB) {
-				if (sdB->type == ShapeType::Car)		sdCar = sdB;
-				else if (sdB->type == ShapeType::Fluid) sdFluid = sdB;
-				else if (sdB->type == ShapeType::Wheel) sdWheel = sdB;
-			}
+	//TODO Not needed until fluids are used
+//	int numManifolds = getDispatcher()->getNumManifolds();
+//	for (int i=0; i < numManifolds; ++i) {
+//		btPersistentManifold* contactManifold =  getDispatcher()->getManifoldByIndexInternal(i);
+//		const btCollisionObject* bA = contactManifold->getBody0();
+//		const btCollisionObject* bB = contactManifold->getBody1();
+//
+//		void *pA = bA->getUserPointer(), *pB = bB->getUserPointer();
+//		{
+//			ShapeData* sdA = (ShapeData*)pA, *sdB = (ShapeData*)pB, *sdCar=0, *sdFluid=0, *sdWheel=0;
+//			if (sdA) {
+//				if (sdA->type == ShapeType::Car) 		sdCar = sdA;
+//				else if (sdA->type == ShapeType::Fluid) sdFluid = sdA;
+//				else if (sdA->type == ShapeType::Wheel) sdWheel = sdA;
+//			}
+//			if (sdB) {
+//				if (sdB->type == ShapeType::Car)		sdCar = sdB;
+//				else if (sdB->type == ShapeType::Fluid) sdFluid = sdB;
+//				else if (sdB->type == ShapeType::Wheel) sdWheel = sdB;
+//			}
 
 //			if (sdFluid) { }
 //				if (sdWheel) {
@@ -36,59 +40,60 @@ void DynamicsWorld::solveConstraints(btContactSolverInfo& solverInfo) {
 //					if (sdCar->pCarDyn->inFluids.empty())
 //						sdCar->pCarDyn->inFluids.push_back(sdFluid->pFluid);
 //				}
-		}
-	}
+//		}
+//	}
 }
 
 void IntTickCallback(btDynamicsWorld* world, btScalar timeStep) {
-	CollisionWorld* cw = (CollisionWorld*)world->getWorldUserInfo();
-
-	int numManifolds = world->getDispatcher()->getNumManifolds();
-	for (int i=0; i < numManifolds; ++i) {
-		btPersistentManifold* contactManifold = world->getDispatcher()->getManifoldByIndexInternal(i);
-		const btCollisionObject* bA = contactManifold->getBody0();
-		const btCollisionObject* bB = contactManifold->getBody1();
-
-		if ((bA->getCollisionFlags() & btCollisionObject::CF_NO_CONTACT_RESPONSE) ||
-			(bB->getCollisionFlags() & btCollisionObject::CF_NO_CONTACT_RESPONSE))
-			continue;
-
-		void* pA = bA->getUserPointer(), *pB = bB->getUserPointer();
-		{
-			ShapeData* sdA = (ShapeData*)pA, *sdB = (ShapeData*)pB, *sdCar=0, *sdFluid=0, *sdWheel=0;
-			if (sdA) {
-				if (sdA->type == ShapeType::Car) 		sdCar = sdA;
-				else if (sdA->type == ShapeType::Fluid) sdFluid = sdA;
-				else if (sdA->type == ShapeType::Wheel) sdWheel = sdA;
-			}
-			if (sdB) {
-				if (sdB->type == ShapeType::Car)		sdCar = sdB;
-				else if (sdB->type == ShapeType::Fluid) sdFluid = sdB;
-				else if (sdB->type == ShapeType::Wheel) sdWheel = sdB;
-			}
-
+	//TODO Not useful unless fluids are involved
+//	CollisionWorld* cw = (CollisionWorld*)world->getWorldUserInfo();
+//
+//	int numManifolds = world->getDispatcher()->getNumManifolds();
+//	for (int i=0; i < numManifolds; ++i) {
+//		btPersistentManifold* contactManifold = world->getDispatcher()->getManifoldByIndexInternal(i);
+//		const btCollisionObject* bA = contactManifold->getBody0();
+//		const btCollisionObject* bB = contactManifold->getBody1();
+//
+//		if ((bA->getCollisionFlags() & btCollisionObject::CF_NO_CONTACT_RESPONSE) ||
+//			(bB->getCollisionFlags() & btCollisionObject::CF_NO_CONTACT_RESPONSE))
+//			continue;
+//
+//		void* pA = bA->getUserPointer(), *pB = bB->getUserPointer();
+//		{
+//			ShapeData* sdA = (ShapeData*)pA, *sdB = (ShapeData*)pB, *sdCar=0, *sdFluid=0, *sdWheel=0;
+//			if (sdA) {
+//				if (sdA->type == ShapeType::Car) 		sdCar = sdA;
+//				else if (sdA->type == ShapeType::Fluid) sdFluid = sdA;
+//				else if (sdA->type == ShapeType::Wheel) sdWheel = sdA;
+//			}
+//			if (sdB) {
+//				if (sdB->type == ShapeType::Car)		sdCar = sdB;
+//				else if (sdB->type == ShapeType::Fluid) sdFluid = sdB;
+//				else if (sdB->type == ShapeType::Wheel) sdWheel = sdB;
+//			}
+//
 //			if (sdFluid && sdFluid->pFluid)  // Solid fluid hit TODO Fluids
 //				if (sdFluid->pFluid->solid)  sdFluid = 0;
-
-			if (sdCar && !sdFluid && !sdWheel) {
-				bool dyn = (sdCar == sdA && !bB->isStaticObject()) || (sdCar == sdB && !bA->isStaticObject());
-				int num = contactManifold->getNumContacts();
-				for (int j=0; j < num; ++j) {
-					btManifoldPoint& pt = contactManifold->getContactPoint(j);
-					btScalar f = pt.getAppliedImpulse() * timeStep;
-					if (f > 0.f) {
-						DynamicsWorld::Hit hit;
-						hit.dyn = dyn ? 1 : 0;  //TODO Dev suggested custom sound for object type
-						hit.pos = pt.getPositionWorldOnA();
-						hit.norm = pt.m_normalWorldOnB;
-						hit.force = f;  hit.sdCar = sdCar;
-						hit.vel = sdCar ? sdCar->dyn->prevVel : (btVector3(1, 1, 1) * 0.1f);
-						cw->getDynamicsWorld()->vHits.push_back(hit);
-					}
-				}
-			}
-		}
-	}
+//
+//			if (sdCar && !sdFluid && !sdWheel) {
+//				bool dyn = (sdCar == sdA && !bB->isStaticObject()) || (sdCar == sdB && !bA->isStaticObject());
+//				int num = contactManifold->getNumContacts();
+//				for (int j=0; j < num; ++j) {
+//					btManifoldPoint& pt = contactManifold->getContactPoint(j);
+//					btScalar f = pt.getAppliedImpulse() * timeStep;
+//					if (f > 0.f) {
+//						DynamicsWorld::Hit hit;
+//						hit.dyn = dyn ? 1 : 0;  //TODO Dev suggested custom sound for object type
+//						hit.pos = pt.getPositionWorldOnA();
+//						hit.norm = pt.m_normalWorldOnB;
+//						hit.force = f;  hit.sdCar = sdCar;
+//						hit.vel = sdCar ? sdCar->dyn->prevVel : (btVector3(1, 1, 1) * 0.1f);
+//						cw->getDynamicsWorld()->vHits.push_back(hit);
+//					}
+//				}
+//			}
+//		}
+//	}
 }
 
 CollisionWorld::CollisionWorld()
@@ -102,11 +107,13 @@ CollisionWorld::CollisionWorld()
 
 	world = new DynamicsWorld(dispatcher, broadphase, solver, config);
 
+	// In Stuntrally, each scene/track stores a value for gravity, so this may be overriden
 	world->setGravity(btVector3(0., 0., -9.81));
 	world->getSolverInfo().m_restitution = 0.0f;
 	world->getDispatchInfo().m_enableSPU = true;
+	world->setForceUpdateAllAabbs(false);
 
-	world->setInternalTickCallback(IntTickCallback, this, false);
+//	world->setInternalTickCallback(IntTickCallback, this, false); // Not needed yet
 }
 
 CollisionWorld::~CollisionWorld() {
@@ -171,18 +178,15 @@ btRigidBody* CollisionWorld::addRigidBody(const btRigidBody::btRigidBodyConstruc
 	return body;
 }
 
-struct MyRayResultCallback
-	: public btCollisionWorld::RayResultCallback {
-	//TODO Include cam variables?
+struct MyRayResultCallback : public btCollisionWorld::RayResultCallback {
+	// Have excluded cam variables
 	MyRayResultCallback(const btVector3& rayFromWorld, const btVector3& rayToWorld, const btCollisionObject* exclude, bool ignoreCars)
-			: mRayFromWorld(rayFromWorld), mRayToWorld(rayToWorld), mExclude(exclude), mIgnoreCars(ignoreCars),
-			  mShapeId(0) {}
+			: mRayFromWorld(rayFromWorld), mRayToWorld(rayToWorld), mExclude(exclude), mIgnoreCars(ignoreCars), mShapeId(0) { }
 
 	btVector3 mRayFromWorld, mRayToWorld;
 	btVector3 mHitNormalWorld, mHitPointWorld;
 
 	int mShapeId;
-
 	const btCollisionObject* mExclude;
 	bool mIgnoreCars;
 
@@ -207,10 +211,8 @@ struct MyRayResultCallback
 		m_closestHitFraction = rayResult.m_hitFraction;
 		m_collisionObject = obj;
 
-		if (!rayResult.m_localShapeInfo)
-			mShapeId = 0;  // Crash hf-
-		else  // Only for btTriangleMeshShape
-			mShapeId = rayResult.m_localShapeInfo->m_shapePart;
+		if (!rayResult.m_localShapeInfo) mShapeId = 0;  // Crash heightfield?
+		else mShapeId = rayResult.m_localShapeInfo->m_shapePart; // Only for btTriangleMeshShape
 
 		if (normalInWorldSpace) mHitNormalWorld = rayResult.m_hitNormalLocal;
 		else mHitNormalWorld = m_collisionObject->getWorldTransform().getBasis() * rayResult.m_hitNormalLocal;
@@ -220,18 +222,16 @@ struct MyRayResultCallback
 	}
 };
 
-bool CollisionWorld::castRay(const MathVector<float, 3>& position, const MathVector<float, 3>& direction, const float length,
+bool CollisionWorld::castRay(const MathVector<float, 3>& origin, const MathVector<float, 3>& direction, const float length,
 		 const btCollisionObject* caster, CollisionContact& contact, CarDynamics* carDyn, int nWheel, bool ignoreCars) const {
-	btVector3 from = toBulletVector(position);
-	btVector3 to = toBulletVector(position + direction * length);
+	btVector3 from = toBulletVector(origin);
+	btVector3 to = toBulletVector(origin + direction * length);
 
 	MyRayResultCallback res(from, to, caster, ignoreCars);
 
-	MathVector<float, 3> pos, norm;
-	float dist;
+	MathVector<float, 3> pos, norm; float dist;
 	const TerrainSurface* surf = TerrainSurface::none();
-	const btCollisionObject* col = NULL;
-	const Bezier* bzr = NULL;
+	const btCollisionObject* col = NULL; const Bezier* bzr = NULL;
 
 	world->rayTest(from, to, res);
 	bool geometryHit = res.hasHit();
@@ -256,18 +256,19 @@ bool CollisionWorld::castRay(const MathVector<float, 3>& position, const MathVec
 					break;
 
 				case SU_Terrain:
-					surf = sim->getTerrainSurface("Default"); //TODO Hard-coded for now
+					//TODO Go into TerrainData and get the TerrainSurface
+					surf = sim->getTerrainSurface("Asphalt"); // Hard-coded for now
 					break;
 
 				case SU_Fluid:
 					break;
 
 				default:
+					surf = sim->getTerrainSurface("Asphalt"); // Hard-coded for now
 					break;
 				}
 			} else {
-				//TODO Go into TerrainData and get the TerrainSurface
-				surf = sim->getTerrainSurface("Default"); //TODO Hard-coded for now
+				surf = sim->getTerrainSurface("Asphalt"); // Hard-coded for now
 			}
 		}
 
@@ -278,34 +279,33 @@ bool CollisionWorld::castRay(const MathVector<float, 3>& position, const MathVec
 	}
 
 	// Should only happen on vehicle roll-over
-	contact.set(position + direction * length, -direction, length, surf, bzr, col);
+	contact.set(origin + direction * length, -direction, length, surf, bzr, col);
 	return false;
 }
 
 void CollisionWorld::update(double dt) {
 	world->stepSimulation(dt, maxSubSteps, fixedTimeStep);
 
+	//TODO The rest of CollisionWorld::update is not useful for the physics simulation
 	// Use collision hit results, once a frame
-	int n = world->vHits.size();
-	if (n > 0) {
-		// Pick the one with biggest force
-		DynamicsWorld::Hit& hit = world->vHits[0];
-		float force = 0.f;//, vel = 0.f;
-		for (int i=0; i < n; ++i)
-			if (world->vHits[i].force > force) {
-				force = world->vHits[i].force;
-				hit = world->vHits[i];
-			}
-
-		CarDynamics* cd = hit.sdCar->dyn;
-		oldDyn = cd;
-		btVector3 vcar = hit.vel;
-		Ogre::Vector3 vel(vcar[0], vcar[2], -vcar[1]);
-		Ogre::Vector3 norm(hit.norm.getX(), hit.norm.getZ(), -hit.norm.getY());
-		float vlen = vel.length(), normvel = abs(vel.dotProduct(norm));
-	}
-
-	// Ignored cdOld and fHitForce
-
-	world->vHits.clear();
+//	int n = world->vHits.size();
+//	if (n > 0) {
+//		// Pick the one with biggest force
+//		DynamicsWorld::Hit& hit = world->vHits[0];
+//		float force = 0.f;//, vel = 0.f;
+//		for (int i=0; i < n; ++i)
+//			if (world->vHits[i].force > force) {
+//				force = world->vHits[i].force;
+//				hit = world->vHits[i];
+//			}
+//
+//		CarDynamics* cd = hit.sdCar->dyn; oldDyn = cd;
+//		Ogre::Vector3 vel = Axes::vectorToOgre(toMathVector(hit.vel));
+//		Ogre::Vector3 norm = Axes::vectorToOgre(toMathVector(hit.norm));
+//		float vlen = vel.length(), normvel = abs(vel.dotProduct(norm));
+//	}
+//
+//	// Ignored cdOld and fHitForce
+//
+//	world->vHits.clear();
 }

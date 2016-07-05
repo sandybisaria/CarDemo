@@ -293,12 +293,12 @@ void Car::updateModel() {
 
 	// Main body
 	Ogre::Vector3 pos = Axes::vectorToOgre(dyn->getPosition());
-	std::cout << pos << std::endl;
 	mainNode->setPosition(pos);
+//	std::cout << pos << std::endl;
 
 	Ogre::Quaternion rot; rot = Axes::doQuatToOgre(dyn->getOrientation());
 	mainNode->setOrientation(rot);
-	std::cout << rot << std::endl;
+//	std::cout << rot << std::endl;
 
 	// Wheels
 	for (int w = 0; w < numWheels; w++) {

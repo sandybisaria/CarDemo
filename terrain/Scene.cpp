@@ -3,6 +3,7 @@
 Scene::Scene(Ogre::SceneManager* sceneMgr)
 	: mSim(NULL), mSceneMgr(sceneMgr), sun(0),
 	  mTerrainGlobals(0), mTerrainGroup(0) {
+	terrSize = 513; worldSize = 10000.0;
 }
 
 Scene::~Scene() {
@@ -27,8 +28,7 @@ void Scene::setupTerrain(Sim* sim) {
 
 	mTerrainGlobals = OGRE_NEW Ogre::TerrainGlobalOptions();
 
-	mTerrainGroup = OGRE_NEW Ogre::TerrainGroup(mSceneMgr,
-			Ogre::Terrain::ALIGN_X_Z, terrSize, worldSize); //TODO Store world size somewhere!
+	mTerrainGroup = OGRE_NEW Ogre::TerrainGroup(mSceneMgr, Ogre::Terrain::ALIGN_X_Z, terrSize, worldSize);
 
 	configureTerrainDefaults();
 	defineTerrain();
@@ -73,7 +73,7 @@ void Scene::createBulletTerrain() {
 	Ogre::Terrain* baseTerrain = mTerrainGroup->getTerrain(0, 0);
 	btHeightfieldTerrainShape* hfShape = new btHeightfieldTerrainShape(
 			baseTerrain->getSize(), baseTerrain->getSize(),
-			baseTerrain->getHeightData(), 1, 0, 0, //baseTerrain->getMinHeight(), baseTerrain->getMaxHeight(),
+			baseTerrain->getHeightData(), 1, 0, 0,
 			2, PHY_FLOAT, false);
 	// Min and max height were set to 0 to force the terrain to be completely flat
 	hfShape->setUseDiamondSubdivision(true);
@@ -91,9 +91,26 @@ void Scene::createBulletTerrain() {
 	mSim->getCollisionWorld()->getDynamicsWorld()->addCollisionObject(colObj);
 	mSim->getCollisionWorld()->addShape(hfShape);
 
-//	//YOLO
-//	btRigidBody* groundBody = new btRigidBody(0, new btDefaultMotionState(), hfShape);
-//	groundBody->getWorldTransform().setOrigin(btVector3(0, 0, 0));
-//	groundBody->getWorldTransform().setRotation(btQuaternion(0, 0, 0, 1));
-//	mSim->getCollisionWorld()->getDynamicsWorld()->addRigidBody(groundBody);
+	// Border planes
+	const float px[4] = {-1, 1, 0, 0};
+	const float py[4] = { 0, 0,-1, 1};
+	for (int i = 0; i < 4; ++i) {
+		btVector3 vpl(px[i], py[i], 0);
+		btCollisionShape* shp = new btStaticPlaneShape(vpl, 0);
+		shp->setUserPointer((void*) SU_Border);
+
+		btTransform tr;  tr.setIdentity();
+		tr.setOrigin(vpl * -0.5 * worldSize);
+
+		btCollisionObject* col = new btCollisionObject();
+		col->setCollisionShape(shp);
+		col->setWorldTransform(tr);
+		col->setFriction(0.3);   //+
+		col->setRestitution(0.0);
+		col->setCollisionFlags(col->getCollisionFlags() |
+			btCollisionObject::CF_STATIC_OBJECT | btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT/**/);
+
+		mSim->getCollisionWorld()->getDynamicsWorld()->addCollisionObject(col);
+		mSim->getCollisionWorld()->addShape(shp);
+	}
 }
