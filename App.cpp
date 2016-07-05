@@ -97,7 +97,7 @@ bool App::setupRenderSystem() {
 	if (rs->getName() != RENDER_SYSTEM) return false;
 
 	rs->setConfigOption("Full Screen", "No");
-//	rs->setConfigOption("Video Mode", "800 x 600 @ 32-bit");
+	rs->setConfigOption("Video Mode", "800 x 600 @ 32-bit");
 
 	mRoot->setRenderSystem(rs);
 

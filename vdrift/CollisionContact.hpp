@@ -15,14 +15,14 @@ public:
 	const MathVector<float, 3>& getPosition() const { return position; }
 	const MathVector<float, 3>& getNormal() const { return normal; }
 	float getDepth() const { return depth; }
-	const TerrainSurface& getSurface() const { return *surface; }
+	const TerrainSurface* getSurface() const { return surface; }
 	const Bezier* getPatch() const { return patch; }
 	const btCollisionObject* getCollisionObject() const { return colObj; }
 
 	// Set contact data (used by ray cast)
 	void set(const MathVector<float, 3>& pos, const MathVector<float, 3>& norm, float dist,
 			 const TerrainSurface* ts, const Bezier* b, const btCollisionObject* c) {
-		assert(s != NULL);
+		assert(ts != NULL);
 		position = pos; normal = norm; depth = dist; surface = ts; patch = b; colObj = c;
 	}
 
@@ -44,6 +44,6 @@ private:
 	MathVector<float, 3> position, normal;
 	float depth;
 	const TerrainSurface* surface;
-	const Bezier* patch;
+	const Bezier* patch; // Unused
 	const btCollisionObject* colObj;
 };

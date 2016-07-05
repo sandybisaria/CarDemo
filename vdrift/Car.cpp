@@ -293,6 +293,7 @@ void Car::updateModel() {
 
 	// Main body
 	Ogre::Vector3 pos = Axes::vectorToOgre(dyn->getPosition());
+	std::cout << pos << std::endl;
 	mainNode->setPosition(pos);
 
 	Ogre::Quaternion rot; rot = Axes::doQuatToOgre(dyn->getOrientation());

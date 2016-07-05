@@ -13,7 +13,7 @@ void DynamicsWorld::solveConstraints(btContactSolverInfo& solverInfo) {
 		const btCollisionObject* bA = contactManifold->getBody0();
 		const btCollisionObject* bB = contactManifold->getBody1();
 
-		void* pA = bA->getUserPointer(), *pB = bB->getUserPointer();
+		void *pA = bA->getUserPointer(), *pB = bB->getUserPointer();
 		{
 			ShapeData* sdA = (ShapeData*)pA, *sdB = (ShapeData*)pB, *sdCar=0, *sdFluid=0, *sdWheel=0;
 			if (sdA) {
@@ -27,7 +27,7 @@ void DynamicsWorld::solveConstraints(btContactSolverInfo& solverInfo) {
 				else if (sdB->type == ShapeType::Wheel) sdWheel = sdB;
 			}
 
-			if (sdFluid) { } //TODO Fluids?
+//			if (sdFluid) { }
 //				if (sdWheel) {
 //					std::list<FluidBox*>& fl = sdWheel->pCarDyn->inFluidsWh[sdWheel->whNum];
 //					if (fl.empty())
@@ -49,8 +49,8 @@ void IntTickCallback(btDynamicsWorld* world, btScalar timeStep) {
 		const btCollisionObject* bA = contactManifold->getBody0();
 		const btCollisionObject* bB = contactManifold->getBody1();
 
-		if (bA->getCollisionFlags() & btCollisionObject::CF_NO_CONTACT_RESPONSE ||
-			bB->getCollisionFlags() & btCollisionObject::CF_NO_CONTACT_RESPONSE)
+		if ((bA->getCollisionFlags() & btCollisionObject::CF_NO_CONTACT_RESPONSE) ||
+			(bB->getCollisionFlags() & btCollisionObject::CF_NO_CONTACT_RESPONSE))
 			continue;
 
 		void* pA = bA->getUserPointer(), *pB = bB->getUserPointer();
@@ -92,7 +92,7 @@ void IntTickCallback(btDynamicsWorld* world, btScalar timeStep) {
 }
 
 CollisionWorld::CollisionWorld()
-	: maxSubSteps(24), fixedTimeStep(1. / 160.), oldDyn(0) /*Defaults according to Stuntrally settings*/ {
+	: maxSubSteps(24), fixedTimeStep(1. / 160.), oldDyn(0), sim(0) /*Defaults according to Stuntrally settings*/ {
 	config = new btDefaultCollisionConfiguration();
 	dispatcher = new btCollisionDispatcher(config);
 

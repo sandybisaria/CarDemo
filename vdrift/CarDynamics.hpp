@@ -45,7 +45,7 @@ public:
 	void init(MathVector<double, 3> pos, Quaternion<double> rot, CollisionWorld& world);
 
 	void alignWithGround();
-	CarTire* getTire(WheelPosition wp) const { return wheelContact[wp].getSurface().tire; }
+	CarTire* getTire(WheelPosition wp) const { return wheelContact[wp].getSurface()->tire; }
 
 	// Bullet interface
 	virtual void updateAction(btCollisionWorld* collisionWorld, btScalar deltaTimeStep);

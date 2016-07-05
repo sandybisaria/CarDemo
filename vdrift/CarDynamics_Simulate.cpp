@@ -1,5 +1,7 @@
 #include "CarDynamics.hpp"
 
+#include "../util/ToBullet.hpp"
+
 void CarDynamics::shiftGear(int value) {
 	if (transmission.getGear() != value && shifted) {
 		if (value <= transmission.getForwardGears() && value >= -transmission.getReverseGears()) {
@@ -307,12 +309,12 @@ MathVector<double, 3> CarDynamics::updateSuspension(int i, double dt) {
 	// Displacement
 	const double posX = wheelContact[i].getPosition()[0];
 	const double posY = wheelContact[i].getPosition()[2];
-	const TerrainSurface& surface = wheelContact[i].getSurface();
+	const TerrainSurface* surface = wheelContact[i].getSurface();
 
 	double phase = 0;
-	if (surface.bumpWavelength > 0.0001) phase = 2 * M_PI * (posX + posY) / surface.bumpWavelength;
+	if (surface->bumpWavelength > 0.0001) phase = 2 * M_PI * (posX + posY) / surface->bumpWavelength;
 	double shift = 2.0 * sin(phase * sqrt(2));
-	double amplitude = 0.25 * surface.bumpAmplitude;
+	double amplitude = 0.25 * surface->bumpAmplitude;
 	double bumpOffset = amplitude * (sin(phase + shift) + sin(phase * sqrt(2)) - 2.0);
 
 	double displacement = 2.0 * wheels[i].getRadius() - wheelContact[i].getDepth() + bumpOffset;
@@ -383,8 +385,8 @@ void CarDynamics::applyAerodynamicsToBody() {
 MathVector<double, 3> CarDynamics::applyTireForce(int i, const double normalForce, const Quaternion<double>& wheelSpace) {
 	CarWheel& wheel = this->wheels[i];
 	const CollisionContact& wheelCon = this->wheelContact[i];
-	const TerrainSurface& surface = wheelCon.getSurface();
-	const CarTire* tire = surface.tire;
+	const TerrainSurface* surface = wheelCon.getSurface();
+	const CarTire* tire = surface->tire;
 	const MathVector<double, 3> surfaceNorm = wheelCon.getNormal();
 
 	// Camber relative to surface (clockwise in wheel heading direction)
@@ -410,14 +412,14 @@ MathVector<double, 3> CarDynamics::applyTireForce(int i, const double normalForc
 	double patchSpeed = wheel.getAngularVelocity() * wheel.getRadius();
 
 	// Friction force in tire space
-	double frictionCoeff = surface.friction;
+	double frictionCoeff = surface->friction;
 	MathVector<double, 3> frictionForce(0);
 	if (frictionCoeff > 0)
 		frictionForce = tire->getForce(normalForce, frictionCoeff, hubVelocity, patchSpeed, camberRad, &wheel.slips);
 
 	///  multipliers x,y test
-	frictionForce[0] *= surface.frictionX;
-	frictionForce[1] *= surface.frictionY;
+	frictionForce[0] *= surface->frictionX;
+	frictionForce[1] *= surface->frictionY;
 
 	//Ignoring feedback
 
@@ -425,7 +427,7 @@ MathVector<double, 3> CarDynamics::applyTireForce(int i, const double normalForc
 	MathVector<double, 3> worldFrictionForce = xAxis * frictionForce[0] + yAxis * frictionForce[1];
 
 	// Fake viscous friction (sand, gravel, mud)
-	MathVector<double, 3> wheelDrag = -(xAxis * hubVelocity[0] + yAxis * hubVelocity[1]) * surface.rollingDrag;
+	MathVector<double, 3> wheelDrag = -(xAxis * hubVelocity[0] + yAxis * hubVelocity[1]) * surface->rollingDrag;
 
 	// Apply forces to body
 	MathVector<double, 3> wheelNormal(0, 0, 1);
@@ -462,7 +464,7 @@ void CarDynamics::applyWheelTorque(double dt, double driveTorque, int i, MathVec
 
 
 	// Set wheel torque due to tire rolling resistance
-	double rollRes = wheel.getRollingResistance(wheel.getAngularVelocity(), wheelContact[i].getSurface().rollingResist);
+	double rollRes = wheel.getRollingResistance(wheel.getAngularVelocity(), wheelContact[i].getSurface()->rollingResist);
 	double tireRollResTorque = -rollRes * wheel.getRadius();
 
 	wheel.setTorque(wheelTorque * 0.5 + tireRollResTorque);
