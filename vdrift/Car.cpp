@@ -149,7 +149,7 @@ bool Car::loadFromConfig(CollisionWorld& world) {
 	}
 
 	//TODO Load starting position/rotation from the scene
-	MathVector<double, 3> pos(0, 0, 1);
+	MathVector<double, 3> pos(0, mId * 10, 1); // mId * 10 is a cheap way to distance distinct cars
 	Quaternion<double> rot;
 
 	float stOfsY = 0.f;

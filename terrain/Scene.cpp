@@ -78,8 +78,8 @@ void Scene::createBulletTerrain() {
 	// Min and max height were set to 0 to force the terrain to be completely flat
 	hfShape->setUseDiamondSubdivision(true);
 
-	float metersBetweenVerts = baseTerrain->getWorldSize() / (baseTerrain->getSize() - 1);
-	btVector3 scale(metersBetweenVerts, metersBetweenVerts, 1);
+//	float metersBetweenVerts = baseTerrain->getWorldSize() / (baseTerrain->getSize() - 1);
+	btVector3 scale(1, 1, 1); //FIXME Just using what Stuntrally does
 	hfShape->setLocalScaling(scale);
 	hfShape->setUserPointer((void*) SU_Terrain);
 

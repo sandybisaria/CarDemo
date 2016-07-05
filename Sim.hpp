@@ -48,7 +48,7 @@ private:
 
 	CollisionWorld* world;
 	Car* car;
-//	Car* otherCar;
+	Car* otherCar;
 	CInput* carInput;
 	CarControlMapLocal localMap;
 
