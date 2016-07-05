@@ -298,6 +298,7 @@ void Car::updateModel() {
 
 	Ogre::Quaternion rot; rot = Axes::doQuatToOgre(dyn->getOrientation());
 	mainNode->setOrientation(rot);
+	std::cout << rot << std::endl;
 
 	// Wheels
 	for (int w = 0; w < numWheels; w++) {

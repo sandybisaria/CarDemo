@@ -175,10 +175,13 @@ struct MyRayResultCallback
 	: public btCollisionWorld::RayResultCallback {
 	//TODO Include cam variables?
 	MyRayResultCallback(const btVector3& rayFromWorld, const btVector3& rayToWorld, const btCollisionObject* exclude, bool ignoreCars)
-			: mRayFromWorld(rayFromWorld), mRayToWorld(rayToWorld), mExclude(exclude), mIgnoreCars(ignoreCars) {}
+			: mRayFromWorld(rayFromWorld), mRayToWorld(rayToWorld), mExclude(exclude), mIgnoreCars(ignoreCars),
+			  mShapeId(0) {}
 
 	btVector3 mRayFromWorld, mRayToWorld;
 	btVector3 mHitNormalWorld, mHitPointWorld;
+
+	int mShapeId;
 
 	const btCollisionObject* mExclude;
 	bool mIgnoreCars;
@@ -194,6 +197,7 @@ struct MyRayResultCallback
 			// Car ignores fluids (Not dealing with cars)
 			if (sd->type == ShapeType::Fluid) return 1.0;
 
+			// Ignore wheel triggers here
 			if (sd->type == ShapeType::Wheel) return 1.0;
 		}
 
@@ -203,7 +207,10 @@ struct MyRayResultCallback
 		m_closestHitFraction = rayResult.m_hitFraction;
 		m_collisionObject = obj;
 
-		//TODO Add m_shapeId member?
+		if (!rayResult.m_localShapeInfo)
+			mShapeId = 0;  // Crash hf-
+		else  // Only for btTriangleMeshShape
+			mShapeId = rayResult.m_localShapeInfo->m_shapePart;
 
 		if (normalInWorldSpace) mHitNormalWorld = rayResult.m_hitNormalLocal;
 		else mHitNormalWorld = m_collisionObject->getWorldTransform().getBasis() * rayResult.m_hitNormalLocal;
@@ -233,13 +240,13 @@ bool CollisionWorld::castRay(const MathVector<float, 3>& position, const MathVec
 		norm = toMathVector<float>(res.mHitNormalWorld);
 		dist = res.m_closestHitFraction * length;
 		col = res.m_collisionObject;
-		//TODO Get TerrainData (TerData)
 
+		// This whole if-else statement seems to be used for determining the surface the wheel is on
 		if (col->isStaticObject()) {
 			int ptrU = (long) (col->getCollisionShape()->getUserPointer());
 			int su = ptrU & 0xFF00, mtr = ptrU & 0xFF; // Fancy arithmetic
 
-			//TODO STILL NEED TERRAINDATA ><
+			//TODO Will need TerrainData to determine what exactly is below the wheel
 			if (ptrU) {
 				switch (su) {
 				case SU_Road:
@@ -249,7 +256,7 @@ bool CollisionWorld::castRay(const MathVector<float, 3>& position, const MathVec
 					break;
 
 				case SU_Terrain:
-					surf = sim->getTerrainSurface("Asphalt"); //TODO Hard-coded for now
+					surf = sim->getTerrainSurface("Default"); //TODO Hard-coded for now
 					break;
 
 				case SU_Fluid:
@@ -260,8 +267,10 @@ bool CollisionWorld::castRay(const MathVector<float, 3>& position, const MathVec
 				}
 			} else {
 				//TODO Go into TerrainData and get the TerrainSurface
+				surf = sim->getTerrainSurface("Default"); //TODO Hard-coded for now
 			}
 		}
+
 		//TODO When Track is implemented, use the Beziers to track collisions, or something...
 
 		contact.set(pos, norm, dist, surf, bzr, col);

@@ -129,8 +129,113 @@ TEST(CarDynamics, UpdateSuspension) {
 	EXPECT_NEAR_HP(res[0], 565400); EXPECT_NEAR_HP(res[1], 102800); EXPECT_NEAR_HP(res[2], 514000);
 }
 
-TEST(CarDynamics, ApplyTireForce) {
-	//TODO Finish test case
+TEST(CarDynamics, TireForceAndWheelTorque) {
+	CarTire* tire = new CarTire();
+	// Asphalt
+	int i = 0;
+	tire->lateral[i++] = 1.61;
+	tire->lateral[i++] = -0;
+	tire->lateral[i++] = 2775;
+	tire->lateral[i++] = 2220;
+	tire->lateral[i++] = 19.6;
+	tire->lateral[i++] = 0.013;
+	tire->lateral[i++] = -0.14;
+	tire->lateral[i++] = 0.14;
+	tire->lateral[i++] = 0.019;
+	tire->lateral[i++] = -0.019;
+	tire->lateral[i++] = -0.18;
+	tire->lateral[i++] = 0;
+	tire->lateral[i++] = 0;
+	tire->lateral[i++] = 0;
+	tire->lateral[i++] = 0;
+	i = 0;
+	tire->longitudinal[i++] = 1.73;
+	tire->longitudinal[i++] = -0.49;
+	tire->longitudinal[i++] = 3439;
+	tire->longitudinal[i++] = 279;
+	tire->longitudinal[i++] = 470;
+	tire->longitudinal[i++] = 0;
+	tire->longitudinal[i++] = 0.0008;
+	tire->longitudinal[i++] = 0.005;
+	tire->longitudinal[i++] = -0.024;
+	tire->longitudinal[i++] = 0;
+	tire->longitudinal[i++] = 0;
+	i = 0;
+	tire->aligning[i++] = 2.10;
+	tire->aligning[i++] = -3.9;
+	tire->aligning[i++] = -3.9;
+	tire->aligning[i++] = -1.26;
+	tire->aligning[i++] = -8.20;
+	tire->aligning[i++] = 0.025;
+	tire->aligning[i++] = 0;
+	tire->aligning[i++] = 0.044;
+	tire->aligning[i++] = -0.58;
+	tire->aligning[i++] = 0.18;
+	tire->aligning[i++] = 0.043;
+	tire->aligning[i++] = 0.048;
+	tire->aligning[i++] = -0.0035;
+	tire->aligning[i++] = -0.18;
+	tire->aligning[i++] = 0.14;
+	tire->aligning[i++] = -1.029;
+	tire->aligning[i++] = 0.27;
+	tire->aligning[i++] = -1.1;
+	tire->calculateSigmaHatAlphaHat();
+
+	TerrainSurface* ts = new TerrainSurface(); // Asphalt
+	ts->bumpAmplitude = 0.01; ts->bumpWavelength = 40.0; ts->friction = 1.0;
+	ts->rollingResist  = 1; ts->rollingDrag = 1; ts->type = TerrainSurface::ASPHALT;
+	ts->tireName = "asphalt"; ts->tire = tire;
+
+	CollisionContact* cc = new CollisionContact();
+
+	cc->set(MathVector<float, 3>(1, 1, 1), MathVector<float, 3>(0, 1, 0), 5, ts, NULL, NULL);
+	cc->castRay(MathVector<float, 3>(1, 1, 1), MathVector<float, 3>(0, -1, 0), 5);
+
+	CarDynamics dyn;
+	dyn.wheelContact[0] = *cc;
+	dyn.wheelVels[0] = MathVector<double, 3>(1, 1, 19);
+	dyn.wheelPos[0] = MathVector<double, 3>(1, 1.5, 1);
+
+	RigidBody& body = dyn.body; body.setMass(100);
+	body.setOrientation(Quaternion<double>(1, 1, 1, 1));
+	body.setVelocity(MathVector<double, 3>(2, 2, 2));
+	body.setAngularVelocity(MathVector<double, 3>(2, 2, 2));
+	body.setInitialForce(MathVector<double, 3>(0.f));
+	body.setInitialTorque(MathVector<double, 3>(0.f));
+	body.integrateStep1(0.01);
+
+	CarWheel& wheel = dyn.wheels[0];
+	wheel.setAngularVelocity(30); wheel.setRadius(0.5);
+	wheel.setRollingResistance(1.3e-2, 6.5e-6);
+
+	CarBrake& brake = dyn.brakes[0];
+	brake.setArea(0.0006); brake.setBias(0.55); brake.setBrakeFactor(0.5);
+	brake.setFriction(0.9); brake.setMaxPressure(3.5e7); brake.setRadius(0.335);
+
+	const Quaternion<double> wheelRot = Quaternion<double>(.5, .5, .5, 1);
+
+	MathVector<double, 3> wff = dyn.applyTireForce(0, 250, wheelRot),
+						  expected = MathVector<double, 3>(-566.330315, 0, -338.065029);
+	for (int i = 0; i < 3; i++) EXPECT_NEAR_HP(wff[i], expected[i]);
+	EXPECT_NEAR_HP(wheel.getCamberDeg(), 48.5903779);
+
+	dyn.applyWheelTorque(0.01, 100, 0, wff, wheelRot);
+
+	body.integrateStep2(0.01);
+
+	expected = MathVector<double, 3>(1.94311697, 2.025, 1.9614435);
+	for (int i = 0; i < 3; i++) EXPECT_NEAR_HP(body.getVelocity()[i], expected[i]);
+
+	expected = MathVector<double, 3>(-6.25970411, 0.85010876, 13.4400865);
+	for (int i = 0; i < 3; i++) EXPECT_NEAR_HP(body.getAngularVelocity()[i], expected[i]);
+
+	expected = MathVector<double, 3>(-568.830315, 250, -385.565029);
+	for (int i = 0; i < 3; i++) EXPECT_NEAR_HP(body.getForce()[i], expected[i]);
+
+	EXPECT_NEAR_HP(wheel.getAngularVelocity(), 29.2433381);
+	EXPECT_NEAR_HP(wheel.getTorque(), -756.661869);
+
+	EXPECT_FALSE(brake.willLock());
 }
 
 TEST(CarDynamics, GetWheelSteeringAndSuspensionOrientation) {

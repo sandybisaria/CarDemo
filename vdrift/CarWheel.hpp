@@ -96,6 +96,7 @@ public:
 	const Quaternion<double>& getOrientation() const { return rotFr.getOrientation(); }
 
 	void setCamberDeg(const double& cd) { camberDeg = cd; }
+	double getCamberDeg() const { return camberDeg; }
 
 	struct SlideSlip {
 		double slide; // Ratio of tire contact patch speed to road speed, minus one

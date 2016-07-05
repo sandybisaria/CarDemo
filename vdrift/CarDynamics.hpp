@@ -235,7 +235,7 @@ private:
 	FRIEND_TEST(CarDynamics, SetSteering);
 	FRIEND_TEST(CarDynamics, ApplyAerodynamicsToBody);
 	FRIEND_TEST(CarDynamics, UpdateSuspension);
-	FRIEND_TEST(CarDynamics, ApplyTireForce);
+	FRIEND_TEST(CarDynamics, TireForceAndWheelTorque);
 	FRIEND_TEST(CarDynamics, GetWheelSteeringAndSuspensionOrientation);
 	FRIEND_TEST(CarDynamics, GetLocalWheelPosition);
 #endif

@@ -309,7 +309,7 @@ TEST(CarTire, CarTireFunctions) {
 	CarTire s;
 
 	// Asphalt
-	int i=0;
+	int i = 0;
 	s.lateral[i++] = 1.61;
 	s.lateral[i++] = -0;
 	s.lateral[i++] = 2775;

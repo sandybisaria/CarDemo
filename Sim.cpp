@@ -2,7 +2,7 @@
 
 Sim::Sim(App* app)
 	: mSceneMgr(0), scene(0), mApp(app),
-	  world(0), car(0), carInput(0),
+	  world(0), car(0), carInput(0), //otherCar(0),
 	  frameRate(1.f / 60.f), targetTime(0),
 	  debugDraw(NULL) {
 }
@@ -22,6 +22,9 @@ void Sim::setup(Ogre::SceneManager* sceneMgr) {
 	car = new Car(0);
 	car->setup("360", mSceneMgr, *world);
 
+//	otherCar = new Car(1);
+//	otherCar->setup("360", mSceneMgr, *world);
+
 	carInput = new CInput(this);
 
 	// Debug drawing
@@ -31,10 +34,17 @@ void Sim::setup(Ogre::SceneManager* sceneMgr) {
 }
 
 void Sim::update(float dt) {
-	car->updatePreviousVelocity(); // Was in the loop for fluids...
-	if (dt > 0) world->update(dt); // Update physics
-	car->update(); // Update model
+	// Was in the loop for fluids...
+	car->updatePreviousVelocity();
+//	otherCar->updatePreviousVelocity();
 
+	if (dt > 0) world->update(dt); // Update physics
+
+	// Update model
+	car->update();
+//	otherCar->update();
+
+	// Update inputs
 	const std::vector<float>& inputs = localMap.processInput(carInput->getPlayerInputState(), car->getSpeedDir(),
 															 0.f, 0.f);
 	car->handleInputs(inputs);
@@ -44,7 +54,7 @@ void Sim::update(float dt) {
 		debugDraw->step();
 	}
 
-	//TODO How Stuntrally updates the game... however, this does not work
+	//TODO How Stuntrally updates the game... however, this loop does not work
 //	const float minFPS = 10.f; // Minimum acceptable fps
 //	const unsigned int maxTicks = (int) (1.f / (minFPS * frameRate));
 //	const float maxTime = 1.f / minFPS;

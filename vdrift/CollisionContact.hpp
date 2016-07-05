@@ -31,6 +31,7 @@ public:
 		// Plane-based approximation
 		float nd = normal.dot(dir);
 		if (nd < 0) {
+			// Angle between vectors greater than 90 deg, intersection
 			depth = normal.dot(position - origin) / nd;
 			position = origin + dir * depth;
 			return true;
