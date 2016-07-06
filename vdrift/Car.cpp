@@ -11,6 +11,8 @@
 
 #include <iostream>
 
+#define toString(s) Ogre::StringConverter::toString(s)
+
 Car::Car(int id)
 	: mId(id), mSceneMgr(0), mainNode(0),
 	  dyn(0),
@@ -35,14 +37,12 @@ Car::~Car() {
 
 void Car::setup(std::string carName, Ogre::SceneManager* sceneMgr, CollisionWorld& world) {
 	mCarName = carName;
-	resGrpId = mCarName + "_" + Ogre::StringConverter::toString(mId);
+	resGrpId = mCarName + "_" + toString(mId);
 	carPath = "../data/cars/" + mCarName;
 
 	dyn = new CarDynamics();
-
-	if (!loadFromConfig(world)) return; //TODO With error
-
-	dyn->shiftGear(1); // Start off in first gear!
+	if (!loadFromConfig(world)) return; // Should return with error
+	dyn->shiftGear(1); // Start off in first gear
 
 	mSceneMgr = sceneMgr;
 	loadModel();
@@ -155,10 +155,10 @@ bool Car::loadFromConfig(CollisionWorld& world) {
 
 	if (!dyn->load(cf)) {
 		std::cerr << "CarDynamics load failed" << std::endl;
-		return false; //TODO Error if not all car params found
+		return false; // Error if not all car params found
 	}
 
-	//TODO Load starting position/rotation from the scene
+	//TODO Load starting position/rotation from the scene, or receive from setup()
 	MathVector<double, 3> pos(0, mId * 10, 1); // mId * 10 is a cheap way to distance distinct cars
 	Quaternion<double> rot;
 
@@ -194,7 +194,7 @@ void Car::loadModel() {
 	// Create wheels and brakes
 	//TODO Add support for custom wheel types, as in CarModel::Create()
 	for (int w = 0; w < numWheels; w++) {
-		// Wheel nodes are parented to the root!
+		// Wheel nodes must be parented to the root for proper model rendering
 		wheelNodes[w] = mSceneMgr->getRootSceneNode()->createChildSceneNode();
 		forDeletion(wheelNodes[w]);
 		wheelNodes[w]->attachObject(loadPart("wheel", w));
@@ -214,8 +214,6 @@ void Car::loadModel() {
 }
 
 void Car::loadMaterials() {
-#define idToString Ogre::StringConverter::toString(mId)
-
 	std::string carBodyMtr = "car_body";
 	if (Ogre::MaterialManager::getSingleton().resourceExists(carBodyMtr + "_" + mCarName)) {
 		carBodyMtr += "_" + mCarName;
@@ -229,8 +227,8 @@ void Car::loadMaterials() {
 	mtrNames[mtrCarBrake] = carBrakeMtr;
 
 	for (int i=0; i < 1; ++i) {
-		sh::Factory::getInstance().destroyMaterialInstance(mtrNames[i] + idToString);
-		sh::MaterialInstance* m = sh::Factory::getInstance().createMaterialInstance(mtrNames[i] + idToString, mtrNames[i]);
+		sh::Factory::getInstance().destroyMaterialInstance(mtrNames[i] + toString(mId));
+		sh::MaterialInstance* m = sh::Factory::getInstance().createMaterialInstance(mtrNames[i] + toString(mId), mtrNames[i]);
 
 		m->setListener(this);
 
@@ -248,7 +246,7 @@ void Car::loadMaterials() {
 			m->setProperty("reflMap", sh::makeProperty<sh::StringValue>(new sh::StringValue(mCarName + "_" + v)));
 		}
 
-		mtrNames[i] = mtrNames[i] + idToString;
+		mtrNames[i] = mtrNames[i] + toString(mId);
 	}
 
 	updateLightMap();
@@ -258,7 +256,7 @@ Ogre::Entity* Car::loadPart(std::string partType, int partId) {
 	std::string extPartType = "_" + partType;
 
 	// partId has default value of -1 if not passed in
-	Ogre::Entity* entity = mSceneMgr->createEntity(resGrpId + extPartType + (partId != -1 ? Ogre::StringConverter::toString(partId) : ""),
+	Ogre::Entity* entity = mSceneMgr->createEntity(resGrpId + extPartType + (partId != -1 ? toString(partId) : ""),
 												   mCarName + extPartType + ".mesh", resGrpId);
 	forDeletion(entity);
 

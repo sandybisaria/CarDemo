@@ -2,7 +2,7 @@
 
 Sim::Sim(App* app)
 	: mSceneMgr(0), scene(0), mApp(app),
-	  world(0), carInput(0), numCars(2), // Setting the number of cars
+	  world(0), carInput(0), numCars(1), // Setting the number of cars
 	  frameRate(1.f / 60.f), targetTime(0),
 	  debugDraw(NULL) {
 }

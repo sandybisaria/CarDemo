@@ -87,8 +87,6 @@ public:
 	MathVector<double, 3> getWheelPosition(WheelPosition wp) const;
 	double getWheelSteerAngle(WheelPosition wp) const { return wheels[wp].getSteerAngle(); }
 
-	//TODO Add traction control (ABS and TCS)
-
 	// Set steering angle to "val", where -1.0 = maximum left and 1.0 = maximum right
 	void setSteering(const double val, const float rangeMul); //TODO Determine typical rangeMul in-game
 
