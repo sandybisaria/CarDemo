@@ -23,6 +23,9 @@ void CarDynamics::update() {
 	chassisRotation.rotateVector(centerOfMass);
 	chassisPosition = chassisCenterOfMass - centerOfMass;
 
+	// For some reason, chassisCenterOfMass randomly jumps up by 10...
+	std::cout << chassisPosition << "\t" << chassisCenterOfMass << "\t" << centerOfMass << std::endl;
+
 	//TODO updateBuoyancy()
 }
 
@@ -73,6 +76,9 @@ void CarDynamics::tick(double dt) {
 void CarDynamics::synchronizeChassis() {
 	chassis->setLinearVelocity(toBulletVector(body.getVelocity()));
 	chassis->setAngularVelocity(toBulletVector(body.getAngularVelocity()));
+
+	std::cout << body.getVelocity() << "\t" << body.getAngularVelocity() << std::endl;
+//	std::cout << /*body.getVelocity() << "P" << body.getPosition() << "C" <<*/ chassisPosition << std::endl;
 }
 
 void CarDynamics::updateBody(double dt, double driveTorque[]) {

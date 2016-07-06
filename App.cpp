@@ -101,6 +101,18 @@ bool App::setupRenderSystem() {
 
 	mRoot->setRenderSystem(rs);
 
+	// Would be useful for configuring render system options
+//	Ogre::ConfigOptionMap& cf = rs->getConfigOptions();
+//	Ogre::ConfigOptionMap::iterator it;
+//	for (it = cf.begin(); it != cf.end(); it++) {
+//		std::cout << it->first << std::endl;
+//		Ogre::StringVector& options = it->second.possibleValues;
+//		Ogre::StringVector::iterator jt;
+//		for (jt = options.begin(); jt != options.end(); jt++) {
+//			std::cout << '\t' << *jt << std::endl;
+//		}
+//	}
+
 	mWindow = mRoot->initialise(true, "CarDemo");
 	return true;
 }
