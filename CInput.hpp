@@ -20,7 +20,7 @@ namespace PlayerActions {
 	};
 }
 
-// Based on Stuntrally's CInput class
+// Based on Stuntrally's CInput class, receiving input from the keyboard and storing it
 class CInput {
 public:
 	CInput(Sim* sim);
@@ -33,7 +33,7 @@ public:
 private:
 	void loadInputDefaults();
 
-	Sim* mSim;
+	Sim* mSim; //TODO Remove; not needed
 
 	std::map< OIS::KeyCode, PlayerActions::PlayerActions > triggerInputMap;
 	std::map< std::pair<OIS::KeyCode, OIS::KeyCode>, PlayerActions::PlayerActions > axisInputMap;

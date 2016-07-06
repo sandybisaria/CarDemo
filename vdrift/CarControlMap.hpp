@@ -6,6 +6,7 @@
 
 #include "../CInput.hpp"
 
+// Class for mapping keyboard inputs to valid car control inputs
 class CarControlMapLocal {
 public:
 	CarControlMapLocal() {
@@ -26,7 +27,7 @@ public:
 		return coeff;
 	}
 
-	//Skipped player int, race countdowns params, performance test params
+	// Skipped player int, race countdowns params, performance test params
 	const std::vector<float>& processInput(const float* channels, float carSpeed, float sssEffect,
 										   float sssVelFactor) {
 		assert(inputs.size() == CarInput::ALL);
@@ -42,7 +43,6 @@ public:
 		// Steering
 		float val = channels[PlayerActions::STEERING] * 2.f - 1.f;
 		if (sssEffect > 0.02f) val *= getSSSCoeff(fabs(carSpeed), sssVelFactor, sssEffect);
-
 		inputs[CarInput::STEER_RIGHT] = val > 0.f ?  val : 0.f;
 		inputs[CarInput::STEER_LEFT]  = val < 0.f ? -val : 0.f;
 

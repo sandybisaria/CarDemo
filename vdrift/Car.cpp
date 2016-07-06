@@ -58,11 +58,19 @@ void Car::update() {
 
 double Car::getSpeedDir() { return dyn->getSpeedDir(); }
 
+/* The format of the inputs vector is as follows:
+ * 0 ->  1 (disengaged -> fully-engaged) = BRAKE, THROTTLE, HANDBRAKE, CLUTCH, STEER_RIGHT
+ * 0 -> -1 (disengaged -> fully-engaged) = STEER_LEFT
+ * 0 or  1 (on or off) = SHIFT_UP/DOWN
+ *
+ * Note that SHIFT_DOWN takes "higher precedence" than SHIFT_UP (in case both are engaged)
+ * Note that the steering value with greater magnitude takes precedence (-0.7 vs 0.5 -> steer left)
+ */
 void Car::handleInputs(const std::vector<float>& inputs) {
 	assert(inputs.size() == CarInput::ALL);
 
 	int curGear = dyn->getTransmission().getGear();
-	bool rear = curGear == -1; // Is car in reverse?
+	bool rear = curGear == -1; // Is car currently in reverse?
 
 	// We assume that we use -1 when trying to drive in reverse; change in the future...
 	float brake = !rear? inputs[CarInput::BRAKE] : inputs[CarInput::THROTTLE];
@@ -86,8 +94,6 @@ void Car::handleInputs(const std::vector<float>& inputs) {
 
 	float clutch = 1 - inputs[CarInput::CLUTCH];
 	dyn->setClutch(clutch);
-
-//	std::cout << "Thr" << throttle << "Clu" << clutch << "Gea" << newGear << "Ste" << steerValue << "Bra" << brake << std::endl;
 }
 
 void Car::createdConfiguration(sh::MaterialInstance* m, const std::string& configuration) {
