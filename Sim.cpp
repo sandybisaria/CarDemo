@@ -2,7 +2,7 @@
 
 Sim::Sim(App* app)
 	: mSceneMgr(0), scene(0), mApp(app),
-	  world(0), car(0), carInput(0), otherCar(0),
+	  world(0), carInput(0), numCars(2), // Setting the number of cars
 	  frameRate(1.f / 60.f), targetTime(0),
 	  debugDraw(NULL) {
 }
@@ -11,6 +11,11 @@ Sim::~Sim() {
 	delete world;
 	delete carInput;
 	delete debugDraw;
+
+	for (std::vector<Car*>::iterator it = cars.begin(); it != cars.end(); it++) {
+		delete (*it);
+	}
+	cars.clear();
 }
 
 void Sim::setup(Ogre::SceneManager* sceneMgr) {
@@ -19,11 +24,12 @@ void Sim::setup(Ogre::SceneManager* sceneMgr) {
 	world = new CollisionWorld();
 	world->sim = this; //TODO Maybe make more secure?
 
-	car = new Car(0);
-	car->setup("360", mSceneMgr, *world);
+	for (int i = 0; i < numCars; i++) {
+		Car* newCar = new Car(i);
+		newCar->setup("360", mSceneMgr, *world);
 
-	otherCar = new Car(1);
-	otherCar->setup("360", mSceneMgr, *world);
+		cars.push_back(newCar);
+	}
 
 	carInput = new CInput(this);
 
@@ -34,20 +40,29 @@ void Sim::setup(Ogre::SceneManager* sceneMgr) {
 }
 
 void Sim::update(float dt) {
-	// Was in the loop for fluids...
-	car->updatePreviousVelocity();
-	otherCar->updatePreviousVelocity();
+//	// Was in the loop for fluids...
+//	for (int i = 0; i < numCars; i++) { cars[i]->updatePreviousVelocity(); }
 
-	if (dt > 0) world->update(dt); // Update physics
+	// Update physics
+	if (dt > 0) world->update(dt);
 
 	// Update model
-	car->update();
-	otherCar->update();
+	for (int i = 0; i < numCars; i++) { cars[i]->update(); }
 
 	// Update inputs
-	const std::vector<float>& inputs = localMap.processInput(carInput->getPlayerInputState(), car->getSpeedDir(),
-															 0.f, 0.f);
-	car->handleInputs(inputs);
+	for (int i = 0; i < numCars; i++) {
+		if (i == 0) { // Whatever the car to control is supposed to be
+			const std::vector<float>& inputs = localMap.processInput(carInput->getPlayerInputState(), cars[i]->getSpeedDir(),
+																	 0.f, 0.f);
+			cars[i]->handleInputs(inputs);
+		} else {
+			std::vector<float> inputs;
+			inputs.resize(CarInput::ALL, 0);
+			//TODO Add "basic AI" for the vehicles
+
+			cars[i]->handleInputs(inputs);
+		}
+	}
 
 	if (debugDraw) {
 		debugDraw->setDebugMode(1);
@@ -88,14 +103,16 @@ void Sim::update(float dt) {
 }
 
 Ogre::Vector3 Sim::getCameraPosition() {
-	return car->getPosition();
+	return cars[0]->getPosition();
 }
 
 Ogre::Quaternion Sim::getCameraOrientation() {
-	return car->getOrientation();
+	return cars[0]->getOrientation();
 }
 
-TerrainSurface* Sim::getTerrainSurface(std::string name) { return mApp->getTerrainSurface(name); }
+TerrainSurface* Sim::getTerrainSurface(std::string name) {
+	return mApp->getTerrainSurface(name);
+}
 
 void Sim::keyPressed(const OIS::KeyEvent& ke) {
 	carInput->keyPressed(ke);

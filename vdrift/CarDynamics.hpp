@@ -56,8 +56,8 @@ public:
 	// CollisionWorld interface
 	const CollisionContact& getWheelContact(WheelPosition(wp)) const { return wheelContact[wp]; }
 	CollisionContact& getWheelContact(WheelPosition(wp)) { return wheelContact[wp]; }
-	btVector3 prevVel;
-	void updatePreviousVelocity() { prevVel = chassis->getLinearVelocity(); }
+//	btVector3 prevVel;
+//	void updatePreviousVelocity() { prevVel = chassis->getLinearVelocity(); }
 
 	// Update method
 	void update();

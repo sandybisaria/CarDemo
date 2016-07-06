@@ -246,6 +246,8 @@ bool CollisionWorld::castRay(const MathVector<float, 3>& origin, const MathVecto
 			int ptrU = (long) (col->getCollisionShape()->getUserPointer());
 			int su = ptrU & 0xFF00, mtr = ptrU & 0xFF; // Fancy arithmetic
 
+			const std::string surfType = "Asphalt"; // Hard-coded for now
+
 			//TODO Will need TerrainData to determine what exactly is below the wheel
 			if (ptrU) {
 				switch (su) {
@@ -257,18 +259,18 @@ bool CollisionWorld::castRay(const MathVector<float, 3>& origin, const MathVecto
 
 				case SU_Terrain:
 					//TODO Go into TerrainData and get the TerrainSurface
-					surf = sim->getTerrainSurface("Asphalt"); // Hard-coded for now
+					surf = sim->getTerrainSurface(surfType);
 					break;
 
 				case SU_Fluid:
 					break;
 
 				default:
-					surf = sim->getTerrainSurface("Asphalt"); // Hard-coded for now
+					surf = sim->getTerrainSurface(surfType);
 					break;
 				}
 			} else {
-				surf = sim->getTerrainSurface("Asphalt"); // Hard-coded for now
+				surf = sim->getTerrainSurface(surfType);
 			}
 		}
 

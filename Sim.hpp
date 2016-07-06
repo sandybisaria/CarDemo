@@ -20,6 +20,8 @@ class Car;
 
 #include <OIS.h>
 
+#include <vector>
+
 class Sim {
 public:
 	Sim(App* app);
@@ -47,13 +49,16 @@ private:
 	Ogre::SceneManager* mSceneMgr;
 
 	CollisionWorld* world;
-	Car* car;
-	Car* otherCar;
+
+	const double frameRate;
+	int targetTime;
+
+	std::vector<Car*> cars;
+	const int numCars; // Number of cars to load
+
+	// Keyboard control
 	CInput* carInput;
 	CarControlMapLocal localMap;
 
 	BtOgre::DebugDrawer* debugDraw;
-
-	const double frameRate;
-	int targetTime;
 };

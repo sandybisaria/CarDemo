@@ -48,7 +48,9 @@ void Car::setup(std::string carName, Ogre::SceneManager* sceneMgr, CollisionWorl
 	loadModel();
 }
 
-void Car::updatePreviousVelocity() { dyn->updatePreviousVelocity(); }
+//void Car::updatePreviousVelocity() {
+//	dyn->updatePreviousVelocity();
+//}
 
 void Car::update() {
 	dyn->update();
@@ -56,7 +58,9 @@ void Car::update() {
 	updateLightMap();
 }
 
-double Car::getSpeedDir() { return dyn->getSpeedDir(); }
+double Car::getSpeedDir() {
+	return dyn->getSpeedDir();
+}
 
 /* The format of the inputs vector is as follows:
  * 0 ->  1 (disengaged -> fully-engaged) = BRAKE, THROTTLE, HANDBRAKE, CLUTCH, STEER_RIGHT
