@@ -23,6 +23,7 @@ find_package(OGRE REQUIRED)
 find_package(OIS REQUIRED)
 find_package(BULLET REQUIRED)
 
+# If on, compile the unit tests. The executable file will solely execute these tests
 option(build_gtests "Build and run gtests" OFF)
 if (build_gtests)
 	find_package(GTest REQUIRED)
@@ -62,6 +63,7 @@ file(GLOB HDRS
 	util/*.hpp
 	vdrift/*.hpp
 	terrain/*.hpp
+	ai/*.hpp
 )
 
 # Source files
@@ -70,6 +72,7 @@ file(GLOB SRCS
 	util/*.cpp
 	vdrift/*.cpp
 	terrain/*.cpp
+	ai/*.cpp
 )
 
 add_executable(CarDemo ${HDRS} ${SRCS})

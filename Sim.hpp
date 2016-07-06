@@ -8,8 +8,10 @@ class Car;
 
 #include "vdrift/CollisionWorld.hpp"
 #include "vdrift/Car.hpp"
-
 #include "vdrift/CarControlMap.hpp"
+
+#include "ai/BasicController.hpp"
+class BasicController;
 
 #include "btOgre/BtOgreDebug.h"
 
@@ -55,6 +57,10 @@ private:
 
 	std::vector<Car*> cars;
 	const int numCars; // Number of cars to load
+	int idCarToControl;
+
+	// Car controllers
+	std::vector<BasicController> controllers;
 
 	// Keyboard control
 	CInput* carInput;

@@ -21,6 +21,7 @@ namespace PlayerActions {
 }
 
 // Based on Stuntrally's CInput class, receiving input from the keyboard and storing it
+//TODO CInput and CarControlMap may possibly be combined if it makes sense
 class CInput {
 public:
 	CInput(Sim* sim);

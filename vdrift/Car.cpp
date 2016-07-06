@@ -74,6 +74,8 @@ void Car::handleInputs(const std::vector<float>& inputs) {
 	assert(inputs.size() == CarInput::ALL);
 
 	int curGear = dyn->getTransmission().getGear();
+
+	// Note that this in effect "inverts" the controls when in reverse, since the brake key acts like a throttle
 	bool rear = curGear == -1; // Is car currently in reverse?
 
 	// We assume that we use -1 when trying to drive in reverse; change in the future...

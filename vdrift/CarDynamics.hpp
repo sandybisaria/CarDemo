@@ -70,7 +70,7 @@ public:
 	void setHandBrake(float value) { for (int i = 0; i < brakes.size(); i++) brakes[i].setHandbrakeFactor(value); } //TODO No dmg
 
 	// Speedometer output based on driveshaft RPM
-	double getSpeedMPS() const;
+	double getSpeedMPS() const; // Compared to getSpeed, this is what the car sensors would likely read
 
 	// Chassis state access
 	const MathVector<double, 3>& getPosition() const { return chassisPosition; }

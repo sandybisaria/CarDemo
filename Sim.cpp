@@ -2,7 +2,9 @@
 
 Sim::Sim(App* app)
 	: mSceneMgr(0), scene(0), mApp(app),
-	  world(0), carInput(0), numCars(1), // Setting the number of cars
+	  world(0), carInput(0),
+	  numCars(1), // Setting the number of cars
+	  idCarToControl(0), // The ID of the car that the user can control
 	  frameRate(1.f / 60.f), targetTime(0),
 	  debugDraw(NULL) {
 }
@@ -22,13 +24,16 @@ void Sim::setup(Ogre::SceneManager* sceneMgr) {
 	mSceneMgr = sceneMgr;
 
 	world = new CollisionWorld();
-	world->sim = this; //TODO Maybe make more secure?
+	world->sim = this; // Maybe make more secure?
 
 	for (int i = 0; i < numCars; i++) {
 		Car* newCar = new Car(i);
 		newCar->setup("360", mSceneMgr, *world);
 
 		cars.push_back(newCar);
+
+		BasicController bc(newCar);
+		controllers.push_back(bc);
 	}
 
 	carInput = new CInput(this);
@@ -51,7 +56,7 @@ void Sim::update(float dt) {
 
 	// Update inputs
 	for (int i = 0; i < numCars; i++) {
-		if (i == 0) { // Whatever the car to control is supposed to be
+		if (i == idCarToControl) {
 			const std::vector<float>& inputs = localMap.processInput(carInput->getPlayerInputState(), cars[i]->getSpeedDir(),
 																	 0.f, 0.f);
 			cars[i]->handleInputs(inputs);

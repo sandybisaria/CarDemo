@@ -39,8 +39,8 @@ void CInput::loadInputDefaults() {
 	triggerInputMap.insert(std::make_pair(OIS::KC_UP, 	 PlayerActions::THROTTLE));
 	triggerInputMap.insert(std::make_pair(OIS::KC_DOWN,  PlayerActions::BRAKE));
 	triggerInputMap.insert(std::make_pair(OIS::KC_SPACE, PlayerActions::HANDBRAKE));
-	triggerInputMap.insert(std::make_pair(OIS::KC_Z, 	 PlayerActions::SHIFT_UP));
-	triggerInputMap.insert(std::make_pair(OIS::KC_X, 	 PlayerActions::SHIFT_DOWN));
+	triggerInputMap.insert(std::make_pair(OIS::KC_X, 	 PlayerActions::SHIFT_UP));
+	triggerInputMap.insert(std::make_pair(OIS::KC_Z, 	 PlayerActions::SHIFT_DOWN));
 
 	axisInputMap.insert(std::make_pair(std::make_pair(OIS::KC_LEFT, OIS::KC_RIGHT), PlayerActions::STEERING));
 	playerInputState[PlayerActions::STEERING] = 0.5;
