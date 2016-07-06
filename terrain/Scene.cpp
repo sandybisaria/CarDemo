@@ -71,9 +71,8 @@ void Scene::defineTerrain() {
 
 void Scene::createBulletTerrain() {
 	Ogre::Terrain* baseTerrain = mTerrainGroup->getTerrain(0, 0);
-	// Used world size because base terrain should be tiled...
 	btHeightfieldTerrainShape* hfShape = new btHeightfieldTerrainShape(
-			worldSize, worldSize, baseTerrain->getHeightData(), 1, 0, 0,
+			baseTerrain->getSize(), baseTerrain->getSize(), baseTerrain->getHeightData(), 1, 0, 0,
 			2, PHY_FLOAT, false);
 	// Min and max height were set to 0 to force the terrain to be completely flat
 	hfShape->setUseDiamondSubdivision(true);
