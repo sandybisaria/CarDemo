@@ -22,7 +22,9 @@ public:
 	// Set contact data (used by ray cast)
 	void set(const MathVector<float, 3>& pos, const MathVector<float, 3>& norm, float dist,
 			 const TerrainSurface* ts, const Bezier* b, const btCollisionObject* c) {
-		assert(ts != NULL);
+#ifndef COMPILE_UNIT_TESTS
+		assert(ts != NULL); // Ensures smooth testing
+#endif
 		position = pos; normal = norm; depth = dist; surface = ts; patch = b; colObj = c;
 	}
 

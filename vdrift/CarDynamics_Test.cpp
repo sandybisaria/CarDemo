@@ -207,6 +207,7 @@ TEST(CarDynamics, TireForceAndWheelTorque) {
 	CarWheel& wheel = dyn.wheels[0];
 	wheel.setAngularVelocity(30); wheel.setRadius(0.5);
 	wheel.setRollingResistance(1.3e-2, 6.5e-6);
+	wheel.setInitialConditions();
 
 	CarBrake& brake = dyn.brakes[0];
 	brake.setArea(0.0006); brake.setBias(0.55); brake.setBrakeFactor(0.5);
@@ -267,15 +268,15 @@ TEST(CarDynamics, GetLocalWheelPosition) {
 
 	MathVector<double, 3> res = dyn.getLocalWheelPosition(WheelPosition(0), 0.5);
 	MathVector<double, 3> expected = MathVector<double, 3>(-0.842289085, 1.12, -0.265558027);
-	for (int i = 0; i < 4; i++) { EXPECT_NEAR_HP(res[i], expected[i]); }
+	for (int i = 0; i < 3; i++) { EXPECT_NEAR_HP(res[i], expected[i]); }
 
 	res = dyn.getLocalWheelPosition(WheelPosition(0), 0.1);
 	expected = MathVector<double, 3>(-0.839653157, 1.12, -0.349564246);
-	for (int i = 0; i < 4; i++) { EXPECT_NEAR_HP(res[i], expected[i]); }
+	for (int i = 0; i < 3; i++) { EXPECT_NEAR_HP(res[i], expected[i]); }
 
 	res = dyn.getLocalWheelPosition(WheelPosition(0), 1.f);
 	expected = MathVector<double, 3>(-0.805248213, 1.12, -0.166720515);
-	for (int i = 0; i < 4; i++) { EXPECT_NEAR_HP(res[i], expected[i]); }
+	for (int i = 0; i < 3; i++) { EXPECT_NEAR_HP(res[i], expected[i]); }
 }
 
 #endif
