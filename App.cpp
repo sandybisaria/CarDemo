@@ -188,7 +188,7 @@ void App::setupScene() {
 
 	mCameraNode = mSceneMgr->getRootSceneNode()->createChildSceneNode("MainCameraNode");
 	mCameraNode->setPosition(Ogre::Vector3(0, 1, -2));
-	mCameraNode->setDirection(Ogre::Vector3::UNIT_Z);
+	mCameraNode->setDirection(Ogre::Vector3::UNIT_X);
 	mCameraNode->attachObject(mCamera);
 
 	//TODO Make configurable a la Stuntrally
@@ -337,24 +337,31 @@ bool App::frameRenderingQueued(const Ogre::FrameEvent& evt) {
 
 // To control the main camera
 void App::updateCamera(const Ogre::FrameEvent& evt) {
-	Ogre::Vector3 translation(Ogre::Vector3::ZERO);
-	if (mKeyboard->isKeyDown(OIS::KC_W)) {
-		translation += Ogre::Vector3::NEGATIVE_UNIT_Z;
-	} if (mKeyboard->isKeyDown(OIS::KC_S)) {
-		translation += Ogre::Vector3::UNIT_Z;
-	} if (mKeyboard->isKeyDown(OIS::KC_E)) {
-		translation += Ogre::Vector3::UNIT_Y;
-	} if (mKeyboard->isKeyDown(OIS::KC_Q)) {
-		translation += Ogre::Vector3::NEGATIVE_UNIT_Y;
-	}
-	translation *= 0.10;
-	mCameraNode->translate(translation, Ogre::Node::TS_LOCAL);
+//	Ogre::Vector3 translation(Ogre::Vector3::ZERO);
+//	if (mKeyboard->isKeyDown(OIS::KC_W)) {
+//		translation += Ogre::Vector3::NEGATIVE_UNIT_Z;
+//	} if (mKeyboard->isKeyDown(OIS::KC_S)) {
+//		translation += Ogre::Vector3::UNIT_Z;
+//	} if (mKeyboard->isKeyDown(OIS::KC_E)) {
+//		translation += Ogre::Vector3::UNIT_Y;
+//	} if (mKeyboard->isKeyDown(OIS::KC_Q)) {
+//		translation += Ogre::Vector3::NEGATIVE_UNIT_Y;
+//	}
+////	translation *= 0.10;
+//	mCameraNode->translate(translation, Ogre::Node::TS_LOCAL);
 
-	if (mKeyboard->isKeyDown(OIS::KC_A)) {
-		mCameraNode->yaw(Ogre::Radian(0.005), Ogre::Node::TS_LOCAL);
-	} if (mKeyboard->isKeyDown(OIS::KC_D)) {
-		mCameraNode->yaw(Ogre::Radian(-0.005), Ogre::Node::TS_LOCAL);
-	}
+	//FIXME The idea is to put the camera "behind" the car; this probably requires math
+	Ogre::Vector3 pos = mSim->getCameraPosition();
+//	pos += 3 * Ogre::Vector3::UNIT_Y;
+//	pos -= 10 * Ogre::Vector3::UNIT_X;
+
+	mCameraNode->setPosition(pos);
+
+//	if (mKeyboard->isKeyDown(OIS::KC_A)) {
+//		mCameraNode->yaw(Ogre::Radian(0.005), Ogre::Node::TS_LOCAL);
+//	} if (mKeyboard->isKeyDown(OIS::KC_D)) {
+//		mCameraNode->yaw(Ogre::Radian(-0.005), Ogre::Node::TS_LOCAL);
+//	}
 
 //	std::cout << mSim->getCameraPosition() << std::endl;
 //	std::cout << mSim->getCameraOrientation() << std::endl;

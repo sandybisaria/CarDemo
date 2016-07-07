@@ -34,6 +34,7 @@ public:
 
 	Ogre::Vector3 getCameraPosition();
 	Ogre::Quaternion getCameraOrientation();
+	int carToWatch;
 
 	CollisionWorld* getCollisionWorld() { return world; }
 

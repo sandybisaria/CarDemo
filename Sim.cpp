@@ -3,8 +3,9 @@
 Sim::Sim(App* app)
 	: mSceneMgr(0), scene(0), mApp(app),
 	  world(0), carInput(0),
-	  numCars(1), // Setting the number of cars
+	  numCars(2), // Setting the number of cars
 	  idCarToControl(0), // The ID of the car that the user can control
+	  carToWatch(0), // ID of car to watch
 	  frameRate(1.f / 60.f), targetTime(0),
 	  debugDraw(NULL) {
 }
@@ -56,20 +57,20 @@ void Sim::update(float dt) {
 
 	// Update inputs
 	for (int i = 0; i < numCars; i++) {
+		const std::vector<float>* inputs;
 		if (i == idCarToControl) {
-			const std::vector<float>& inputs = localMap.processInput(carInput->getPlayerInputState(), cars[i]->getSpeedDir(),
-																	 0.f, 0.f);
-			cars[i]->handleInputs(inputs);
+			 inputs = &localMap.processInput(carInput->getPlayerInputState(), cars[i]->getSpeedDir(), 0.f, 0.f);
 		} else {
-			std::vector<float> inputs;
-			inputs.resize(CarInput::ALL, 0);
 			//TODO Add "basic AI" for the vehicles
-
-			cars[i]->handleInputs(inputs);
+			inputs = &controllers[i].updateInputs(dt);
+			std::cout << inputs->at(CarInput::THROTTLE) << " " << inputs->at(CarInput::BRAKE) << std::endl;
+			std::cout << cars[i]->getSpeedMPS() << std::endl;
 		}
+
+		cars[i]->handleInputs(*inputs);
 	}
 
-	if (debugDraw) {
+	if (false && debugDraw) {
 		debugDraw->setDebugMode(1);
 		debugDraw->step();
 	}
@@ -108,11 +109,11 @@ void Sim::update(float dt) {
 }
 
 Ogre::Vector3 Sim::getCameraPosition() {
-	return cars[0]->getPosition();
+	return cars[carToWatch]->getPosition();
 }
 
 Ogre::Quaternion Sim::getCameraOrientation() {
-	return cars[0]->getOrientation();
+	return cars[carToWatch]->getOrientation();
 }
 
 TerrainSurface* Sim::getTerrainSurface(std::string name) {
@@ -121,6 +122,25 @@ TerrainSurface* Sim::getTerrainSurface(std::string name) {
 
 void Sim::keyPressed(const OIS::KeyEvent& ke) {
 	carInput->keyPressed(ke);
+
+	if (numCars < 2) return;
+	switch(ke.key) {
+	case OIS::KC_0:
+		controllers[1].setTargetSpeed(0.f);
+		break;
+	case OIS::KC_1:
+		controllers[1].setTargetSpeed(10.f);
+		break;
+	case OIS::KC_2:
+		controllers[1].setTargetSpeed(20.f);
+		break;
+
+	case OIS::KC_NUMPAD0:
+		carToWatch = 0;
+		break;
+	case OIS::KC_NUMPAD1:
+		carToWatch = 1;
+	}
 }
 
 void Sim::keyReleased(const OIS::KeyEvent& ke) {

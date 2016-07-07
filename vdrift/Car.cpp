@@ -62,6 +62,10 @@ double Car::getSpeedDir() {
 	return dyn->getSpeedDir();
 }
 
+double Car::getSpeedMPS() {
+	return dyn->getSpeedMPS();
+}
+
 /* The format of the inputs vector is as follows:
  * 0 ->  1 (disengaged -> fully-engaged) = BRAKE, THROTTLE, HANDBRAKE, CLUTCH, STEER_RIGHT
  * 0 -> -1 (disengaged -> fully-engaged) = STEER_LEFT

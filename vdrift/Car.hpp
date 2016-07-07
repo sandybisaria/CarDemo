@@ -27,6 +27,7 @@ public:
 
 	// Interface methods
 	double getSpeedDir();
+	double getSpeedMPS(); // Speed as "measured" internally by the car
 	Ogre::Vector3 getPosition() { return mainNode->getPosition(); }
 	Ogre::Quaternion getOrientation() { return mainNode->getOrientation(); }
 
