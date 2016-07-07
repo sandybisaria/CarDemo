@@ -2,7 +2,7 @@
 
 BasicController::BasicController(Car* car)
 	: mCar(car),
-	  targetSpeed(10), kPSpeed(8), kDSpeed(0.001), kISpeed(0.001) {
+	  targetSpeed(20), kPSpeed(7.65629), kDSpeed(0.00020), kISpeed(0.00656) {
 	reset();
 }
 
@@ -36,7 +36,6 @@ const std::vector<float>& BasicController::updateInputs(float dt) {
 	iSpeedAcc += eSpeed * dt;
 
 	thrBrkVal = clamp(thrBrkVal, -1.f, 1.f); // Clamp from -1 to 1
-	if (fabs(thrBrkVal) < 0.01) thrBrkVal = 0; // Output is so small as to be negligible
 	if (thrBrkVal < 0) {
 		inputs[CarInput::THROTTLE] = 0;
 		inputs[CarInput::BRAKE] = -thrBrkVal;
