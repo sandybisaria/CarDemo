@@ -20,11 +20,11 @@ void BasicController::setTargetSpeed(double newSpeed) {
 	targetSpeed = newSpeed;
 }
 
-const std::vector<float>& BasicController::updateInputs(float dt) {
+const std::vector<double>& BasicController::updateInputs(float dt) {
 	// Set speed
 	const double eSpeed = targetSpeed - mCar->getSpeedMPS();
 
-	float thrBrkVal = 0;
+	double thrBrkVal = 0;
 	thrBrkVal += eSpeed * kPSpeed; // Proportionality term
 
 	if (dt != 0) {
@@ -35,7 +35,7 @@ const std::vector<float>& BasicController::updateInputs(float dt) {
 	thrBrkVal += kISpeed * iSpeedAcc;
 	iSpeedAcc += eSpeed * dt;
 
-	thrBrkVal = clamp(thrBrkVal, -1.f, 1.f); // Clamp from -1 to 1
+	thrBrkVal = clamp(thrBrkVal, -1.0, 1.0); // Clamp from -1 to 1
 	if (thrBrkVal < 0) {
 		inputs[CarInput::THROTTLE] = 0;
 		inputs[CarInput::BRAKE] = -thrBrkVal;

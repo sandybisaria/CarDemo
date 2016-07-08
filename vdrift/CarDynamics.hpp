@@ -64,10 +64,10 @@ public:
 
 	// Driveline input
 	void shiftGear(int value);
-	void setThrottle(float value) { engine.setThrottle(value); } //TODO Ignore damage for now
-	void setClutch(float value) { clutch.setClutch(value); }
-	void setBrake(float value) { for (int i = 0; i < brakes.size(); i++) brakes[i].setBrakeFactor(value); } //TODO No dmg
-	void setHandBrake(float value) { for (int i = 0; i < brakes.size(); i++) brakes[i].setHandbrakeFactor(value); } //TODO No dmg
+	void setThrottle(double value) { engine.setThrottle(value); } //TODO Ignore damage for now
+	void setClutch(double value) { clutch.setClutch(value); }
+	void setBrake(double value) { for (int i = 0; i < brakes.size(); i++) brakes[i].setBrakeFactor(value); } //TODO No dmg
+	void setHandBrake(double value) { for (int i = 0; i < brakes.size(); i++) brakes[i].setHandbrakeFactor(value); } //TODO No dmg
 
 	// Speedometer output based on driveshaft RPM
 	double getSpeedMPS() const; // Compared to getSpeed, this is what the car sensors would likely read
@@ -89,7 +89,7 @@ public:
 	double getWheelSteerAngle(WheelPosition wp) const { return wheels[wp].getSteerAngle(); }
 
 	// Set steering angle to "val", where -1.0 = maximum left and 1.0 = maximum right
-	void setSteering(const double val, const float rangeMul); //TODO Determine typical rangeMul in-game
+	void setSteering(const double val, const double rangeMul); //TODO Determine typical rangeMul in-game
 
 	// Collision params
 	float collR, collR2m, collW, collH,

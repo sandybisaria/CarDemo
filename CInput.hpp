@@ -26,7 +26,7 @@ class CInput {
 public:
 	CInput(Sim* sim);
 
-	float* getPlayerInputState() { return playerInputState; }
+	double* getPlayerInputState() { return playerInputState; }
 
 	void keyPressed(const OIS::KeyEvent& ke);
 	void keyReleased(const OIS::KeyEvent& ke);
@@ -39,6 +39,6 @@ private:
 	std::map< OIS::KeyCode, PlayerActions::PlayerActions > triggerInputMap;
 	std::map< std::pair<OIS::KeyCode, OIS::KeyCode>, PlayerActions::PlayerActions > axisInputMap;
 
-	float playerInputState[PlayerActions::NumPlayerActions];
+	double playerInputState[PlayerActions::NumPlayerActions];
 };
 

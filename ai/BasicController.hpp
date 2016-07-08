@@ -12,11 +12,11 @@ public:
 
 	void setTargetSpeed(double newSpeed);
 
-	const std::vector<float>& updateInputs(float dt);
+	const std::vector<double>& updateInputs(float dt);
 
 private:
 	Car* mCar;
-	std::vector<float> inputs;
+	std::vector<double> inputs;
 
 	double kPSpeed,
 		   kDSpeed, dLastESpeed,

@@ -23,7 +23,7 @@ public:
 
 //	void updatePreviousVelocity();
 	void update();
-	void handleInputs(const std::vector<float>& inputs);
+	void handleInputs(const std::vector<double>& inputs);
 
 	// Interface methods
 	double getSpeedDir();

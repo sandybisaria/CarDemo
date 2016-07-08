@@ -30,7 +30,7 @@ double CarDynamics::getSpeedMPS() const {
 	}
 }
 
-void CarDynamics::setSteering(const double val, const float rangeMul) {
+void CarDynamics::setSteering(const double val, const double rangeMul) {
 	//Ignored damage
 	steerValue = val;
 	double steerAngle = val * maxAngle * rangeMul; // Steering angle in degrees

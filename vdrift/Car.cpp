@@ -78,7 +78,7 @@ MathVector<double, 3> Car::getDownVector() {
  * Note that SHIFT_DOWN takes "higher precedence" than SHIFT_UP (in case both are engaged)
  * Note that the steering value with greater magnitude takes precedence (-0.7 vs 0.5 -> steer left)
  */
-void Car::handleInputs(const std::vector<float>& inputs) {
+void Car::handleInputs(const std::vector<double>& inputs) {
 	assert(inputs.size() == CarInput::ALL);
 
 	int curGear = dyn->getTransmission().getGear();
@@ -87,26 +87,26 @@ void Car::handleInputs(const std::vector<float>& inputs) {
 	bool rear = curGear == -1; // Is car currently in reverse?
 
 	// We assume that we use -1 when trying to drive in reverse; change in the future...
-	float brake = !rear? inputs[CarInput::BRAKE] : inputs[CarInput::THROTTLE];
+	double brake = !rear? inputs[CarInput::BRAKE] : inputs[CarInput::THROTTLE];
 	dyn->setBrake(brake);
 
 	dyn->setHandBrake(inputs[CarInput::HANDBRAKE]);
 
-	float steerValue = inputs[CarInput::STEER_RIGHT];
+	double steerValue = inputs[CarInput::STEER_RIGHT];
 	if (std::abs(inputs[CarInput::STEER_LEFT]) > std::abs(inputs[CarInput::STEER_RIGHT]))
 		steerValue = -inputs[CarInput::STEER_LEFT];
 	dyn->setSteering(steerValue, 0.81 * 0.7); //TODO Hard-coded value based on default settings
 
 	int gearChange = 0;
-	if (inputs[CarInput::SHIFT_UP]   == 1.0) gearChange =  1.0;
-	if (inputs[CarInput::SHIFT_DOWN] == 1.0) gearChange = -1.0;
+	if (inputs[CarInput::SHIFT_UP]   == 1.0) gearChange = (int)  1.0;
+	if (inputs[CarInput::SHIFT_DOWN] == 1.0) gearChange = (int) -1.0;
 	int newGear = curGear + gearChange;
 	dyn->shiftGear(newGear);
 
-	float throttle = !rear ? inputs[CarInput::THROTTLE] : inputs[CarInput::BRAKE];
+	double throttle = !rear ? inputs[CarInput::THROTTLE] : inputs[CarInput::BRAKE];
 	dyn->setThrottle(throttle);
 
-	float clutch = 1 - inputs[CarInput::CLUTCH];
+	double clutch = 1 - inputs[CarInput::CLUTCH];
 	dyn->setClutch(clutch);
 }
 

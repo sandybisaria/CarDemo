@@ -57,9 +57,9 @@ void Sim::update(float dt) {
 
 	// Update inputs
 	for (int i = 0; i < numCars; i++) {
-		const std::vector<float>* inputs;
+		const std::vector<double>* inputs;
 		if (i == idCarToControl) {
-			 inputs = &localMap.processInput(carInput->getPlayerInputState(), cars[i]->getSpeedDir(), 0.f, 0.f);
+			 inputs = &localMap.processInput(carInput->getPlayerInputState(), cars[i]->getSpeedDir(), 0.0, 0.0);
 		} else {
 			//TODO Add "basic AI" for the vehicles
 			inputs = &controllers[i].updateInputs(dt);
