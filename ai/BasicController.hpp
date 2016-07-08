@@ -10,17 +10,22 @@ public:
 
 	void reset();
 
-	void setTargetSpeed(double newSpeed);
-
 	const std::vector<double>& updateInputs(float dt);
 
 private:
 	Car* mCar;
 	std::vector<double> inputs;
 
-	void updateSpeed(float dt);
 	double kPSpeed,
-		   kDSpeed, dLastESpeed,
-		   kISpeed, iSpeedAcc;
+		kDSpeed, dLastESpeed,
+		kISpeed, iSpeedAcc;
 	double targetSpeed; // Target speed in m/s
+	void setTargetSpeed(double newSpeed);
+	void updateSpeed(float dt);
+
+	double kPDir;
+	double targetX; // Target x-coordinate
+	void setTargetX(double newX);
+
+	void updateDirection(float dt);
 };

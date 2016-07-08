@@ -137,22 +137,15 @@ void Sim::keyPressed(const OIS::KeyEvent& ke) {
 	carInput->keyPressed(ke);
 
 	if (numCars < 2) return;
-	switch(ke.key) {
-	case OIS::KC_0:
-		controllers[1].setTargetSpeed(0.f);
-		break;
-	case OIS::KC_1:
-		controllers[1].setTargetSpeed(10.f);
-		break;
-	case OIS::KC_2:
-		controllers[1].setTargetSpeed(20.f);
-		break;
-
+	switch (ke.key) {
 	case OIS::KC_NUMPAD0:
 		carToWatch = 0;
 		break;
 	case OIS::KC_NUMPAD1:
 		carToWatch = 1;
+		break;
+	default:
+		break;
 	}
 }
 

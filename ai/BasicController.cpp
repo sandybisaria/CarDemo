@@ -1,9 +1,14 @@
 #include "BasicController.hpp"
 
 BasicController::BasicController(Car* car)
-	: mCar(car),
-	  targetSpeed(20), kPSpeed(7.65629), kDSpeed(0.00020), kISpeed(0.00656) {
+	: mCar(car) {
 	reset();
+
+	setTargetSpeed(20);
+	kPSpeed = 7.65629; kDSpeed = 0.00020; kISpeed = 0.00656;
+
+	setTargetX(20);
+	kPDir = 1;
 }
 
 BasicController::~BasicController() {
@@ -21,8 +26,13 @@ void BasicController::setTargetSpeed(double newSpeed) {
 	targetSpeed = newSpeed;
 }
 
+void BasicController::setTargetX(double newX) {
+	targetX = newX;
+}
+
 const std::vector<double>& BasicController::updateInputs(float dt) {
 	updateSpeed(dt);
+	updateDirection(dt);
 
 	return inputs;
 }
@@ -48,5 +58,25 @@ void BasicController::updateSpeed(float dt) {
 	} else {
 		inputs[CarInput::THROTTLE] = thrBrkVal;
 		inputs[CarInput::BRAKE] = 0;
+	}
+}
+
+void BasicController::updateDirection(float dt) {
+//	double eDir = targetX -
+//	Ogre::Vector3 forwardDir = Axes::vectorToOgre(mCar->getForwardVector());
+
+
+	double steerVal = 0;
+//	steerVal += eDir * kPDir;
+
+	steerVal = clamp(steerVal, -1.0, 1.0); // Clamp from -1 to 1
+	if (steerVal < 0) {
+		inputs[CarInput::STEER_RIGHT] = 0;
+		inputs[CarInput::STEER_LEFT] = steerVal;
+//		std::cout << "STEER LEFT " << steerVal << std::endl;
+	} else {
+		inputs[CarInput::STEER_RIGHT] = steerVal;
+		inputs[CarInput::STEER_LEFT] = 0;
+//		std::cout << "STEER RIGHT " << steerVal << std::endl;
 	}
 }
