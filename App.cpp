@@ -2,13 +2,13 @@
 
 #include "shiny/Platforms/Ogre/OgrePlatform.hpp"
 #include "shiny/Platforms/Ogre/OgreMaterial.hpp"
-#include "shiny/Main/PropertyBase.hpp"
+//#include "shiny/Main/PropertyBase.hpp"
 
 #include <OgreConfigFile.h>
 #include <OgreRenderWindow.h>
 
 #include "App.hpp"
-#include "util/Axes.hpp"
+//#include "util/Axes.hpp"
 
 App::App(Ogre::Root* root)
 	: mShutDown(false), mFactory(0), mScene(0), mSim(0),
@@ -187,7 +187,7 @@ void App::setupScene() {
 	mCamera = mSceneMgr->createCamera("MainCamera");
 
 	mCameraNode = mSceneMgr->getRootSceneNode()->createChildSceneNode("MainCameraNode");
-	mCameraNode->setPosition(Ogre::Vector3(0, 1, -2));
+	mCameraNode->setPosition(Ogre::Vector3::ZERO);
 	mCameraNode->setDirection(Ogre::Vector3::UNIT_X);
 	mCameraNode->attachObject(mCamera);
 
@@ -351,11 +351,10 @@ void App::updateCamera(const Ogre::FrameEvent& evt) {
 //	mCameraNode->translate(translation, Ogre::Node::TS_LOCAL);
 
 	//FIXME The idea is to put the camera "behind" the car; this probably requires math
-	Ogre::Vector3 pos = mSim->getCameraPosition();
 //	pos += 3 * Ogre::Vector3::UNIT_Y;
 //	pos -= 10 * Ogre::Vector3::UNIT_X;
-
-	mCameraNode->setPosition(pos);
+	mCameraNode->setPosition(mSim->getCameraPosition());
+	mCameraNode->setOrientation(mSim->getCameraOrientation());
 
 //	if (mKeyboard->isKeyDown(OIS::KC_A)) {
 //		mCameraNode->yaw(Ogre::Radian(0.005), Ogre::Node::TS_LOCAL);

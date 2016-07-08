@@ -78,6 +78,7 @@ public:
 	MathVector<double, 3> getVelocity() const { return body.getVelocity(); }
 	double getSpeed() const { return body.getVelocity().magnitude(); }
 	double getSpeedDir() const;
+	MathVector<double, 3> getDownVector() const;
 
 	// Driveline state access
 	const CarTransmission& getTransmission() const { return transmission; }
@@ -213,7 +214,6 @@ private:
 
 	Quaternion<double> getBodyOrientation() const { return body.getOrientation(); } // Replaces CARDYNAMICS::Orientation
 	MathVector<double, 3> getBodyPosition() const { return body.getPosition(); } // Replaces CARDYNAMICS::Position
-	MathVector<double, 3> getDownVector() const;
 
 	// Interpolated chassis state, using Bullet sim
 	MathVector<double, 3> chassisPosition;

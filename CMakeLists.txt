@@ -84,7 +84,7 @@ target_link_libraries(CarDemo
 	${OIS_LIBRARIES}
 	${OGRE_LIBRARIES}
 	${OGRE_Terrain_LIBRARIES}
-	${CMAKE_THREAD_LIBS_INIT} # Needed for gtest?
+#	${CMAKE_THREAD_LIBS_INIT} # Needed for gtest?
 )
 
 ## Make binary directories

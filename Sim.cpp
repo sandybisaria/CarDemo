@@ -63,8 +63,8 @@ void Sim::update(float dt) {
 		} else {
 			//TODO Add "basic AI" for the vehicles
 			inputs = &controllers[i].updateInputs(dt);
-			std::cout << inputs->at(CarInput::THROTTLE) << " " << inputs->at(CarInput::BRAKE) << std::endl;
-			std::cout << cars[i]->getSpeedMPS() << std::endl;
+//			std::cout << inputs->at(CarInput::THROTTLE) << " " << inputs->at(CarInput::BRAKE) << std::endl;
+//			std::cout << cars[i]->getSpeedMPS() << std::endl;
 		}
 
 		cars[i]->handleInputs(*inputs);
@@ -109,11 +109,22 @@ void Sim::update(float dt) {
 }
 
 Ogre::Vector3 Sim::getCameraPosition() {
-	return cars[carToWatch]->getPosition();
+	Ogre::Vector3 pos = cars[carToWatch]->getPosition();
+	pos += Ogre::Vector3::UNIT_Y; // Lift camera above car
+
+	return pos;
 }
 
 Ogre::Quaternion Sim::getCameraOrientation() {
-	return cars[carToWatch]->getOrientation();
+	Ogre::Quaternion orient = cars[carToWatch]->getOrientation();
+
+	Ogre::Vector3 downVector = Axes::vectorToOgre(cars[carToWatch]->getDownVector());
+	orient = orient * Ogre::Quaternion(Ogre::Degree(270), downVector); // Rotate to face front of car
+
+	// (Attempt to) turn right-side-up; not sure why this works..
+	orient = orient * Ogre::Quaternion(Ogre::Degree(180), Ogre::Vector3::UNIT_Z);
+
+	return orient;
 }
 
 TerrainSurface* Sim::getTerrainSurface(std::string name) {

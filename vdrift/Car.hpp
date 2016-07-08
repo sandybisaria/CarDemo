@@ -30,6 +30,7 @@ public:
 	double getSpeedMPS(); // Speed as "measured" internally by the car
 	Ogre::Vector3 getPosition() { return mainNode->getPosition(); }
 	Ogre::Quaternion getOrientation() { return mainNode->getOrientation(); }
+	MathVector<double, 3> getDownVector();
 
 	// MaterialInstanceListener methods
 	virtual void requestedConfiguration(sh::MaterialInstance* m, const std::string& configuration) { }
