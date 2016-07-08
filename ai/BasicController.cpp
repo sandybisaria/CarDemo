@@ -12,6 +12,7 @@ BasicController::~BasicController() {
 void BasicController::reset() {
 	inputs.resize(CarInput::ALL, 0.0f);
 
+	// Speed variables
 	dLastESpeed = 0;
 	iSpeedAcc = 0;
 }
@@ -21,7 +22,12 @@ void BasicController::setTargetSpeed(double newSpeed) {
 }
 
 const std::vector<double>& BasicController::updateInputs(float dt) {
-	// Set speed
+	updateSpeed(dt);
+
+	return inputs;
+}
+
+void BasicController::updateSpeed(float dt) {
 	const double eSpeed = targetSpeed - mCar->getSpeedMPS();
 
 	double thrBrkVal = 0;
@@ -43,6 +49,4 @@ const std::vector<double>& BasicController::updateInputs(float dt) {
 		inputs[CarInput::THROTTLE] = thrBrkVal;
 		inputs[CarInput::BRAKE] = 0;
 	}
-
-	return inputs;
 }

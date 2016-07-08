@@ -101,3 +101,9 @@ MathVector<double, 3> CarDynamics::getDownVector() const {
 	getBodyOrientation().rotateVector(v);
 	return v;
 }
+
+MathVector<double, 3> CarDynamics::getForwardVector() const {
+	MathVector<double, 3> v(1, 0, 0);
+	getBodyOrientation().rotateVector(v);
+	return v;
+}

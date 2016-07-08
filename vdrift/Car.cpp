@@ -70,6 +70,10 @@ MathVector<double, 3> Car::getDownVector() {
 	return dyn->getDownVector();
 }
 
+MathVector<double, 3> Car::getForwardVector() {
+	return dyn->getForwardVector();
+}
+
 /* The format of the inputs vector is as follows:
  * 0 ->  1 (disengaged -> fully-engaged) = BRAKE, THROTTLE, HANDBRAKE, CLUTCH, STEER_RIGHT
  * 0 -> -1 (disengaged -> fully-engaged) = STEER_LEFT

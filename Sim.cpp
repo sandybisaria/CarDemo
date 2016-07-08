@@ -110,7 +110,8 @@ void Sim::update(float dt) {
 
 Ogre::Vector3 Sim::getCameraPosition() {
 	Ogre::Vector3 pos = cars[carToWatch]->getPosition();
-	pos += Ogre::Vector3::UNIT_Y; // Lift camera above car
+	pos += 2 * Ogre::Vector3::UNIT_Y; // Lift camera above car
+	pos -= 8 * Axes::vectorToOgre(cars[carToWatch]->getForwardVector()); // Move behind car
 
 	return pos;
 }
@@ -121,8 +122,9 @@ Ogre::Quaternion Sim::getCameraOrientation() {
 	Ogre::Vector3 downVector = Axes::vectorToOgre(cars[carToWatch]->getDownVector());
 	orient = orient * Ogre::Quaternion(Ogre::Degree(270), downVector); // Rotate to face front of car
 
-	// (Attempt to) turn right-side-up; not sure why this works..
-	orient = orient * Ogre::Quaternion(Ogre::Degree(180), Ogre::Vector3::UNIT_Z);
+	// Turn right-side-up; not sure why we can simply rotate around the Z axis
+	Ogre::Vector3 forwardVector = /*Axes::vectorToOgre(cars[carToWatch]->getForwardVector());*/ Ogre::Vector3::UNIT_Z;
+	orient = orient * Ogre::Quaternion(Ogre::Degree(180), forwardVector);
 
 	return orient;
 }

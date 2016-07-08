@@ -31,6 +31,7 @@ public:
 	Ogre::Vector3 getPosition() { return mainNode->getPosition(); }
 	Ogre::Quaternion getOrientation() { return mainNode->getOrientation(); }
 	MathVector<double, 3> getDownVector();
+	MathVector<double, 3> getForwardVector();
 
 	// MaterialInstanceListener methods
 	virtual void requestedConfiguration(sh::MaterialInstance* m, const std::string& configuration) { }

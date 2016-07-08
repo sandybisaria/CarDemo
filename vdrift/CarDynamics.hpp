@@ -73,12 +73,13 @@ public:
 	double getSpeedMPS() const; // Compared to getSpeed, this is what the car sensors would likely read
 
 	// Chassis state access
-	const MathVector<double, 3>& getPosition() const { return chassisPosition; }
-	const Quaternion<double>& getOrientation() const { return chassisRotation; }
+	const MathVector<double, 3>& getPosition() const { return chassisPosition; } // Used to render model
+	const Quaternion<double>& getOrientation() const { return chassisRotation; } // Used to render model
 	MathVector<double, 3> getVelocity() const { return body.getVelocity(); }
 	double getSpeed() const { return body.getVelocity().magnitude(); }
 	double getSpeedDir() const;
 	MathVector<double, 3> getDownVector() const;
+	MathVector<double, 3> getForwardVector() const;
 
 	// Driveline state access
 	const CarTransmission& getTransmission() const { return transmission; }

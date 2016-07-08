@@ -18,6 +18,7 @@ private:
 	Car* mCar;
 	std::vector<double> inputs;
 
+	void updateSpeed(float dt);
 	double kPSpeed,
 		   kDSpeed, dLastESpeed,
 		   kISpeed, iSpeedAcc;
