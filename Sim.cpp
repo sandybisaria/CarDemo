@@ -144,6 +144,14 @@ void Sim::keyPressed(const OIS::KeyEvent& ke) {
 	case OIS::KC_NUMPAD1:
 		carToWatch = 1;
 		break;
+
+	case OIS::KC_1:
+		controllers[1].setTargetAngle(-45 * (M_PI / 180.0));
+		break;
+	case OIS::KC_2:
+		controllers[1].setTargetAngle(45 * (M_PI / 180.0));
+		break;
+
 	default:
 		break;
 	}

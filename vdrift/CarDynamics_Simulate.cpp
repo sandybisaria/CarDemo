@@ -136,15 +136,15 @@ double CarDynamics::calculateDriveshaftRPM() const {
 	for (int i = 0; i < numWheels; ++i) assert(!isnan(wheels[WheelPosition(i)].getAngularVelocity()));
 
 	double driveshaftSpeed = 0.0;
-	double whFL = wheels[FRONT_LEFT].getAngularVelocity();
-	double whFR = wheels[FRONT_RIGHT].getAngularVelocity();
+//	double whFL = wheels[FRONT_LEFT].getAngularVelocity();
+//	double whFR = wheels[FRONT_RIGHT].getAngularVelocity();
 	if (drive == FWD) {
 		driveshaftSpeed = diffFront.getDriveshaftSpeed();
 		return transmission.getClutchSpeed(driveshaftSpeed) * 30.0 / M_PI;
 	}
 
-	double whRL = wheels[REAR_LEFT].getAngularVelocity();
-	double whRR = wheels[REAR_RIGHT].getAngularVelocity();
+//	double whRL = wheels[REAR_LEFT].getAngularVelocity();
+//	double whRR = wheels[REAR_RIGHT].getAngularVelocity();
 	if (drive == RWD)
 		driveshaftSpeed = diffRear.getDriveshaftSpeed();
 	else if (drive == AWD) {

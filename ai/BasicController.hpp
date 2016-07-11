@@ -11,6 +11,7 @@ public:
 	void reset();
 
 	const std::vector<double>& updateInputs(float dt);
+	void setTargetAngle(double newAngle);
 
 private:
 	Car* mCar;
@@ -23,9 +24,12 @@ private:
 	void setTargetSpeed(double newSpeed);
 	void updateSpeed(float dt);
 
-	double kPDir;
-	double targetX; // Target x-coordinate
-	void setTargetX(double newX);
+	double kPAngle;
+	double targetAngle; // Target angle in rad
+	MathVector<double, 3> initDir; // The initial direction (when targetAngle was set)
+//	void setTargetAngle(double newAngle);
+
+	MathVector<double, 2> toFlatVector(MathVector<double, 3> v);
 
 	void updateDirection(float dt);
 };

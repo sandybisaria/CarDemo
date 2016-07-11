@@ -75,12 +75,11 @@ MathVector<double, 3> Car::getForwardVector() {
 }
 
 /* The format of the inputs vector is as follows:
- * 0 ->  1 (disengaged -> fully-engaged) = BRAKE, THROTTLE, HANDBRAKE, CLUTCH, STEER_RIGHT
- * 0 -> -1 (disengaged -> fully-engaged) = STEER_LEFT
+ * 0 ->  1 (disengaged -> fully-engaged) = BRAKE, THROTTLE, HANDBRAKE, CLUTCH, STEER_RIGHT, STEER_LEFT
  * 0 or  1 (on or off) = SHIFT_UP/DOWN
  *
  * Note that SHIFT_DOWN takes "higher precedence" than SHIFT_UP (in case both are engaged)
- * Note that the steering value with greater magnitude takes precedence (-0.7 vs 0.5 -> steer left)
+ * Note that the steering value with greater magnitude takes precedence (0.7L vs 0.5R -> steer left)
  */
 void Car::handleInputs(const std::vector<double>& inputs) {
 	assert(inputs.size() == CarInput::ALL);

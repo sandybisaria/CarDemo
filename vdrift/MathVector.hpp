@@ -72,7 +72,7 @@ public:
 	const T dot(const MathVector<T, dimension>& other) const {
 		T output(0);
 		for (size_t i = 0; i < dimension; i++) {
-			output += v[i] * output.v[i];
+			output += v[i] * other.v[i];
 		}
 		return output;
 	}
