@@ -18,8 +18,8 @@ private:
 	std::vector<double> inputs;
 
 	double kPSpeed,
-		kDSpeed, dLastESpeed,
-		kISpeed, iSpeedAcc;
+		kISpeed, iSpeedAcc,
+		kDSpeed, dLastESpeed;
 	double targetSpeed; // Target speed in m/s
 	void setTargetSpeed(double newSpeed);
 	void updateSpeed(float dt);
