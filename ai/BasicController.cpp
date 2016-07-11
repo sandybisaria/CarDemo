@@ -4,16 +4,15 @@ BasicController::BasicController(Car* car)
 	: mCar(car) {
 	reset();
 
-	setTargetSpeed(20);
+	setTargetSpeed(10);
 	kPSpeed = 7.65629; kISpeed = 0.00656; kDSpeed = 0.00020;
 
 	// Could be refined further; may also be correlated with speed
-	kPAngle = 437.5;
+	kPAngle = 443.75; kIAngle = 1; kDAngle = 1;
 	setTargetAngle(0);
 }
 
-BasicController::~BasicController() {
-}
+BasicController::~BasicController() { }
 
 void BasicController::reset() {
 	inputs.resize(CarInput::ALL, 0.0f);
@@ -21,6 +20,10 @@ void BasicController::reset() {
 	// Speed variables
 	iSpeedAcc = 0;
 	dLastESpeed = 0;
+
+	// Angle variables
+	iAngleAcc = 0;
+	dLastEAngle = 0;
 }
 
 void BasicController::setTargetSpeed(double newSpeed) {
@@ -44,7 +47,7 @@ void BasicController::updateSpeed(float dt) {
 
 	// Simple PID controller
 	double thrBrkVal = 0;
-	thrBrkVal += eSpeed * kPSpeed; // Proportionality term
+	thrBrkVal += eSpeed * kPSpeed; // Proportional term
 
 	thrBrkVal += kISpeed * iSpeedAcc; // Integral term
 	iSpeedAcc += eSpeed * dt;
@@ -70,22 +73,37 @@ void BasicController::updateDirection(float dt) {
 	double angle = acos(initDirFlat.dot(currentDirFlat));
 
 	MathVector<double, 3> cross = initDir.cross(mCar->getForwardVector());
-	if (cross.dot(MathVector<double, 3>(0, 0, 1)) > 0) {
+	if (cross.dot(MathVector<double, 3>(0, 0, 1)) > 0) { // Use "> 0" because angle dir is reversed
 		angle = -angle; // Determine direction of angle (i.e. to the left or to the right of initDir)
 	}
 
+	if (isnan(angle)) return; // Abandon ship (maybe should find out where a nan might occur...)
+
 	double eAngle = targetAngle - angle;
-	// Scale error to within -PI/2 to PI/2
+	// Scale error to within -PI/2 to PI/2 (should I scale angle instead?)
 	if (eAngle < -M_PI / 2) eAngle += M_PI;
 	if (eAngle >  M_PI / 2) eAngle -= M_PI;
 
 	double steerVal = 0;
-	steerVal += eAngle * kPAngle;
+	steerVal += eAngle * kPAngle; // Proportional term
+
+	steerVal += kIAngle * iAngleAcc; // Integral term
+	iAngleAcc += eAngle * dt;
+
+	if (dt != 0) {
+		steerVal += kDAngle * ((eAngle - dLastEAngle) / dt); // Derivative term
+		dLastEAngle = eAngle;
+	}
 
 	steerVal = clamp(steerVal, -1.0, 1.0); // Clamp from -1 to 1
 	std::cout << targetAngle << " " << angle << " " << eAngle << " " << steerVal;
 
-	if (steerVal < 0) {
+	// Within some epsilon, give no steering input (prevent jittery steering)
+	/*if (fabs(steerVal) < 0.0001) {
+		inputs[CarInput::STEER_RIGHT] = 0;
+		inputs[CarInput::STEER_LEFT] = 0;
+		std::cout << std::endl;
+	} else*/if (steerVal < 0) {
 		inputs[CarInput::STEER_RIGHT] = 0;
 		inputs[CarInput::STEER_LEFT] = -steerVal;
 		std::cout << " LEFT" << std::endl;

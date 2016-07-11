@@ -24,10 +24,11 @@ private:
 	void setTargetSpeed(double newSpeed);
 	void updateSpeed(float dt);
 
-	double kPAngle;
-	double targetAngle; // Target angle in rad
+	double kPAngle,
+		kIAngle, iAngleAcc,
+		kDAngle, dLastEAngle;
+	double targetAngle; // Target angle in rad (note that negative angles point to the LEFT or CCW)
 	MathVector<double, 3> initDir; // The initial direction (when targetAngle was set)
-//	void setTargetAngle(double newAngle);
 
 	MathVector<double, 2> toFlatVector(MathVector<double, 3> v);
 
