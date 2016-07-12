@@ -63,17 +63,15 @@ void Sim::update(float dt) {
 		} else {
 			//TODO Add "basic AI" for the vehicles
 			inputs = &controllers[i].updateInputs(dt);
-//			std::cout << inputs->at(CarInput::THROTTLE) << " " << inputs->at(CarInput::BRAKE) << std::endl;
-//			std::cout << cars[i]->getSpeedMPS() << std::endl;
 		}
 
 		cars[i]->handleInputs(*inputs);
 	}
 
-	if (false && debugDraw) {
-		debugDraw->setDebugMode(1);
-		debugDraw->step();
-	}
+//	if (debugDraw) {
+//		debugDraw->setDebugMode(1);
+//		debugDraw->step();
+//	}
 
 	//TODO How Stuntrally updates the game... however, this loop does not work
 //	const float minFPS = 10.f; // Minimum acceptable fps
@@ -146,10 +144,10 @@ void Sim::keyPressed(const OIS::KeyEvent& ke) {
 		break;
 
 	case OIS::KC_1:
-		controllers[1].setTargetAngle(-45 * (M_PI / 180.0));
+		controllers[1].setTargetPoint(MathVector<double, 2>(0.0));
 		break;
 	case OIS::KC_2:
-		controllers[1].setTargetAngle(45 * (M_PI / 180.0));
+		controllers[1].setTargetPoint(MathVector<double, 2>(100.0));
 		break;
 
 	default:

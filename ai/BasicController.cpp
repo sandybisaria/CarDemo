@@ -10,6 +10,8 @@ BasicController::BasicController(Car* car)
 	// Could be refined further; may also be correlated with speed
 	kPAngle = 443.75; kIAngle = 1; kDAngle = 1;
 	setTargetAngle(0);
+
+	isTargetPointEnabled = false;
 }
 
 BasicController::~BasicController() { }
@@ -24,6 +26,9 @@ void BasicController::reset() {
 	// Angle variables
 	iAngleAcc = 0;
 	dLastEAngle = 0;
+
+	// Point variables
+	isTargetPointEnabled = false;
 }
 
 void BasicController::setTargetSpeed(double newSpeed) {
@@ -35,11 +40,49 @@ void BasicController::setTargetAngle(double newAngle) {
 	initDir = mCar->getForwardVector();
 }
 
+void BasicController::setTargetPoint(MathVector<double, 2> newPoint) {
+	targetPoint = newPoint;
+	isTargetPointEnabled = true;
+}
+
 const std::vector<double>& BasicController::updateInputs(float dt) {
+	MathVector<double, 2> carPos = toFlatVector(Axes::ogreToMath(mCar->getPosition()), false);
+	if (isTargetPointEnabled) {
+		MathVector<double, 2> pointDir = targetPoint - carPos;
+
+		// Maybe radius could be configured
+		if (pointDir.magnitude() < 1) {
+			isTargetPointEnabled = false;
+			targetAngle = 0;
+
+			std::cout << "Reached point " << targetPoint << std::endl;
+		} else {
+			double angle = getAngle(pointDir.normalized(), toFlatVector(mCar->getForwardVector()));
+			setTargetAngle(angle);
+		}
+	}
+
 	updateSpeed(dt);
 	updateDirection(dt);
 
 	return inputs;
+}
+
+double BasicController::getAngle(MathVector<double, 2> fromDir, MathVector<double, 2> toDir) {
+	double angle = acos(fromDir.dot(toDir));
+
+	MathVector<double, 3> cross = MathVector<double, 3>(toDir[0], toDir[1], 0).cross(MathVector<double, 3>(fromDir[0], fromDir[1], 0));
+	if (cross.dot(MathVector<double, 3>(0, 0, 1)) > 0) { // > 0 because angle sign is inverted
+		angle = -angle; // Determine direction of angle (i.e. to the left or to the right of initDir)
+	}
+
+	return angle;
+}
+
+// "Flat" in that height is ignored; normalized by default
+MathVector<double, 2> BasicController::toFlatVector(MathVector<double, 3> vec, bool normalize) {
+	MathVector<double, 2> res(vec[0], vec[1]);
+	return normalize ? res.normalized() : res;
 }
 
 void BasicController::updateSpeed(float dt) {
@@ -68,18 +111,10 @@ void BasicController::updateSpeed(float dt) {
 }
 
 void BasicController::updateDirection(float dt) {
-	MathVector<double, 2> initDirFlat = toFlatVector(initDir);
-	MathVector<double, 2> currentDirFlat = toFlatVector(mCar->getForwardVector());
-	double angle = acos(initDirFlat.dot(currentDirFlat));
-
-	MathVector<double, 3> cross = initDir.cross(mCar->getForwardVector());
-	if (cross.dot(MathVector<double, 3>(0, 0, 1)) > 0) { // Use "> 0" because angle dir is reversed
-		angle = -angle; // Determine direction of angle (i.e. to the left or to the right of initDir)
-	}
-
+	const double angle = getAngle(toFlatVector(mCar->getForwardVector()), toFlatVector(initDir));
 	if (isnan(angle)) return; // Abandon ship (maybe should find out where a nan might occur...)
 
-	double eAngle = targetAngle - angle;
+	const double eAngle = targetAngle - angle;
 
 	double steerVal = 0;
 	steerVal += eAngle * kPAngle; // Proportional term
@@ -92,7 +127,7 @@ void BasicController::updateDirection(float dt) {
 		dLastEAngle = eAngle;
 	}
 
-	steerVal = clamp(steerVal, -1.0, 1.0); // Clamp from -1 to 1
+	steerVal = clamp(steerVal, -1.0, 1.0);
 //	std::cout << targetAngle << " " << angle << " " << eAngle << " " << steerVal;
 
 	// Within some epsilon, give no steering input (prevent jittery steering)
@@ -110,9 +145,4 @@ void BasicController::updateDirection(float dt) {
 		inputs[CarInput::STEER_LEFT] = 0;
 //		std::cout << " RIGHT" << std::endl;
 	}
-}
-
-// "Flat" in that height is ignored; return vector is normalized.
-MathVector<double, 2> BasicController::toFlatVector(MathVector<double, 3> vec) {
-	return MathVector<double, 2>(vec[0], vec[1]).normalized();
 }
