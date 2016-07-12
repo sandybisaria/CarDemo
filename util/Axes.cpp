@@ -25,6 +25,10 @@ Ogre::Vector3 Axes::vectorToOgre(const MathVector<float, 3>& vIn) {
 	return Ogre::Vector3(vIn[0], vIn[2], -vIn[1]);
 }
 
+MathVector<float, 3> Axes::ogreToMath(const Ogre::Vector3 vIn) {
+	return MathVector<float, 3>(vIn.x, -vIn.z, vIn.y);
+}
+
 // For the car
 Ogre::Quaternion Axes::flQuatToOgre(const Quaternion<float>& qIn) {
 	Ogre::Quaternion q(qIn[0], -qIn[3], qIn[1], qIn[2]);

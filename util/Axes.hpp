@@ -17,6 +17,8 @@ struct Axes {
 	static void vectorToOgre(Ogre::Vector3& vOut, const MathVector<float, 3>& vIn);
 	static Ogre::Vector3 vectorToOgre(const MathVector<float, 3>& vIn);
 
+	static MathVector<float, 3> ogreToMath(const Ogre::Vector3 vIn);
+
 	// For the car
 	static Ogre::Quaternion flQuatToOgre(const Quaternion<float>& qIn);
 	static Ogre::Quaternion doQuatToOgre(const Quaternion<double>& qIn);

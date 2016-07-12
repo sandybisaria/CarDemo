@@ -132,24 +132,24 @@ bool Car::loadFromConfig(CollisionWorld& world) {
 		setNumWheels(nw);
 
 	// Load car collision params (Stuntrally puts it outside of CARDYNAMICS so...
-	// Common offsets
+	// Center-of-mass offsets
 	dyn->comOfsL = 0.f;  cf.getParam("collision.com_ofs_L", dyn->comOfsL);
 	dyn->comOfsH = 0.f;  cf.getParam("collision.com_ofs_H", dyn->comOfsH);
-	// Collision dimension
+	// Collision dimensions
 	dyn->collR   = 0.3f;  cf.getParam("collision.radius", 	 dyn->collR);
 	dyn->collR2m = 0.6f;  cf.getParam("collision.radius2mul",dyn->collR2m);
 	dyn->collH   = 0.45f; cf.getParam("collision.height", 	 dyn->collH);
 	dyn->collW   = 0.5f;  cf.getParam("collision.width",  	 dyn->collW);
-	// Offsets
+	// Collision offsets
 	dyn->collLofs = 0.f;  cf.getParam("collision.offsetL", dyn->collLofs);
 	dyn->collWofs = 0.f;  cf.getParam("collision.offsetW", dyn->collWofs);
 	dyn->collHofs = 0.f;  cf.getParam("collision.offsetH", dyn->collHofs);
 	dyn->collLofs -= dyn->comOfsL;
 	dyn->collHofs -= dyn->comOfsH;
-	// Length
+	// Length ranges (bumpers)
 	dyn->collPosLFront = 1.9f; cf.getParam("collision.posLfront", dyn->collPosLFront);
 	dyn->collPosLBack = -1.9f; cf.getParam("collision.posLrear",  dyn->collPosLBack);
-	// width
+	// Multipliers
 	dyn->collFrWMul  = 0.2f;   cf.getParam("collision.FrWmul",  dyn->collFrWMul);
 	dyn->collFrHMul  = 1.0f;   cf.getParam("collision.FrHmul",  dyn->collFrHMul);
 	dyn->collTopWMul = 0.8f;   cf.getParam("collision.TopWmul", dyn->collTopWMul);
@@ -161,7 +161,7 @@ bool Car::loadFromConfig(CollisionWorld& world) {
 	dyn->collTopFrHm  = 0.2f;  cf.getParam("collision.TopFrHm",  dyn->collTopFrHm);
 	dyn->collTopMidHm = 0.4f;  cf.getParam("collision.TopMidHm", dyn->collTopMidHm);
 	dyn->collTopBackHm= 0.2f;  cf.getParam("collision.TopBackHm",dyn->collTopBackHm);
-	// Friction
+	// Rigid body friction and fluid trigger height
 	dyn->collFriction = 0.4f;  cf.getParam("collision.friction",  dyn->collFriction);
 	dyn->collFlTrigH  = 0.f;   cf.getParam("collision.fluidTrigH",dyn->collFlTrigH);
 	dyn->collFlTrigH -= dyn->comOfsH;
