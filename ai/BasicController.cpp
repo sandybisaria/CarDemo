@@ -80,9 +80,6 @@ void BasicController::updateDirection(float dt) {
 	if (isnan(angle)) return; // Abandon ship (maybe should find out where a nan might occur...)
 
 	double eAngle = targetAngle - angle;
-	// Scale error to within -PI/2 to PI/2 (should I scale angle instead?)
-	if (eAngle < -M_PI / 2) eAngle += M_PI;
-	if (eAngle >  M_PI / 2) eAngle -= M_PI;
 
 	double steerVal = 0;
 	steerVal += eAngle * kPAngle; // Proportional term
@@ -96,21 +93,22 @@ void BasicController::updateDirection(float dt) {
 	}
 
 	steerVal = clamp(steerVal, -1.0, 1.0); // Clamp from -1 to 1
-	std::cout << targetAngle << " " << angle << " " << eAngle << " " << steerVal;
+//	std::cout << targetAngle << " " << angle << " " << eAngle << " " << steerVal;
 
 	// Within some epsilon, give no steering input (prevent jittery steering)
-	/*if (fabs(steerVal) < 0.0001) {
+	/*if (fabs(steerVal) < 0.0001) { // May n
 		inputs[CarInput::STEER_RIGHT] = 0;
 		inputs[CarInput::STEER_LEFT] = 0;
 		std::cout << std::endl;
-	} else*/if (steerVal < 0) {
+	} else*/
+	if (steerVal < 0) {
 		inputs[CarInput::STEER_RIGHT] = 0;
 		inputs[CarInput::STEER_LEFT] = -steerVal;
-		std::cout << " LEFT" << std::endl;
+//		std::cout << " LEFT" << std::endl;
 	} else {
 		inputs[CarInput::STEER_RIGHT] = steerVal;
 		inputs[CarInput::STEER_LEFT] = 0;
-		std::cout << " RIGHT" << std::endl;
+//		std::cout << " RIGHT" << std::endl;
 	}
 }
 
