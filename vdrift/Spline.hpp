@@ -60,7 +60,7 @@ public:
 		const T a2 = a*a;
 		const T b2 = b*b;
 
-		// Find the first derivitive.
+		// Find the first derivative.
 		slope = (points[high].second - points[low].second) /diff -
 				((3.0 * a2) - 1.0) / 6.0 * diff * secondDeriv [low] +
 				((3.0 * b2) - 1.0) / 6.0 * diff * secondDeriv [high];
@@ -136,7 +136,7 @@ private:
 	}
 
 	std::vector<std::pair< T, T > > points;
-	mutable std::vector< T > secondDeriv; // Mutable means it can change in a const method
+	mutable std::vector< T > secondDeriv;
 	T firstSlope;
 	T lastSlope;
 	mutable bool derivsCalculated;

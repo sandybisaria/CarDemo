@@ -12,6 +12,8 @@ public:
 
 	const std::vector<double>& updateInputs(float dt);
 
+	void turn(bool isLeft, double turnRadius);
+
 private:
 	Car* mCar;
 	std::vector<double> inputs;
@@ -36,6 +38,6 @@ private:
 
 	bool isTargetPointEnabled;
 	MathVector<double, 2> targetPoint; // Target point on ground in Bullet coords (x-y plane)
-public:
 	void setTargetPoint(MathVector<double, 2> newPoint);
+	void updateTurnBehavior();
 };

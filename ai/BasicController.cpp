@@ -46,26 +46,29 @@ void BasicController::setTargetPoint(MathVector<double, 2> newPoint) {
 }
 
 const std::vector<double>& BasicController::updateInputs(float dt) {
-	MathVector<double, 2> carPos = toFlatVector(Axes::ogreToMath(mCar->getPosition()), false);
-	if (isTargetPointEnabled) {
-		MathVector<double, 2> pointDir = targetPoint - carPos;
-
-		// Maybe radius could be configured
-		if (pointDir.magnitude() < 1) {
-			isTargetPointEnabled = false;
-			targetAngle = 0;
-
-			std::cout << "Reached point " << targetPoint << std::endl;
-		} else {
-			double angle = getAngle(pointDir.normalized(), toFlatVector(mCar->getForwardVector()));
-			setTargetAngle(angle);
-		}
-	}
-
+	updateTurnBehavior();
 	updateSpeed(dt);
 	updateDirection(dt);
 
 	return inputs;
+}
+
+void BasicController::turn(bool isLeft, double turnRadius) {
+	const double diagDist = turnRadius * sqrt(2.0);
+
+	MathVector<double, 2> forwardVector = toFlatVector(mCar->getForwardVector());
+	MathVector<double, 2> pointDir;
+
+	const double angle = (45.0 * M_PI / 180.0) * (isLeft ? 1.0 : -1.0); // Angle signs are inverted
+	pointDir[0] = (forwardVector[0] * cos(angle) - forwardVector[1] * sin(angle)) * diagDist;
+	pointDir[1] = (forwardVector[0] * sin(angle) + forwardVector[1] * cos(angle)) * diagDist;
+
+	MathVector<double, 2> carPos = toFlatVector(Axes::ogreToMath(mCar->getPosition()), false);
+	MathVector<double, 2> turnPoint = carPos + pointDir;
+
+//	std::cout << carPos << " " << forwardVector << " " << pointDir << " " << turnPoint << std::endl;
+
+	setTargetPoint(turnPoint);
 }
 
 double BasicController::getAngle(MathVector<double, 2> fromDir, MathVector<double, 2> toDir) {
@@ -83,6 +86,25 @@ double BasicController::getAngle(MathVector<double, 2> fromDir, MathVector<doubl
 MathVector<double, 2> BasicController::toFlatVector(MathVector<double, 3> vec, bool normalize) {
 	MathVector<double, 2> res(vec[0], vec[1]);
 	return normalize ? res.normalized() : res;
+}
+
+void BasicController::updateTurnBehavior() {
+	MathVector<double, 2> carPos = toFlatVector(Axes::ogreToMath(mCar->getPosition()), false);
+	if (isTargetPointEnabled) {
+		MathVector<double, 2> pointDir = targetPoint - carPos;
+
+		// Maybe radius could be configured
+		if (pointDir.magnitude() < 1) {
+			isTargetPointEnabled = false;
+			targetAngle = 0;
+
+			//TODO In the future, may want another way to indicate arrival (or none at all)
+			std::cout << "Reached point " << targetPoint << std::endl;
+		} else {
+			double angle = getAngle(pointDir.normalized(), toFlatVector(mCar->getForwardVector()));
+			setTargetAngle(angle);
+		}
+	}
 }
 
 void BasicController::updateSpeed(float dt) {
