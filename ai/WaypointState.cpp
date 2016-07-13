@@ -8,7 +8,6 @@ BaseState* WaypointState::update(float dt) {
 	MathVector<double, 2> vecToPoint = mWaypoint - mInterface->getCarPosition();
 
 	if (vecToPoint.magnitude() < mRadius) {
-		std::cout << "Arrived!" << std::endl;
 		return new ConstantState(mInterface, mInterface->getCarSpeed(), 0);
 	} else {
 		double angle = mInterface->getAngle(vecToPoint.normalized(), mInterface->getCarDirection());

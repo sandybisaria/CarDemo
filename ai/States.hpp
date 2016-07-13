@@ -4,6 +4,8 @@
 
 #include "../vdrift/MathVector.hpp"
 
+#include <queue>
+
 class BaseState {
 public:
 	virtual ~BaseState() { };
@@ -42,7 +44,7 @@ private:
 // Perform a 90-degree turn left or right
 class TurnState : public BaseState {
 public:
-	TurnState(ControllerInterface* interface, bool isLeftTurn, double turnRadius);
+	TurnState(ControllerInterface* interface, bool isLeftTurn, double turnRadius, int subdivisions = 1);
 	virtual ~TurnState() { }
 
 	virtual BaseState* update(float dt);
@@ -51,4 +53,5 @@ private:
 	ControllerInterface* mInterface;
 
 	WaypointState* mWaypointState;
+	std::queue< MathVector<double, 2> > mWaypoints;
 };
