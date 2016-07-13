@@ -19,8 +19,7 @@ public:
 
 //---- Control methods
 	void goToPoint(MathVector<double, 2> waypoint, double radius);
-
-//	void turn(bool isLeft, double turnRadius);
+	void turn(bool isLeftTurn, double turnRadius);
 
 private:
 	Car* mCar;

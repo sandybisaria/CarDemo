@@ -58,40 +58,9 @@ void BasicController::goToPoint(MathVector<double, 2> waypoint, double radius) {
 	currentState = new WaypointState(myInterface, waypoint, radius);
 }
 
-//void BasicController::turn(bool isLeft, double turnRadius) {
-//	const double diagDist = turnRadius * sqrt(2.0);
-//
-//	MathVector<double, 2> forwardVector = toFlatVector(mCar->getForwardVector());
-//	MathVector<double, 2> pointDir;
-//
-//	const double angle = (45.0 * M_PI / 180.0) * (isLeft ? 1.0 : -1.0); // Angle signs are inverted
-//	pointDir[0] = (forwardVector[0] * cos(angle) - forwardVector[1] * sin(angle)) * diagDist;
-//	pointDir[1] = (forwardVector[0] * sin(angle) + forwardVector[1] * cos(angle)) * diagDist;
-//
-//	MathVector<double, 2> carPos = toFlatVector(Axes::ogreToMath(mCar->getPosition()), false);
-//	MathVector<double, 2> turnPoint = carPos + pointDir;
-//
-//	setTargetPoint(turnPoint);
-//}
-
-//void BasicController::updatePointTargeting() {
-//	if (isTargetPointEnabled) {
-//		MathVector<double, 2> carPos = toFlatVector(Axes::ogreToMath(mCar->getPosition()), false);
-//		MathVector<double, 2> pointDir = targetPoint - carPos;
-//
-//		// Maybe radius could be configured
-//		if (pointDir.magnitude() < 1) {
-//			isTargetPointEnabled = false;
-//			targetAngle = 0;
-//
-//			//TODO In the future, may want another way to indicate arrival (or none at all)
-//			std::cout << "Reached point " << targetPoint << std::endl;
-//		} else {
-//			double angle = getAngle(pointDir.normalized(), toFlatVector(mCar->getForwardVector()));
-//			setTargetAngle(angle);
-//		}
-//	}
-//}
+void BasicController::turn(bool isLeftTurn, double turnRadius) {
+	currentState = new TurnState(myInterface, isLeftTurn, turnRadius);
+}
 
 void BasicController::updateSpeed(float dt) {
 	const double eSpeed = targetSpeed - mCar->getSpeedMPS();
