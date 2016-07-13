@@ -14,11 +14,15 @@ public:
 
 	const std::vector<double>& updateInputs(float dt);
 
+	// Tell the car to drive at this speed (in m/s)
 	void setTargetSpeed(double newSpeed);
-	void setTargetAngle(double newAngle);
-	void setTargetPoint(MathVector<double, 2> newPoint);
+	// Tell the car to drive at an angle.
+	// If resetDir is true, then angle is relative to current dir. Otherwise, use the previously-stored dir.
+	// Note that angle signs are reversed (left/CCW is negative).
+	void setTargetAngle(double newAngle, bool resetDir = true);
 
-	void turn(bool isLeft, double turnRadius);
+//	void setTargetPoint(MathVector<double, 2> newPoint);
+//	void turn(bool isLeft, double turnRadius);
 
 private:
 	Car* mCar;
@@ -42,7 +46,7 @@ private:
 	MathVector<double, 3> initDir; // The initial direction (when targetAngle was set)
 	void updateDirection(float dt);
 
-	bool isTargetPointEnabled;
-	MathVector<double, 2> targetPoint; // Target point on ground in Bullet coords (x-y plane)
-	void updateTurnBehavior();
+//	bool isTargetPointEnabled;
+//	MathVector<double, 2> targetPoint; // Target point on ground in Bullet coords (x-y plane)
+//	void updatePointTargeting();
 };

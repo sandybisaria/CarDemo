@@ -10,7 +10,7 @@ BasicController::BasicController(Car* car)
 	kPSpeed = 7.65629; kISpeed = 0.00656; kDSpeed = 0.00020;
 	kPAngle = 443.75; kIAngle = 1; kDAngle = 1; // Could be refined further; may also be correlated with speed
 
-	currentState = new IdleState(this);
+	currentState = new ConstantState(this, 20, 0);
 }
 
 BasicController::~BasicController() {
@@ -28,49 +28,50 @@ void BasicController::reset() {
 	iAngleAcc = 0;
 	dLastEAngle = 0;
 
-	// Point variables
-	isTargetPointEnabled = false;
+//	// Point variables
+//	isTargetPointEnabled = false;
 }
 
 void BasicController::setTargetSpeed(double newSpeed) {
 	targetSpeed = newSpeed;
 }
 
-void BasicController::setTargetAngle(double newAngle) {
+void BasicController::setTargetAngle(double newAngle, bool resetDir) {
 	targetAngle = newAngle;
-	initDir = mCar->getForwardVector();
+
+	if (resetDir) initDir = mCar->getForwardVector();
 }
 
-void BasicController::setTargetPoint(MathVector<double, 2> newPoint) {
-	targetPoint = newPoint;
-	isTargetPointEnabled = true;
-}
+//void BasicController::setTargetPoint(MathVector<double, 2> newPoint) {
+//	targetPoint = newPoint;
+//	isTargetPointEnabled = true;
+//}
 
 const std::vector<double>& BasicController::updateInputs(float dt) {
 	currentState->update(dt);
 
-	updateTurnBehavior();
+//	updatePointTargeting();
 	updateSpeed(dt);
 	updateDirection(dt);
 
 	return inputs;
 }
 
-void BasicController::turn(bool isLeft, double turnRadius) {
-	const double diagDist = turnRadius * sqrt(2.0);
-
-	MathVector<double, 2> forwardVector = toFlatVector(mCar->getForwardVector());
-	MathVector<double, 2> pointDir;
-
-	const double angle = (45.0 * M_PI / 180.0) * (isLeft ? 1.0 : -1.0); // Angle signs are inverted
-	pointDir[0] = (forwardVector[0] * cos(angle) - forwardVector[1] * sin(angle)) * diagDist;
-	pointDir[1] = (forwardVector[0] * sin(angle) + forwardVector[1] * cos(angle)) * diagDist;
-
-	MathVector<double, 2> carPos = toFlatVector(Axes::ogreToMath(mCar->getPosition()), false);
-	MathVector<double, 2> turnPoint = carPos + pointDir;
-
-	setTargetPoint(turnPoint);
-}
+//void BasicController::turn(bool isLeft, double turnRadius) {
+//	const double diagDist = turnRadius * sqrt(2.0);
+//
+//	MathVector<double, 2> forwardVector = toFlatVector(mCar->getForwardVector());
+//	MathVector<double, 2> pointDir;
+//
+//	const double angle = (45.0 * M_PI / 180.0) * (isLeft ? 1.0 : -1.0); // Angle signs are inverted
+//	pointDir[0] = (forwardVector[0] * cos(angle) - forwardVector[1] * sin(angle)) * diagDist;
+//	pointDir[1] = (forwardVector[0] * sin(angle) + forwardVector[1] * cos(angle)) * diagDist;
+//
+//	MathVector<double, 2> carPos = toFlatVector(Axes::ogreToMath(mCar->getPosition()), false);
+//	MathVector<double, 2> turnPoint = carPos + pointDir;
+//
+//	setTargetPoint(turnPoint);
+//}
 
 double BasicController::getAngle(MathVector<double, 2> fromDir, MathVector<double, 2> toDir) {
 	double angle = acos(fromDir.dot(toDir));
@@ -89,24 +90,24 @@ MathVector<double, 2> BasicController::toFlatVector(MathVector<double, 3> vec, b
 	return normalize ? res.normalized() : res;
 }
 
-void BasicController::updateTurnBehavior() {
-	if (isTargetPointEnabled) {
-		MathVector<double, 2> carPos = toFlatVector(Axes::ogreToMath(mCar->getPosition()), false);
-		MathVector<double, 2> pointDir = targetPoint - carPos;
-
-		// Maybe radius could be configured
-		if (pointDir.magnitude() < 1) {
-			isTargetPointEnabled = false;
-			targetAngle = 0;
-
-			//TODO In the future, may want another way to indicate arrival (or none at all)
-			std::cout << "Reached point " << targetPoint << std::endl;
-		} else {
-			double angle = getAngle(pointDir.normalized(), toFlatVector(mCar->getForwardVector()));
-			setTargetAngle(angle);
-		}
-	}
-}
+//void BasicController::updatePointTargeting() {
+//	if (isTargetPointEnabled) {
+//		MathVector<double, 2> carPos = toFlatVector(Axes::ogreToMath(mCar->getPosition()), false);
+//		MathVector<double, 2> pointDir = targetPoint - carPos;
+//
+//		// Maybe radius could be configured
+//		if (pointDir.magnitude() < 1) {
+//			isTargetPointEnabled = false;
+//			targetAngle = 0;
+//
+//			//TODO In the future, may want another way to indicate arrival (or none at all)
+//			std::cout << "Reached point " << targetPoint << std::endl;
+//		} else {
+//			double angle = getAngle(pointDir.normalized(), toFlatVector(mCar->getForwardVector()));
+//			setTargetAngle(angle);
+//		}
+//	}
+//}
 
 void BasicController::updateSpeed(float dt) {
 	const double eSpeed = targetSpeed - mCar->getSpeedMPS();
@@ -151,21 +152,11 @@ void BasicController::updateDirection(float dt) {
 	}
 
 	steerVal = clamp(steerVal, -1.0, 1.0);
-//	std::cout << targetAngle << " " << angle << " " << eAngle << " " << steerVal;
-
-	// Within some epsilon, give no steering input (prevent jittery steering)
-	/*if (fabs(steerVal) < 0.0001) { // May n
-		inputs[CarInput::STEER_RIGHT] = 0;
-		inputs[CarInput::STEER_LEFT] = 0;
-		std::cout << std::endl;
-	} else*/
 	if (steerVal < 0) {
 		inputs[CarInput::STEER_RIGHT] = 0;
 		inputs[CarInput::STEER_LEFT] = -steerVal;
-//		std::cout << " LEFT" << std::endl;
 	} else {
 		inputs[CarInput::STEER_RIGHT] = steerVal;
 		inputs[CarInput::STEER_LEFT] = 0;
-//		std::cout << " RIGHT" << std::endl;
 	}
 }

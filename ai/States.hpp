@@ -8,14 +8,16 @@ public:
 	virtual void update(float dt) { };
 };
 
-// Constant velocity and direction
-class IdleState : public BaseState {
+// Maintain a given velocity and direction
+class ConstantState : public BaseState {
 public:
-	IdleState(BasicController* controller);
-	virtual ~IdleState() { };
+	ConstantState(BasicController* controller, double speed, double angle);
+	virtual ~ConstantState() { };
 
 	virtual void update(float dt);
 
 private:
 	BasicController* mController;
+	double mSpeed;
+	double mAngle;
 };
