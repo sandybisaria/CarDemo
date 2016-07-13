@@ -1,20 +1,21 @@
 #include "BasicController.hpp"
 
+#include "States.hpp"
+
 BasicController::BasicController(Car* car)
 	: mCar(car) {
 	reset();
 
-	setTargetSpeed(10);
+	// PID constants
 	kPSpeed = 7.65629; kISpeed = 0.00656; kDSpeed = 0.00020;
+	kPAngle = 443.75; kIAngle = 1; kDAngle = 1; // Could be refined further; may also be correlated with speed
 
-	// Could be refined further; may also be correlated with speed
-	kPAngle = 443.75; kIAngle = 1; kDAngle = 1;
-	setTargetAngle(0);
-
-	isTargetPointEnabled = false;
+	currentState = new IdleState(this);
 }
 
-BasicController::~BasicController() { }
+BasicController::~BasicController() {
+	delete currentState;
+}
 
 void BasicController::reset() {
 	inputs.resize(CarInput::ALL, 0.0f);
@@ -46,6 +47,8 @@ void BasicController::setTargetPoint(MathVector<double, 2> newPoint) {
 }
 
 const std::vector<double>& BasicController::updateInputs(float dt) {
+	currentState->update(dt);
+
 	updateTurnBehavior();
 	updateSpeed(dt);
 	updateDirection(dt);
@@ -65,8 +68,6 @@ void BasicController::turn(bool isLeft, double turnRadius) {
 
 	MathVector<double, 2> carPos = toFlatVector(Axes::ogreToMath(mCar->getPosition()), false);
 	MathVector<double, 2> turnPoint = carPos + pointDir;
-
-//	std::cout << carPos << " " << forwardVector << " " << pointDir << " " << turnPoint << std::endl;
 
 	setTargetPoint(turnPoint);
 }
@@ -89,8 +90,8 @@ MathVector<double, 2> BasicController::toFlatVector(MathVector<double, 3> vec, b
 }
 
 void BasicController::updateTurnBehavior() {
-	MathVector<double, 2> carPos = toFlatVector(Axes::ogreToMath(mCar->getPosition()), false);
 	if (isTargetPointEnabled) {
+		MathVector<double, 2> carPos = toFlatVector(Axes::ogreToMath(mCar->getPosition()), false);
 		MathVector<double, 2> pointDir = targetPoint - carPos;
 
 		// Maybe radius could be configured

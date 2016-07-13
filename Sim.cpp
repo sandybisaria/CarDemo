@@ -19,6 +19,11 @@ Sim::~Sim() {
 		delete (*it);
 	}
 	cars.clear();
+
+	for (std::vector<BasicController*>::iterator it = controllers.begin(); it != controllers.end(); it++) {
+		delete (*it);
+	}
+	controllers.clear();
 }
 
 void Sim::setup(Ogre::SceneManager* sceneMgr) {
@@ -33,7 +38,7 @@ void Sim::setup(Ogre::SceneManager* sceneMgr) {
 
 		cars.push_back(newCar);
 
-		BasicController bc(newCar);
+		BasicController* bc = new BasicController(newCar);
 		controllers.push_back(bc);
 	}
 
@@ -62,7 +67,7 @@ void Sim::update(float dt) {
 			 inputs = &localMap.processInput(carInput->getPlayerInputState(), cars[i]->getSpeedDir(), 0.0, 0.0);
 		} else {
 			//TODO Add "basic AI" for the vehicles
-			inputs = &controllers[i].updateInputs(dt);
+			inputs = &controllers[i]->updateInputs(dt);
 		}
 
 		cars[i]->handleInputs(*inputs);
@@ -143,12 +148,12 @@ void Sim::keyPressed(const OIS::KeyEvent& ke) {
 		carToWatch = 1;
 		break;
 
-	case OIS::KC_1:
-		controllers[1].turn(true, 50);
-		break;
-	case OIS::KC_2:
-		controllers[1].turn(false, 50);
-		break;
+//	case OIS::KC_1:
+//		controllers[1]->turn(true, 50);
+//		break;
+//	case OIS::KC_2:
+//		controllers[1]->turn(false, 50);
+//		break;
 
 	default:
 		break;

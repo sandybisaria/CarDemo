@@ -61,7 +61,7 @@ private:
 	int idCarToControl;
 
 	// Car controllers
-	std::vector<BasicController> controllers;
+	std::vector<BasicController*> controllers;
 
 	// Keyboard control
 	CInput* carInput;
