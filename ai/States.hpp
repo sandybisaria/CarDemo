@@ -1,6 +1,6 @@
 #pragma once
 
-class BasicController;
+class ControllerInterface;
 
 class BaseState {
 public:
@@ -11,13 +11,13 @@ public:
 // Maintain a given velocity and direction
 class ConstantState : public BaseState {
 public:
-	ConstantState(BasicController* controller, double speed, double angle);
-	virtual ~ConstantState() { };
+	ConstantState(ControllerInterface* interface, double speed, double angle);
+	virtual ~ConstantState();
 
 	virtual void update(float dt);
 
 private:
-	BasicController* mController;
+	ControllerInterface* mInterface;
 	double mSpeed;
 	double mAngle;
 };

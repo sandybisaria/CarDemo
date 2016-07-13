@@ -10,7 +10,7 @@ BasicController::BasicController(Car* car)
 	kPSpeed = 7.65629; kISpeed = 0.00656; kDSpeed = 0.00020;
 	kPAngle = 443.75; kIAngle = 1; kDAngle = 1; // Could be refined further; may also be correlated with speed
 
-	currentState = new ConstantState(this, 20, 0);
+	currentState = new ConstantState(new ControllerInterface(this), 20, 0);
 }
 
 BasicController::~BasicController() {

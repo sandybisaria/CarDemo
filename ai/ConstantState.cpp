@@ -2,13 +2,17 @@
 
 #include "BasicController.hpp"
 
-ConstantState::ConstantState(BasicController *controller, double speed, double angle)
-	: mController(controller), mSpeed(speed), mAngle(angle) {
-	mController->setTargetSpeed(mSpeed);
-	mController->setTargetAngle(mAngle);
+ConstantState::ConstantState(ControllerInterface* interface, double speed, double angle)
+	: mInterface(interface), mSpeed(speed), mAngle(angle) {
+	mInterface->setTargetSpeed(mSpeed);
+	mInterface->setTargetAngle(mAngle);
+}
+
+ConstantState::~ConstantState() {
+	delete mInterface;
 }
 
 void ConstantState::update(float dt) {
-	mController->setTargetSpeed(mSpeed);
-	mController->setTargetAngle(mAngle, false);
+	mInterface->setTargetSpeed(mSpeed);
+	mInterface->setTargetAngle(mAngle, false);
 }
