@@ -44,7 +44,7 @@ private:
 // Perform a 90-degree turn left or right
 class TurnState : public BaseState {
 public:
-	TurnState(ControllerInterface* interface, bool isLeftTurn, double turnRadius, int subdivisions = 1);
+	TurnState(ControllerInterface* interface, bool isLeftTurn, double turnRadius, int subdivisions = 20);
 	virtual ~TurnState() { }
 
 	virtual BaseState* update(float dt);
@@ -54,4 +54,7 @@ private:
 
 	WaypointState* mWaypointState;
 	std::queue< MathVector<double, 2> > mWaypoints;
+
+	double startSpeed;
+	MathVector<double, 2> desiredFinalDir;
 };

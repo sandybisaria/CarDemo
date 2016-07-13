@@ -33,10 +33,14 @@ void BasicController::reset() {
 
 void BasicController::setTargetSpeed(double newSpeed) {
 	targetSpeed = newSpeed;
+	iSpeedAcc = 0;
+	dLastESpeed = 0;
 }
 
 void BasicController::setTargetAngle(double newAngle, bool resetDir) {
 	targetAngle = newAngle;
+	iAngleAcc = 0;
+	dLastEAngle = 0;
 
 	if (resetDir) initDir = mCar->getForwardVector();
 }

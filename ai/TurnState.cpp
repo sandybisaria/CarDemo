@@ -20,8 +20,19 @@ TurnState::TurnState(ControllerInterface *interface, bool isLeftTurn, double tur
 	}
 	assert(mWaypoints.size() == subdivisions);
 
+	// Setting "desired" final values
+	{
+		const double angle = (M_PI / 2) * (isLeftTurn ? 1.0 : -1.0); // Angle signs are inverted
+		desiredFinalDir[0] = (forwardVec[0] * cos(angle) - forwardVec[1] * sin(angle));
+		desiredFinalDir[1] = (forwardVec[0] * sin(angle) + forwardVec[1] * cos(angle));
+
+		startSpeed = mInterface->getCarSpeed();
+	}
+
 	mWaypointState = new WaypointState(mInterface, mWaypoints.front(), 1);
 	mWaypoints.pop();
+
+	std::cout << "Turn started." << std::endl;
 }
 
 BaseState* TurnState::update(float dt) {
@@ -30,8 +41,11 @@ BaseState* TurnState::update(float dt) {
 		delete mWaypointState;
 
 		if (mWaypoints.empty()) {
-			std::cout << "Turn complete" << std::endl;
-			return new ConstantState(mInterface, mInterface->getCarSpeed(), 0);
+			std::cout << "Turn complete. Angle error (deg): ";
+			std::cout << 180.0 * mInterface->getAngle(desiredFinalDir, mInterface->getCarDirection()) / M_PI << std::endl;
+
+			return new ConstantState(mInterface, startSpeed,
+									 mInterface->getAngle(desiredFinalDir, mInterface->getCarDirection()));
 		} else {
 			mWaypointState = new WaypointState(mInterface, mWaypoints.front(), 1);
 			mWaypoints.pop();
