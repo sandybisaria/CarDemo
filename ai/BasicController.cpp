@@ -10,11 +10,13 @@ BasicController::BasicController(Car* car)
 	kPSpeed = 7.65629; kISpeed = 0.00656; kDSpeed = 0.00020;
 	kPAngle = 443.75; kIAngle = 1; kDAngle = 1; // Could be refined further; may also be correlated with speed
 
-	currentState = new ConstantState(new ControllerInterface(this), 20, 0);
+	myInterface = new ControllerInterface(this);
+	currentState = new ConstantState(myInterface, 10, 0);
 }
 
 BasicController::~BasicController() {
 	delete currentState;
+	delete myInterface;
 }
 
 void BasicController::reset() {
@@ -27,9 +29,6 @@ void BasicController::reset() {
 	// Angle variables
 	iAngleAcc = 0;
 	dLastEAngle = 0;
-
-//	// Point variables
-//	isTargetPointEnabled = false;
 }
 
 void BasicController::setTargetSpeed(double newSpeed) {
@@ -42,19 +41,21 @@ void BasicController::setTargetAngle(double newAngle, bool resetDir) {
 	if (resetDir) initDir = mCar->getForwardVector();
 }
 
-//void BasicController::setTargetPoint(MathVector<double, 2> newPoint) {
-//	targetPoint = newPoint;
-//	isTargetPointEnabled = true;
-//}
-
 const std::vector<double>& BasicController::updateInputs(float dt) {
-	currentState->update(dt);
+	BaseState* nextState = currentState->update(dt);
+	if (nextState != NULL) {
+		delete currentState;
+		currentState = nextState;
+	}
 
-//	updatePointTargeting();
 	updateSpeed(dt);
 	updateDirection(dt);
 
 	return inputs;
+}
+
+void BasicController::goToPoint(MathVector<double, 2> waypoint, double radius) {
+	currentState = new WaypointState(myInterface, waypoint, radius);
 }
 
 //void BasicController::turn(bool isLeft, double turnRadius) {
@@ -72,23 +73,6 @@ const std::vector<double>& BasicController::updateInputs(float dt) {
 //
 //	setTargetPoint(turnPoint);
 //}
-
-double BasicController::getAngle(MathVector<double, 2> fromDir, MathVector<double, 2> toDir) {
-	double angle = acos(fromDir.dot(toDir));
-
-	MathVector<double, 3> cross = MathVector<double, 3>(toDir[0], toDir[1], 0).cross(MathVector<double, 3>(fromDir[0], fromDir[1], 0));
-	if (cross.dot(MathVector<double, 3>(0, 0, 1)) > 0) { // > 0 because angle sign is inverted
-		angle = -angle; // Determine direction of angle (i.e. to the left or to the right of initDir)
-	}
-
-	return angle;
-}
-
-// "Flat" in that height is ignored; normalized by default
-MathVector<double, 2> BasicController::toFlatVector(MathVector<double, 3> vec, bool normalize) {
-	MathVector<double, 2> res(vec[0], vec[1]);
-	return normalize ? res.normalized() : res;
-}
 
 //void BasicController::updatePointTargeting() {
 //	if (isTargetPointEnabled) {
@@ -159,4 +143,22 @@ void BasicController::updateDirection(float dt) {
 		inputs[CarInput::STEER_RIGHT] = steerVal;
 		inputs[CarInput::STEER_LEFT] = 0;
 	}
+}
+
+double BasicController::getAngle(MathVector<double, 2> fromDir, MathVector<double, 2> toDir) {
+	double angle = acos(fromDir.dot(toDir));
+
+	MathVector<double, 3> cross = MathVector<double, 3>(toDir[0], toDir[1], 0).cross(
+		MathVector<double, 3>(fromDir[0], fromDir[1], 0));
+
+	if (cross.dot(MathVector<double, 3>(0, 0, 1)) > 0) { // > 0 because angle sign is inverted
+		angle = -angle; // Determine direction of angle (i.e. to the left or to the right of initDir)
+	}
+
+	return angle;
+}
+
+MathVector<double, 2> BasicController::toFlatVector(MathVector<double, 3> vec, bool normalize) {
+	MathVector<double, 2> res(vec[0], vec[1]);
+	return normalize ? res.normalized() : res;
 }

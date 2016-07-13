@@ -148,12 +148,12 @@ void Sim::keyPressed(const OIS::KeyEvent& ke) {
 		carToWatch = 1;
 		break;
 
-//	case OIS::KC_1:
-//		controllers[1]->turn(true, 50);
-//		break;
-//	case OIS::KC_2:
-//		controllers[1]->turn(false, 50);
-//		break;
+	case OIS::KC_1:
+		controllers[1]->goToPoint(MathVector<double, 2>(0.0), 1);
+		break;
+	case OIS::KC_2:
+		controllers[1]->goToPoint(MathVector<double, 2>(100.0), 1);
+		break;
 
 	default:
 		break;

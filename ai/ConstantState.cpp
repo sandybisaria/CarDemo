@@ -8,11 +8,9 @@ ConstantState::ConstantState(ControllerInterface* interface, double speed, doubl
 	mInterface->setTargetAngle(mAngle);
 }
 
-ConstantState::~ConstantState() {
-	delete mInterface;
-}
-
-void ConstantState::update(float dt) {
+BaseState* ConstantState::update(float dt) {
 	mInterface->setTargetSpeed(mSpeed);
 	mInterface->setTargetAngle(mAngle, false);
+
+	return NULL;
 }
