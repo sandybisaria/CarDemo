@@ -63,6 +63,11 @@ TEST(MathVector, MathVectorOperations) {
 	testcopy = testcopy * 1.0;
 	EXPECT_EQ(test1, testcopy);
 
+	MathVector<float, 3> testMult(1.f, 2.f, 3.f);
+	testMult = testMult * 2.f;
+	MathVector<float, 3> testMultRes(2.f, 4.f, 6.f);
+	EXPECT_EQ(testMult, testMultRes);
+
 	testcopy = testcopy / 1.0;
 	EXPECT_EQ(test1, testcopy);
 	EXPECT_TRUE(test1 == testcopy);
