@@ -149,7 +149,7 @@ void Sim::keyPressed(const OIS::KeyEvent& ke) {
 		break;
 
 	case OIS::KC_1:
-		controllers[1]->turn(true,  50);
+		controllers[1]->turn(true,   50);
 		break;
 	case OIS::KC_2:
 		controllers[1]->turn(false, 100);

@@ -10,8 +10,10 @@ BasicController::BasicController(Car* car)
 	kPSpeed = 7.65629; kISpeed = 0.00656; kDSpeed = 0.00020;
 	kPAngle = 443.75; kIAngle = 1; kDAngle = 1; // Could be refined further; may also be correlated with speed
 
+	dirAlreadyUpdated = false;
+
 	myInterface = new ControllerInterface(this);
-	currentState = new ConstantState(myInterface, 10, 0);
+	currentState = new ConstantState(myInterface, 20, 0);
 }
 
 BasicController::~BasicController() {
@@ -45,6 +47,15 @@ void BasicController::setTargetAngle(double newAngle, bool resetDir) {
 	if (resetDir) initDir = mCar->getForwardVector();
 }
 
+void BasicController::goToPoint(MathVector<double, 2> waypoint, double radius) {
+	currentState = new WaypointState(myInterface, waypoint, radius);
+}
+
+void BasicController::turn(bool isLeftTurn, double turnRadius) {
+	int subdivisions = 50;
+	currentState = new TurnState(myInterface, isLeftTurn, turnRadius, subdivisions);
+}
+
 const std::vector<double>& BasicController::updateInputs(float dt) {
 	BaseState* nextState = currentState->update(dt);
 	if (nextState != NULL) {
@@ -53,18 +64,11 @@ const std::vector<double>& BasicController::updateInputs(float dt) {
 	}
 
 	updateSpeed(dt);
-	updateDirection(dt);
+	if (!dirAlreadyUpdated) updateDirection(dt);
+
+	dirAlreadyUpdated = false;
 
 	return inputs;
-}
-
-void BasicController::goToPoint(MathVector<double, 2> waypoint, double radius) {
-	currentState = new WaypointState(myInterface, waypoint, radius);
-}
-
-void BasicController::turn(bool isLeftTurn, double turnRadius) {
-	int subdivisions = 50;
-	currentState = new TurnState(myInterface, isLeftTurn, turnRadius, subdivisions);
 }
 
 void BasicController::updateSpeed(float dt) {

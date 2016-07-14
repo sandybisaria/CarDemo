@@ -44,7 +44,7 @@ private:
 	 * If resetDir is true, then angle is relative to current dir. Otherwise, use the previously-stored dir.
 	 * Note that angle signs are reversed (left/CCW is negative). */
 	void setTargetAngle(double newAngle, bool resetDir);
-	void updateDirection(float dt);
+	void updateDirection(float dt); bool dirAlreadyUpdated;
 
 	static double getAngle(MathVector<double, 2> fromDir, MathVector<double, 2> toDir);
 	// "Flat" in that height is ignored; normalized by default
@@ -58,20 +58,17 @@ public:
 //---- Setter methods
 	void setTargetSpeed(double newSpeed) { mController->setTargetSpeed(newSpeed); }
 	void setTargetAngle(double newAngle, bool resetDir = true) { mController->setTargetAngle(newAngle, resetDir); }
+	void setSteering(double steering); // -1 (full left) to 1 (full right); overrides the Controller's updateDirection
 
 //---- Getter methods
 	MathVector<double, 2> getCarPosition();
-
-	// Direction is normalized
-	MathVector<double, 2> getCarDirection();
-
+	MathVector<double, 2> getCarDirection(); // Direction is normalized
 	double getCarSpeed();
 
 //---- Utility methods
 	static double getAngle(MathVector<double, 2> fromDir, MathVector<double, 2> toDir) {
 		return BasicController::getAngle(fromDir, toDir);
 	}
-
 	static MathVector<double, 2> toFlatVector(MathVector<double, 3> vec, bool normalize = true) {
 		return BasicController::toFlatVector(vec, normalize);
 	}
