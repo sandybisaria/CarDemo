@@ -1,60 +1,55 @@
 #include "States.hpp"
 
-TurnState::TurnState(ControllerInterface *interface, bool isLeftTurn, double turnRadius, int subdivisions)
+TurnState::TurnState(ControllerInterface *interface, bool isLeftTurn, double turnRadius)
  	: mInterface(interface) {
-	const double finalAngle = (45.0 * M_PI / 180.0) * (isLeftTurn ? 1.0 : -1.0); // Angle signs are inverted
-	const double angleDiv = finalAngle / subdivisions;
-	MathVector<double, 2> forwardVec = mInterface->getCarDirection();
+	startSpeed = mInterface->getCarSpeed();
+	turn = getTurn(turnRadius, startSpeed) * (isLeftTurn ? -1.0 : 1.0); // Left (CCW) is negative for turning
 
-	for (int i = 0; i < subdivisions; i++) {
-//		if (i > subdivisions / 2 && i % 2 == 0) continue;
+	//TODO Should be passed as an argument
+	const double turnAngle = M_PI_2 * (isLeftTurn ? 1.0 : -1.0); // In geometry, left (CCW) is positive
 
-		const double angle = angleDiv * (i + 1);
-		const double dist = turnRadius * sqrt(2 * (1 - cos(angle)));
+	const double distFinalPoint = turnRadius * M_SQRT2 * sqrt(1 - cos(turnAngle)); // Distance from start position to final point
+	MathVector<double, 2> vecFinalPoint, carDir = mInterface->getCarDirection();
+	// vecFinalPoint is a vector from the car's starting position to the final point
+	vecFinalPoint[0] = (carDir[0] * cos(turnAngle / 2) - carDir[1] * sin(turnAngle / 2)) * distFinalPoint;
+	vecFinalPoint[1] = (carDir[0] * sin(turnAngle / 2) + carDir[1] * cos(turnAngle / 2)) * distFinalPoint;
 
-		MathVector<double, 2> vecToTurnPoint;
-		vecToTurnPoint[0] = (forwardVec[0] * cos(angle) - forwardVec[1] * sin(angle)) * dist;
-		vecToTurnPoint[1] = (forwardVec[0] * sin(angle) + forwardVec[1] * cos(angle)) * dist;
+	finalPoint = vecFinalPoint + mInterface->getCarPosition();
+	finalDir[0] = carDir[0] * cos(turnAngle) - carDir[1] * sin(turnAngle);
+	finalDir[1] = carDir[0] * sin(turnAngle) + carDir[1] * cos(turnAngle);
 
-		MathVector<double, 2> turnPoint = mInterface->getCarPosition() + vecToTurnPoint;
-
-		mWaypoints.push(turnPoint);
-	}
-
-	// Setting "desired" final values
-	{
-		const double angle = (M_PI / 2) * (isLeftTurn ? 1.0 : -1.0); // Angle signs are inverted
-		desiredFinalDir[0] = (forwardVec[0] * cos(angle) - forwardVec[1] * sin(angle));
-		desiredFinalDir[1] = (forwardVec[0] * sin(angle) + forwardVec[1] * cos(angle));
-
-		startSpeed = mInterface->getCarSpeed();
-	}
-
-	MathVector<double, 2> lastPoint(mWaypoints.back());
-	float continueDist = 5;
-	lastPoint[0] += desiredFinalDir[0] * continueDist;
-	lastPoint[1] += desiredFinalDir[1] * continueDist;
-	mWaypoints.push(lastPoint);
-
-	mWaypointState = new WaypointState(mInterface, mWaypoints.front(), 1);
-	mWaypoints.pop();
+	lastDist = DBL_MAX;
 }
 
 BaseState* TurnState::update(float dt) {
-	BaseState* nextState = mWaypointState->update(dt);
-	if (nextState != NULL) {
-		delete mWaypointState;
+	double currDist = (mInterface->getCarPosition() - finalPoint).magnitude();
+	if (currDist < 1) {
+		std::cout << "Turn complete" << std::endl;
+		return new ConstantState(mInterface, startSpeed, mInterface->getAngle(finalDir, mInterface->getCarDirection()));
+	}
+	else if (currDist > lastDist) {
+		//TODO May want to more intelligently handle a miscalculated turn
+		std::cout << "Not quite perfect... oh well" << std::endl;
+		return new ConstantState(mInterface, startSpeed, mInterface->getAngle(finalDir, mInterface->getCarDirection()));
+	}
+	else {
+		mInterface->setSteering(turn);
+		mInterface->setTargetSpeed(startSpeed);
 
-		if (mWaypoints.empty()) {
-			return new ConstantState(mInterface, startSpeed,
-									 mInterface->getAngle(desiredFinalDir, mInterface->getCarDirection()));
-		} else {
-			mWaypointState = new WaypointState(mInterface, mWaypoints.front(), 1);
-			mWaypoints.pop();
-			return NULL;
-		}
-	} else {
+		lastDist = currDist;
+
 		return NULL;
 	}
 }
 
+double TurnState::getTurn(double turnRadius, double speed) {
+	// Rough nonlinear regression based on collected data-points
+	const double a = 0.0821,
+				 b = 0.8608,
+				 c = 0.01923,
+				 d = 5.415,
+				 e = 6.983;
+	const double x = speed, y = turnRadius;
+
+	return a * (b*y + exp(c*x + d)) / (y + e);
+}

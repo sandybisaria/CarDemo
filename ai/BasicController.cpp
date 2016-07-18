@@ -52,8 +52,7 @@ void BasicController::goToPoint(MathVector<double, 2> waypoint, double radius) {
 }
 
 void BasicController::turn(bool isLeftTurn, double turnRadius) {
-	int subdivisions = 50;
-	currentState = new TurnState(myInterface, isLeftTurn, turnRadius, subdivisions);
+	currentState = new TurnState(myInterface, isLeftTurn, turnRadius);
 }
 
 const std::vector<double>& BasicController::updateInputs(float dt) {
