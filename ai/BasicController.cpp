@@ -28,16 +28,19 @@ void BasicController::reset() {
 	iSpeedAcc = 0;
 	dLastESpeed = 0;
 	lastSpeed = 0;
+	reachedSpeed = false;
 
 	// Angle variables
 	iAngleAcc = 0;
 	dLastEAngle = 0;
 	lastAngle = 0;
+	reachedAngle = false;
 }
 
 void BasicController::setTargetSpeed(double newSpeed) {
 	if (targetSpeed != newSpeed) { // Should we ever reset these?
 		iSpeedAcc = 0;
+		reachedSpeed = false;
 	}
 
 	targetSpeed = newSpeed;
@@ -46,11 +49,12 @@ void BasicController::setTargetSpeed(double newSpeed) {
 void BasicController::setTargetAngle(double newAngle, bool resetDir) {
 	if (targetAngle != newAngle) { // Should we ever reset these?
 		iAngleAcc = 0;
+		reachedAngle = false;
 	}
 
 	targetAngle = newAngle;
 
-	if (resetDir) initDir = mCar->getForwardVector();
+	if (resetDir) { initDir = mCar->getForwardVector(); }
 }
 
 void BasicController::goToPoint(MathVector<double, 2> waypoint, double radius) {
@@ -105,9 +109,10 @@ void BasicController::updateSpeed(float dt) {
 		inputs[CarInput::BRAKE] = 0;
 	}
 
-//	if (dt != 0 && speed != lastSpeed) {
-//		std::cout << speed << " " << (speed - lastSpeed) / dt << std::endl;
-//	}
+	if (dt != 0 && speed != lastSpeed) {
+		double acc = (speed - lastSpeed) / dt;
+		if (fabs(acc) < 0.1 && !reachedSpeed) { reachedSpeed = true; }
+	}
 	lastSpeed = speed;
 }
 
@@ -140,7 +145,8 @@ void BasicController::updateDirection(float dt) {
 	}
 
 	if (dt != 0 && angle != lastAngle) {
-		std::cout << steerVal << " " << angle << " " << (angle - lastAngle) / dt << " " << std::endl;
+		double acc = (angle - lastAngle) / dt;
+		if (fabs(acc) < 0.01 && !reachedAngle) { reachedAngle = true; }
 	}
 	lastAngle = angle;
 }

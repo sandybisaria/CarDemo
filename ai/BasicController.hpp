@@ -29,19 +29,21 @@ private:
 	ControllerInterface* myInterface;
 	BaseState* currentState;
 
+//---- Speed PID control (speed in m/s)
 	double kPSpeed,
 		kISpeed, iSpeedAcc,
 		kDSpeed, dLastESpeed;
-	double targetSpeed; // Target speed in m/s
-	double lastSpeed;
+	double targetSpeed, lastSpeed;
+	bool reachedSpeed;
 	void setTargetSpeed(double newSpeed); // Tell the car to drive at this speed (in m/s)
 	void updateSpeed(float dt);
 
+//---- Angle PID control (angle in radians, but note that negative angles correspond to CCW/LEFT!)
 	double kPAngle,
 		kIAngle, iAngleAcc,
 		kDAngle, dLastEAngle;
-	double targetAngle; // Target angle in rad (note that negative angles point to the LEFT or CCW)
-	double lastAngle;
+	double targetAngle, lastAngle;
+	bool reachedAngle; // True if car has reached its target angle
 	MathVector<double, 3> initDir; // The initial direction (when targetAngle was set)
 	/* Tell the car to drive at an angle.
 	 * If resetDir is true, then angle is relative to current dir. Otherwise, use the previously-stored dir.
