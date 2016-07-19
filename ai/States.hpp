@@ -41,7 +41,7 @@ private:
 	double mRadius;
 };
 
-// Perform a 90-degree turn left or right
+// Perform a turn left or right
 class TurnState : public BaseState {
 public:
 	TurnState(ControllerInterface* interface, bool isLeftTurn, double turnRadius);
@@ -57,10 +57,19 @@ private:
 
 	MathVector<double, 2> finalPoint, finalDir;
 	double lastDist;
+};
 
-//	WaypointState* mWaypointState;
-//	std::queue< MathVector<double, 2> > mWaypoints;
-//
-//	double startSpeed;
-//	MathVector<double, 2> desiredFinalDir;
+// Debug state used for setting a constant steering input
+class ConstantTurnState : public BaseState {
+public:
+	ConstantTurnState(ControllerInterface* interface, double turn);
+	virtual ~ConstantTurnState() { }
+
+	virtual BaseState* update(float dt);
+
+private:
+	ControllerInterface* mInterface;
+
+	double turn, startSpeed;
+	double minX, minY, maxX, maxY;
 };

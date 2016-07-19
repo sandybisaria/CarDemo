@@ -51,5 +51,32 @@ double TurnState::getTurn(double turnRadius, double speed) {
 				 e = 6.983;
 	const double x = speed, y = turnRadius;
 
-	return a * (b*y + exp(c*x + d)) / (y + e);
+	const double turn = a * (b*y + exp(c*x + d)) / (y + e);
+	return clamp(turn, -1.0, 1.0);
+}
+
+ConstantTurnState::ConstantTurnState(ControllerInterface *interface, double turn)
+	: mInterface(interface) {
+	this->turn = turn;
+	startSpeed = mInterface->getCarSpeed();
+
+	minX = maxX = mInterface->getCarPosition()[0];
+	minY = maxY = mInterface->getCarPosition()[1];
+}
+
+BaseState* ConstantTurnState::update(float dt) {
+	mInterface->setSteering(turn);
+	mInterface->setTargetSpeed(startSpeed);
+
+	bool updated = false;
+	double x = mInterface->getCarPosition()[0], y = mInterface->getCarPosition()[1];
+		 if (x < minX) { minX = x; updated = true; }
+	else if (x > maxX) { maxX = x; updated = true; }
+		 if (y < minY) { minY = y; updated = true; }
+	else if (y > maxY) { maxY = y; updated = true; }
+	if (updated) {
+
+	}
+
+	return NULL;
 }

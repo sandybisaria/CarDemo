@@ -13,7 +13,7 @@ BasicController::BasicController(Car* car)
 	dirAlreadyUpdated = false;
 
 	myInterface = new ControllerInterface(this);
-	currentState = new ConstantState(myInterface, 20, 0);
+	currentState = new ConstantState(myInterface, 1, 0);
 }
 
 BasicController::~BasicController() {
@@ -31,18 +31,24 @@ void BasicController::reset() {
 	// Angle variables
 	iAngleAcc = 0;
 	dLastEAngle = 0;
+
+	lastSpeed = 0;
 }
 
 void BasicController::setTargetSpeed(double newSpeed) {
+	if (targetSpeed != newSpeed) { // Should we ever reset these?
+		iSpeedAcc = 0;
+	}
+
 	targetSpeed = newSpeed;
-	iSpeedAcc = 0;
-	dLastESpeed = 0;
 }
 
 void BasicController::setTargetAngle(double newAngle, bool resetDir) {
+	if (targetAngle != newAngle) { // Should we ever reset these?
+		iAngleAcc = 0;
+	}
+
 	targetAngle = newAngle;
-	iAngleAcc = 0;
-	dLastEAngle = 0;
 
 	if (resetDir) initDir = mCar->getForwardVector();
 }
@@ -51,8 +57,8 @@ void BasicController::goToPoint(MathVector<double, 2> waypoint, double radius) {
 	currentState = new WaypointState(myInterface, waypoint, radius);
 }
 
-void BasicController::turn(bool isLeftTurn, double turnRadius) {
-	currentState = new TurnState(myInterface, isLeftTurn, turnRadius);
+void BasicController::setSpeed(double speed) {
+	currentState = new ConstantState(myInterface, speed, 0);
 }
 
 const std::vector<double>& BasicController::updateInputs(float dt) {
@@ -71,19 +77,20 @@ const std::vector<double>& BasicController::updateInputs(float dt) {
 }
 
 void BasicController::updateSpeed(float dt) {
-	const double eSpeed = targetSpeed - mCar->getSpeedMPS();
+	const double speed = mCar->getSpeedMPS();
+	const double eSpeed = targetSpeed - speed;
 
 	// Simple PID controller
 	double thrBrkVal = 0;
 	thrBrkVal += eSpeed * kPSpeed; // Proportional term
 
-	thrBrkVal += kISpeed * iSpeedAcc; // Integral term
-	iSpeedAcc += eSpeed * dt;
-
-	if (dt != 0) {
-		thrBrkVal += kDSpeed * ((eSpeed - dLastESpeed) / dt); // Derivative term
-		dLastESpeed = eSpeed;
+	if (eSpeed < targetSpeed / 4) { // If error is too high, skip; don't want high integral accumulation
+		thrBrkVal += kISpeed * iSpeedAcc; // Integral term
+		iSpeedAcc += eSpeed * dt;
 	}
+
+	if (dt != 0) { thrBrkVal += kDSpeed * ((eSpeed - dLastESpeed) / dt); } // Derivative term
+	dLastESpeed = eSpeed;
 
 	thrBrkVal = clamp(thrBrkVal, -1.0, 1.0); // Clamp from -1 to 1
 	if (thrBrkVal < 0) {
@@ -93,6 +100,12 @@ void BasicController::updateSpeed(float dt) {
 		inputs[CarInput::THROTTLE] = thrBrkVal;
 		inputs[CarInput::BRAKE] = 0;
 	}
+
+	// Don't care about "same" speed situations
+	if (dt != 0 && speed != lastSpeed) {
+		std::cout << speed << " " << (speed - lastSpeed) / dt << std::endl;
+	}
+	lastSpeed = speed;
 }
 
 void BasicController::updateDirection(float dt) {

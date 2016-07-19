@@ -195,7 +195,7 @@ private:
 	double rotCoeff[4];
 
 	// Steering
-	double steerValue;
+	double steerValue; //TODO Not actually used for simulation
 	double maxAngle;
 	double angularDamping;
 

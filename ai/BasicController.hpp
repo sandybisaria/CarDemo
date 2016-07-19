@@ -19,7 +19,7 @@ public:
 
 //---- Control methods
 	void goToPoint(MathVector<double, 2> waypoint, double radius);
-	void turn(bool isLeftTurn, double turnRadius);
+	void setSpeed(double speed);
 
 private:
 	Car* mCar;
@@ -32,6 +32,7 @@ private:
 		kISpeed, iSpeedAcc,
 		kDSpeed, dLastESpeed;
 	double targetSpeed; // Target speed in m/s
+	double lastSpeed;
 	void setTargetSpeed(double newSpeed); // Tell the car to drive at this speed (in m/s)
 	void updateSpeed(float dt);
 

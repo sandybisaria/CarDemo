@@ -40,27 +40,26 @@ void CarDynamics::setSteering(const double val, const double rangeMul) {
 	}
 
 	// Ackerman steering geometry
-	bool ax2 = numWheels >= 6; // Two front steering axles
+	bool ax2 = numWheels >= 6; // Two front steering axles for 6 wheels or more
 	int iMax = ax2 ? 2 : 1; // One iteration per axle
 	for (int i = 0; i < iMax; i++) {
 		WheelPosition wl, wr, rear;
-		if (i == 0) { wl = FRONT_LEFT; wr = FRONT_RIGHT; rear =  REAR_LEFT; }
-		else 		{ wl =  REAR_LEFT; wr =  REAR_RIGHT; rear = REAR2_LEFT; }
+		if (i == 0) { wl = FRONT_LEFT; wr = FRONT_RIGHT; rear =  REAR_LEFT; } // Under six wheels
+		else 		{ wl =  REAR_LEFT; wr =  REAR_RIGHT; rear = REAR2_LEFT; } // Six or more wheels
 
-		double alpha = std::abs(steerAngle * M_PI / 180.0); // Outside wheel steering angle in rads
+		double alpha = std::abs(steerAngle * M_PI / 180.0); // Outside wheel steering angle in radians
 
-		double dW = wheels[wl].getExtendedPosition()[1] - wheels[wr].getExtendedPosition()[1]; // Width between front wheels
-		double dL = wheels[wl].getExtendedPosition()[0] - wheels[rear].getExtendedPosition()[0]; // Length between front and rear
-		if (i == 1) dL *= 2.f;
+		double dW = wheels[wl].getExtendedPosition()[1] - wheels[wr].getExtendedPosition()[1]; // W between wheels
+		double dL = wheels[wl].getExtendedPosition()[0] - wheels[rear].getExtendedPosition()[0]; // Wheelbase
+		if (i == 1) dL *= 2.f; // Double the length for second axle
 
-		double beta = atan2(1.0, 1.0 / tan(alpha) - dW / fabs(dL)); // Inside wheel steering angle in rads
+		double beta = atan2(1.0, 1.0 / tan(alpha) - dW / fabs(dL)); // Inside wheel steering angle in radians
 
 		double left = 0, right = 0; // Wheel angle
 		if (val >= 0) {   left = alpha; right = beta; }
 		else 		  { right = -alpha; left = -beta; }
 
-		left *= 180.0 / M_PI; right *= 180.0 / M_PI;
-
+		left *= 180.0 / M_PI; right *= 180.0 / M_PI; // Angles must be set as degrees
 		wheels[wl].setSteerAngle(left); wheels[wr].setSteerAngle(right);
 	}
 }
@@ -353,7 +352,7 @@ void CarDynamics::applyEngineTorqueToBody() {
 }
 
 void CarDynamics::applyAerodynamicsToBody() {
-	MathVector<double, 3> windForce(0), windTorque(0), airVelocity = -getVelocity();
+	MathVector<double, 3> windForce(0.), windTorque(0.), airVelocity = -getVelocity();
 	(-getBodyOrientation()).rotateVector(airVelocity);
 
 	for (std::vector<CarAero>::iterator i = aerodynamics.begin(); i != aerodynamics.end(); i++) {
@@ -391,7 +390,7 @@ MathVector<double, 3> CarDynamics::applyTireForce(int i, const double normalForc
 
 	// Camber relative to surface (clockwise in wheel heading direction)
 	MathVector<double, 3> wheelAxis(0, 1, 0);
-	wheelSpace.rotateVector(wheelAxis); // Aheel axis in world space (wheel plane normal)
+	wheelSpace.rotateVector(wheelAxis); // Wheel axis in world space (wheel plane normal)
 	double camberSin = wheelAxis.dot(surfaceNorm);
 	double camberRad = asin(camberSin);
 	wheel.setCamberDeg(camberRad * 180.0 / M_PI);
@@ -413,7 +412,7 @@ MathVector<double, 3> CarDynamics::applyTireForce(int i, const double normalForc
 
 	// Friction force in tire space
 	double frictionCoeff = surface->friction;
-	MathVector<double, 3> frictionForce(0);
+	MathVector<double, 3> frictionForce(0.);
 	if (frictionCoeff > 0)
 		frictionForce = tire->getForce(normalForce, frictionCoeff, hubVelocity, patchSpeed, camberRad, &wheel.slips);
 

@@ -16,3 +16,7 @@ BaseState* WaypointState::update(float dt) {
 		return NULL;
 	}
 }
+
+//TODO This fails if the car can't turn sharply enough to reach the waypoint
+// It will just keep driving around the point without actually hitting it.
+// Some sort of speed control is needed, one that is aware of the car's minimum turning radius
