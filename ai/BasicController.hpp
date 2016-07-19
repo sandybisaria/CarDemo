@@ -20,6 +20,7 @@ public:
 //---- Control methods
 	void goToPoint(MathVector<double, 2> waypoint, double radius);
 	void setSpeed(double speed);
+	void setAngle(double angle);
 
 private:
 	Car* mCar;
@@ -40,6 +41,7 @@ private:
 		kIAngle, iAngleAcc,
 		kDAngle, dLastEAngle;
 	double targetAngle; // Target angle in rad (note that negative angles point to the LEFT or CCW)
+	double lastAngle;
 	MathVector<double, 3> initDir; // The initial direction (when targetAngle was set)
 	/* Tell the car to drive at an angle.
 	 * If resetDir is true, then angle is relative to current dir. Otherwise, use the previously-stored dir.
@@ -51,6 +53,8 @@ private:
 	// "Flat" in that height is ignored; normalized by default
 	static MathVector<double, 2> toFlatVector(MathVector<double, 3> vec, bool normalize = true);
 };
+
+//TODO Need to delete only BasicStates after being replaced; maybe write a helper?
 
 // Interface that exposes BasicController methods to its states
 class ControllerInterface {
@@ -75,6 +79,7 @@ public:
 	}
 
 private:
+	// Constructor is private; only friend classes (Controllers) can instantiate them
 	ControllerInterface(BasicController* controller)
 		: mController(controller) { }
 

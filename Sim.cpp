@@ -40,6 +40,8 @@ void Sim::setup(Ogre::SceneManager* sceneMgr) {
 
 		BasicController* bc = new BasicController(newCar);
 		controllers.push_back(bc);
+
+		bc->setSpeed(10); //TODO Initial speed configuration would probably come from the scene
 	}
 
 	carInput = new CInput(this);
@@ -78,37 +80,7 @@ void Sim::update(float dt) {
 //		debugDraw->step();
 //	}
 
-	//TODO How Stuntrally updates the game... however, this loop does not work
-//	const float minFPS = 10.f; // Minimum acceptable fps
-//	const unsigned int maxTicks = (int) (1.f / (minFPS * frameRate));
-//	const float maxTime = 1.f / minFPS;
-//	unsigned int curTicks = 0;
-//
-//	// Throw away wall clock time if needed to maintain framerate
-//	if (dt > maxTime) dt = maxTime;
-//
-//	targetTime += dt;
-//	double tickPeriod = frameRate;
-//
-//	// Increment game logic by as many tick periods necessary
-//	while (targetTime > tickPeriod && curTicks < maxTicks) {
-//		// Advance game logic
-//		car->updatePreviousVelocity(); // Was in the loop for fluids...
-//		if (tickPeriod > 0) world->update(tickPeriod); // Update physics
-//
-//		const std::vector<float>& inputs = localMap.processInput(carInput->getPlayerInputState(), car->getSpeedDir(),
-//																 0.f, 0.f);
-//		car->handleInputs(inputs);
-//
-//		curTicks++;
-//		targetTime -= tickPeriod;
-//	}
-//	car->update(); // Update model
-//
-//	if (debugDraw) {
-//		debugDraw->setDebugMode(1);
-//		debugDraw->step();
-//	}
+	//TODO May want to see how Stuntrally "actually" loops
 }
 
 Ogre::Vector3 Sim::getCameraPosition() {
@@ -149,10 +121,10 @@ void Sim::keyPressed(const OIS::KeyEvent& ke) {
 		break;
 
 	case OIS::KC_1:
-		controllers[1]->setSpeed(10);
+		controllers[1]->setAngle(-45 * (M_PI / 180));
 		break;
 	case OIS::KC_2:
-		controllers[1]->setSpeed(20);
+		controllers[1]->setAngle(+45 * (M_PI / 180));
 		break;
 
 	default:

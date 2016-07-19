@@ -8,12 +8,12 @@ BasicController::BasicController(Car* car)
 
 	// PID constants
 	kPSpeed = 7.65629; kISpeed = 0.00656; kDSpeed = 0.00020;
-	kPAngle = 443.75; kIAngle = 1; kDAngle = 1; // Could be refined further; may also be correlated with speed
+	kPAngle = 15.3125; kIAngle = 0.25; kDAngle = 0.03125;
 
 	dirAlreadyUpdated = false;
 
 	myInterface = new ControllerInterface(this);
-	currentState = new ConstantState(myInterface, 1, 0);
+	currentState = new ConstantState(myInterface, 0, 0);
 }
 
 BasicController::~BasicController() {
@@ -27,12 +27,12 @@ void BasicController::reset() {
 	// Speed variables
 	iSpeedAcc = 0;
 	dLastESpeed = 0;
+	lastSpeed = 0;
 
 	// Angle variables
 	iAngleAcc = 0;
 	dLastEAngle = 0;
-
-	lastSpeed = 0;
+	lastAngle = 0;
 }
 
 void BasicController::setTargetSpeed(double newSpeed) {
@@ -58,7 +58,11 @@ void BasicController::goToPoint(MathVector<double, 2> waypoint, double radius) {
 }
 
 void BasicController::setSpeed(double speed) {
-	currentState = new ConstantState(myInterface, speed, 0);
+	currentState = new ConstantState(myInterface, speed, targetAngle);
+}
+
+void BasicController::setAngle(double angle) {
+	currentState = new ConstantState(myInterface, targetSpeed, angle);
 }
 
 const std::vector<double>& BasicController::updateInputs(float dt) {
@@ -84,7 +88,7 @@ void BasicController::updateSpeed(float dt) {
 	double thrBrkVal = 0;
 	thrBrkVal += eSpeed * kPSpeed; // Proportional term
 
-	if (eSpeed < targetSpeed / 4) { // If error is too high, skip; don't want high integral accumulation
+	if (fabs(eSpeed) < targetSpeed / 4) { // If error is too high, skip; don't want high integral accumulation
 		thrBrkVal += kISpeed * iSpeedAcc; // Integral term
 		iSpeedAcc += eSpeed * dt;
 	}
@@ -101,10 +105,9 @@ void BasicController::updateSpeed(float dt) {
 		inputs[CarInput::BRAKE] = 0;
 	}
 
-	// Don't care about "same" speed situations
-	if (dt != 0 && speed != lastSpeed) {
-		std::cout << speed << " " << (speed - lastSpeed) / dt << std::endl;
-	}
+//	if (dt != 0 && speed != lastSpeed) {
+//		std::cout << speed << " " << (speed - lastSpeed) / dt << std::endl;
+//	}
 	lastSpeed = speed;
 }
 
@@ -117,8 +120,10 @@ void BasicController::updateDirection(float dt) {
 	double steerVal = 0;
 	steerVal += eAngle * kPAngle; // Proportional term
 
-	steerVal += kIAngle * iAngleAcc; // Integral term
-	iAngleAcc += eAngle * dt;
+	if (fabs(eAngle) < fabs(targetAngle / 8)) {
+		steerVal += kIAngle * iAngleAcc; // Integral term
+		iAngleAcc += eAngle * dt;
+	}
 
 	if (dt != 0) {
 		steerVal += kDAngle * ((eAngle - dLastEAngle) / dt); // Derivative term
@@ -133,6 +138,11 @@ void BasicController::updateDirection(float dt) {
 		inputs[CarInput::STEER_RIGHT] = steerVal;
 		inputs[CarInput::STEER_LEFT] = 0;
 	}
+
+	if (dt != 0 && angle != lastAngle) {
+		std::cout << steerVal << " " << angle << " " << (angle - lastAngle) / dt << " " << std::endl;
+	}
+	lastAngle = angle;
 }
 
 double BasicController::getAngle(MathVector<double, 2> fromDir, MathVector<double, 2> toDir) {
