@@ -21,6 +21,14 @@ public:
 	void goToPoint(MathVector<double, 2> waypoint, double radius);
 	void setSpeed(double speed);
 	void setAngle(double angle);
+	void turn(double steerValue);
+
+//---- Info methods
+	bool hasReachedTargetSpeed() { return reachedSpeed; }
+	bool hasReachedTargetAngle() { return reachedAngle; }
+
+//---- Testing methods
+	void setupDataCollection();
 
 private:
 	Car* mCar;
@@ -51,9 +59,20 @@ private:
 	void setTargetAngle(double newAngle, bool resetDir);
 	void updateDirection(float dt); bool dirAlreadyUpdated;
 
+//---- Utility methods
 	static double getAngle(MathVector<double, 2> fromDir, MathVector<double, 2> toDir);
 	// "Flat" in that height is ignored; normalized by default
 	static MathVector<double, 2> toFlatVector(MathVector<double, 3> vec, bool normalize = true);
+
+//---- Testing methods and members
+	void updateDataCollection(float dt);
+
+	std::ofstream dataFile;
+	std::vector<double> speeds; int currentSpeed;
+	std::vector<double> turns; int currentTurn;
+	enum { WAIT_SPEED, WAIT_STEER } testStage;
+	bool testing;
+	float timeElapsed;
 };
 
 //TODO Need to delete only BasicStates after being replaced; maybe write a helper?

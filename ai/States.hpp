@@ -62,14 +62,20 @@ private:
 // Debug state used for setting a constant steering input
 class ConstantTurnState : public BaseState {
 public:
-	ConstantTurnState(ControllerInterface* interface, double turn);
+	ConstantTurnState(ControllerInterface* interface, double turn, double startSpeed = 0);
 	virtual ~ConstantTurnState() { }
 
 	virtual BaseState* update(float dt);
+
+	bool hasLooped() { return looped; }
+	double getAverageRadius() { return (radiusX + radiusY) / 2; }
 
 private:
 	ControllerInterface* mInterface;
 
 	double turn, startSpeed;
-	double minX, minY, maxX, maxY;
+
+	// For debugging and testing
+	bool canHaveLooped, looped; MathVector<double, 2> startDir;
+	double minX, minY, maxX, maxY, radiusX, radiusY;
 };

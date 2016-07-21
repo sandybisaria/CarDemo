@@ -3,8 +3,8 @@
 Sim::Sim(App* app)
 	: mSceneMgr(0), scene(0), mApp(app),
 	  world(0), carInput(0),
-	  numCars(2), // Setting the number of cars
-	  idCarToControl(0), // The ID of the car that the user can control
+	  numCars(1), // Setting the number of cars
+	  idCarToControl(-1/*INVALID ID ON PURPOSE*/), // The ID of the car that the user can control
 	  carToWatch(0), // ID of car to watch
 	  frameRate(1.f / 60.f), targetTime(0),
 	  debugDraw(NULL) {
@@ -41,7 +41,10 @@ void Sim::setup(Ogre::SceneManager* sceneMgr) {
 		BasicController* bc = new BasicController(newCar);
 		controllers.push_back(bc);
 
-		bc->setSpeed(10); //TODO Initial speed configuration would probably come from the scene
+		//TODO Initial speed configuration would probably come from the scene
+
+		// For testing only (uncomment when needed)
+//		bc->setupDataCollection();
 	}
 
 	carInput = new CInput(this);
@@ -121,10 +124,8 @@ void Sim::keyPressed(const OIS::KeyEvent& ke) {
 		break;
 
 	case OIS::KC_1:
-		controllers[1]->setAngle(-45 * (M_PI / 180));
 		break;
 	case OIS::KC_2:
-		controllers[1]->setAngle(+45 * (M_PI / 180));
 		break;
 
 	default:

@@ -3,7 +3,7 @@
 #include "States.hpp"
 
 BasicController::BasicController(Car* car)
-	: mCar(car) {
+	: mCar(car), testing(false) {
 	reset();
 
 	// PID constants
@@ -69,6 +69,10 @@ void BasicController::setAngle(double angle) {
 	currentState = new ConstantState(myInterface, targetSpeed, angle);
 }
 
+void BasicController::turn(double steerValue) {
+	currentState = new ConstantTurnState(myInterface, steerValue);
+}
+
 const std::vector<double>& BasicController::updateInputs(float dt) {
 	BaseState* nextState = currentState->update(dt);
 	if (nextState != NULL) {
@@ -77,9 +81,10 @@ const std::vector<double>& BasicController::updateInputs(float dt) {
 	}
 
 	updateSpeed(dt);
-	if (!dirAlreadyUpdated) updateDirection(dt);
-
+	if (!dirAlreadyUpdated) { updateDirection(dt); }
 	dirAlreadyUpdated = false;
+
+	if (testing) { updateDataCollection(dt); }
 
 	return inputs;
 }
@@ -109,9 +114,9 @@ void BasicController::updateSpeed(float dt) {
 		inputs[CarInput::BRAKE] = 0;
 	}
 
-	if (dt != 0 && speed != lastSpeed) {
+	if (dt != 0) {
 		double acc = (speed - lastSpeed) / dt;
-		if (fabs(acc) < 0.1 && !reachedSpeed) { reachedSpeed = true; }
+		if (fabs(acc) < 0.01 && !reachedSpeed && fabs(eSpeed) < 0.1) { reachedSpeed = true; }
 	}
 	lastSpeed = speed;
 }
@@ -144,9 +149,9 @@ void BasicController::updateDirection(float dt) {
 		inputs[CarInput::STEER_LEFT] = 0;
 	}
 
-	if (dt != 0 && angle != lastAngle) {
+	if (dt != 0) {
 		double acc = (angle - lastAngle) / dt;
-		if (fabs(acc) < 0.01 && !reachedAngle) { reachedAngle = true; }
+		if (fabs(acc) < 0.01 && !reachedAngle && fabs(eAngle) < 0.01) { reachedAngle = true; }
 	}
 	lastAngle = angle;
 }
@@ -167,4 +172,58 @@ double BasicController::getAngle(MathVector<double, 2> fromDir, MathVector<doubl
 MathVector<double, 2> BasicController::toFlatVector(MathVector<double, 3> vec, bool normalize) {
 	MathVector<double, 2> res(vec[0], vec[1]);
 	return normalize ? res.normalized() : res;
+}
+
+void BasicController::setupDataCollection() {
+	double minSpeed = 1, maxSpeed = 30, speedStep = 1;
+	double minTurn = 0.05, maxTurn = 1.00, turnStep = 0.01;
+
+	for (double speed = maxSpeed; speed >= minSpeed; speed -= speedStep) { speeds.push_back(speed); }
+	for (double turn = maxTurn; turn >= minTurn; turn -= turnStep) { turns.push_back(turn); turns.push_back(-turn); }
+
+	assert(speeds.size() > 0 && turns.size() > 0);
+	currentSpeed = currentTurn = 0;
+
+	testing = true; testStage = WAIT_SPEED; timeElapsed = 0;
+	currentState = new ConstantState(myInterface, speeds[currentSpeed], 0);
+	std::cout << "SETUP COMPLETE! " << speeds[currentSpeed] << " " << turns[currentTurn] << std::endl;
+
+	dataFile.open("data.txt", std::ios::app);
+}
+
+void BasicController::updateDataCollection(float dt) {
+	timeElapsed += dt;
+	if (testStage == WAIT_SPEED) {
+		if (hasReachedTargetSpeed() || timeElapsed > 60) {
+			std::cout << "HAS REACHED: " << targetSpeed << std::endl;
+			currentState = new ConstantTurnState(myInterface, turns[currentTurn], speeds[currentSpeed]);
+			testStage = WAIT_STEER; timeElapsed = 0;
+		}
+	} else if (testStage == WAIT_STEER) {
+		ConstantTurnState* cts = (ConstantTurnState*) currentState;
+		if (cts->hasLooped() || timeElapsed > 60 * (50 - speeds[currentSpeed]) ) {
+			dataFile << mCar->getSpeedMPS() << " " << turns[currentTurn] << " " << cts->getAverageRadius() << std::endl;
+
+			currentTurn++;
+			// Turning radii above 100m very rare... but want to do both left and right turns
+			if (currentTurn >= turns.size() || (cts->getAverageRadius() > 100 && turns[currentTurn] < 0)) {
+				currentTurn = 0;
+				currentSpeed++;
+
+				if (currentSpeed >= speeds.size()) {
+					std::cout << "FINISHED!" << std::endl;
+					exit(0);
+				} else {
+					std::cout << "COMP SPEED: " << speeds[currentSpeed-1] << std::endl;
+
+					currentState = new ConstantState(myInterface, speeds[currentSpeed], 0);
+					testStage = WAIT_SPEED; timeElapsed = 0;
+				}
+			} else {
+				std::cout << "COMP TURN: " << turns[currentTurn-1] << std::endl;
+				currentState = new ConstantTurnState(myInterface, turns[currentTurn], speeds[currentSpeed]);
+				testStage = WAIT_STEER; timeElapsed = 0;
+			}
+		}
+	}
 }

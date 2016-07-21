@@ -48,10 +48,6 @@ void Car::setup(std::string carName, Ogre::SceneManager* sceneMgr, CollisionWorl
 	loadModel();
 }
 
-//void Car::updatePreviousVelocity() {
-//	dyn->updatePreviousVelocity();
-//}
-
 void Car::update() {
 	dyn->update();
 	updateModel();
@@ -317,11 +313,9 @@ void Car::updateModel() {
 	// Main body
 	Ogre::Vector3 pos = Axes::vectorToOgre(dyn->getPosition());
 	mainNode->setPosition(pos);
-//	std::cout << pos << std::endl;
 
 	Ogre::Quaternion rot; rot = Axes::doQuatToOgre(dyn->getOrientation());
 	mainNode->setOrientation(rot);
-//	std::cout << rot << std::endl;
 
 	// Wheels
 	for (int w = 0; w < numWheels; w++) {
