@@ -89,5 +89,6 @@ public:
 private:
 	bool mIsLeft, halfwayDone;
 	double theta, radius, startSpeed;
+	MathVector<double, 2> finalDir, startPos;
 	TurnState* currState;
 };

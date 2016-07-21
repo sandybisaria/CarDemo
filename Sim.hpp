@@ -57,7 +57,7 @@ private:
 	int targetTime;
 
 	std::vector<Car*> cars;
-	const int numCars; // Number of cars to load
+	int numCars; // Number of cars to load
 	int idCarToControl;
 
 	// Car controllers

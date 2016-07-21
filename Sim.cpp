@@ -3,8 +3,6 @@
 Sim::Sim(App* app)
 	: mSceneMgr(0), scene(0), mApp(app),
 	  world(0), carInput(0),
-	  numCars(1), // Setting the number of cars
-	  carToWatch(0), // ID of car to watch
 	  frameRate(1.f / 60.f), targetTime(0),
 	  debugDraw(NULL) {
 }
@@ -31,7 +29,10 @@ void Sim::setup(Ogre::SceneManager* sceneMgr) {
 	world = new CollisionWorld();
 	world->sim = this; // Maybe make more secure?
 
-	idCarToControl = -1;  // The ID of the car that the user can control
+	numCars = 2; // Setting the number of cars
+	carToWatch = 1; // ID of car to watch
+	idCarToControl = 1;  // The ID of the car that the user can control
+
 	for (int i = 0; i < numCars; i++) {
 		Car* newCar = new Car(i);
 		newCar->setup("360", mSceneMgr, *world);
@@ -120,16 +121,20 @@ void Sim::keyPressed(const OIS::KeyEvent& ke) {
 	carInput->keyPressed(ke);
 
 	switch (ke.key) {
+	// Testing turns
 	case OIS::KC_1:
 		controllers[0]->turn(true,  50, 45);
 		break;
-
 	case OIS::KC_2:
 		controllers[0]->turn(false, 30);
 		break;
 
+	// Testing lane changes
 	case OIS::KC_3:
-		controllers[0]->laneChange(true, 3.7);
+		controllers[0]->laneChange(true,  3.7);
+		break;
+	case OIS::KC_4:
+		controllers[0]->laneChange(false, 3.7);
 		break;
 
 	default:

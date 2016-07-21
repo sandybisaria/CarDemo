@@ -31,7 +31,7 @@ TurnState::TurnState(ControllerInterface *interface, bool isLeftTurn, double tur
 
 BaseState* TurnState::update(float dt) {
 	double currDist = (mInterface->getCarPosition() - finalPoint).magnitude();
-	if (currDist < 1) { // So far, a 1m margin is really the best we can do
+	if (currDist < 0.1) { // So far, a 1m margin is really the best we can do
 		// There is also a small error in angle (maybe 5 degrees or less?)
 		std::cout << "Turn complete, angle error (rad) = " << mInterface->getAngle(finalDir, mInterface->getCarDirection())
 				  << std::endl;
@@ -39,7 +39,7 @@ BaseState* TurnState::update(float dt) {
 		return new ConstantState(mInterface, startSpeed, 0);
 	}
 	else if (currDist > lastDist) {
-		//May want to more intelligently handle a miscalculated turn
+		//May want to more intelligently handle an imperfect turn
 		std::cout << "Not quite perfect... off by " << currDist << " with angle error (rad) = "
 				  << mInterface->getAngle(finalDir, mInterface->getCarDirection()) << std::endl;
 
