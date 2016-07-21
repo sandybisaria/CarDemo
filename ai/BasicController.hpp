@@ -21,7 +21,7 @@ public:
 	void goToPoint(MathVector<double, 2> waypoint, double radius);
 	void setSpeed(double speed);
 	void setAngle(double angle);
-	void turn(double steerValue);
+	void turn(bool isLeftTurn, double turnRadius, double angle = 90); // Angle in degrees
 
 //---- Info methods
 	bool hasReachedTargetSpeed() { return reachedSpeed; }

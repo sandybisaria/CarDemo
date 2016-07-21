@@ -1,13 +1,17 @@
 #include "States.hpp"
 
+#include "predictSteering/predictSteering.h"
+
 //---- TurnState methods
-TurnState::TurnState(ControllerInterface *interface, bool isLeftTurn, double turnRadius)
+TurnState::TurnState(ControllerInterface *interface, bool isLeftTurn, double turnRadius, double angle)
  	: mInterface(interface) {
 	startSpeed = mInterface->getCarSpeed();
-	turn = getTurn(turnRadius, startSpeed) * (isLeftTurn ? -1.0 : 1.0); // Left (CCW) is negative for turning
+	double inputs[] = {startSpeed, turnRadius};
+	turn = predictSteering(inputs) * (isLeftTurn ? -1.0 : 1.0); // Left (CCW) is negative for turning
+//	turn = getTurn(turnRadius, startSpeed) * (isLeftTurn ? -1.0 : 1.0); // Left (CCW) is negative for turning
 
-	//TODO Should be passed as an argument
-	const double turnAngle = M_PI_2 * (isLeftTurn ? 1.0 : -1.0); // In geometry, left (CCW) is positive
+	angle = fabs(angle); // Ignore the sign of angle; only listen to isLeftTurn
+	const double turnAngle = (angle * M_PI / 180) * (isLeftTurn ? 1.0 : -1.0); // In geometry, left (CCW) is positive
 
 	const double distFinalPoint = turnRadius * M_SQRT2 * sqrt(1 - cos(turnAngle)); // Distance from start position to final point
 	MathVector<double, 2> vecFinalPoint, carDir = mInterface->getCarDirection();
@@ -25,8 +29,8 @@ TurnState::TurnState(ControllerInterface *interface, bool isLeftTurn, double tur
 BaseState* TurnState::update(float dt) {
 	double currDist = (mInterface->getCarPosition() - finalPoint).magnitude();
 	if (currDist < 1) {
-		std::cout << "Turn complete" << std::endl;
-		return new ConstantState(mInterface, startSpeed, mInterface->getAngle(finalDir, mInterface->getCarDirection()));
+		std::cout << "Turn complete" << std::endl; // There is... a small error in angle...
+		return new ConstantState(mInterface, startSpeed, 0/*mInterface->getAngle(finalDir, mInterface->getCarDirection())*/);
 	}
 	else if (currDist > lastDist) {
 		//TODO May want to more intelligently handle a miscalculated turn

@@ -42,6 +42,7 @@ void Sim::setup(Ogre::SceneManager* sceneMgr) {
 		controllers.push_back(bc);
 
 		//TODO Initial speed configuration would probably come from the scene
+		bc->setSpeed(10);
 
 		// For testing only (uncomment when needed)
 //		bc->setupDataCollection();
@@ -114,18 +115,19 @@ TerrainSurface* Sim::getTerrainSurface(std::string name) {
 void Sim::keyPressed(const OIS::KeyEvent& ke) {
 	carInput->keyPressed(ke);
 
-	if (numCars < 2) return;
 	switch (ke.key) {
-	case OIS::KC_NUMPAD0:
-		carToWatch = 0;
-		break;
-	case OIS::KC_NUMPAD1:
-		carToWatch = 1;
-		break;
+//	case OIS::KC_NUMPAD0:
+//		carToWatch = 0;
+//		break;
+//	case OIS::KC_NUMPAD1:
+//		carToWatch = 1;
+//		break;
 
 	case OIS::KC_1:
+		controllers[0]->turn(true,  50, 45);
 		break;
 	case OIS::KC_2:
+		controllers[0]->turn(false, 75);
 		break;
 
 	default:

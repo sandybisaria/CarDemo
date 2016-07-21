@@ -69,8 +69,8 @@ void BasicController::setAngle(double angle) {
 	currentState = new ConstantState(myInterface, targetSpeed, angle);
 }
 
-void BasicController::turn(double steerValue) {
-	currentState = new ConstantTurnState(myInterface, steerValue);
+void BasicController::turn(bool isLeftTurn, double turnRadius, double angle) {
+	currentState = new TurnState(myInterface, isLeftTurn, turnRadius, angle);
 }
 
 const std::vector<double>& BasicController::updateInputs(float dt) {

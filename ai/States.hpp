@@ -44,7 +44,8 @@ private:
 // Perform a turn left or right
 class TurnState : public BaseState {
 public:
-	TurnState(ControllerInterface* interface, bool isLeftTurn, double turnRadius);
+	// Angle passed in as degrees
+	TurnState(ControllerInterface* interface, bool isLeftTurn, double turnRadius, double angle = 90);
 	virtual ~TurnState() { }
 
 	virtual BaseState* update(float dt);
