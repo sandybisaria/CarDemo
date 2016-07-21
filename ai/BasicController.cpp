@@ -73,6 +73,10 @@ void BasicController::turn(bool isLeftTurn, double turnRadius, double angle) {
 	currentState = new TurnState(myInterface, isLeftTurn, turnRadius, angle);
 }
 
+void BasicController::laneChange(bool isLeft, double laneWidth) {
+	currentState = new LaneChangeState(myInterface, isLeft, laneWidth);
+}
+
 const std::vector<double>& BasicController::updateInputs(float dt) {
 	BaseState* nextState = currentState->update(dt);
 	if (nextState != NULL) {

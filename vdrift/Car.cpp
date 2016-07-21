@@ -95,8 +95,9 @@ void Car::handleInputs(const std::vector<double>& inputs) {
 	if (std::abs(inputs[CarInput::STEER_LEFT]) > std::abs(inputs[CarInput::STEER_RIGHT]))
 		steerValue = -inputs[CarInput::STEER_LEFT];
 	// 0.81 is due to "normal" (as opposed to "easy") sim
-	// 0.7 for asphalt, 1.0 otherwise TODO: Make dependent on terrain
-	dyn->setSteering(steerValue, 0.81 * 0.7);
+	// 0.7 for asphalt, 1.0 otherwise //TODO: Make dependent on terrain, or maybe get rid of this?
+	const double rangeMul = 0.81 * 0.7;
+	dyn->setSteering(steerValue, rangeMul);
 
 	int gearChange = 0;
 	if (inputs[CarInput::SHIFT_UP]   == 1.0) gearChange = (int)  1.0;

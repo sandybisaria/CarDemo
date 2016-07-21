@@ -1,7 +1,7 @@
 #include "States.hpp"
 
 WaypointState::WaypointState(ControllerInterface *interface, MathVector<double, 2> waypoint, double radius)
-	: mInterface(interface), mWaypoint(waypoint), mRadius(radius) {
+	: BaseState(interface), mWaypoint(waypoint), mRadius(radius) {
 }
 
 BaseState* WaypointState::update(float dt) {

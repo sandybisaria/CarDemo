@@ -22,6 +22,7 @@ public:
 	void setSpeed(double speed);
 	void setAngle(double angle);
 	void turn(bool isLeftTurn, double turnRadius, double angle = 90); // Angle in degrees
+	void laneChange(bool isLeft, double laneWidth);
 
 //---- Info methods
 	bool hasReachedTargetSpeed() { return reachedSpeed; }

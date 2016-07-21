@@ -4,10 +4,13 @@
 
 //---- TurnState methods
 TurnState::TurnState(ControllerInterface *interface, bool isLeftTurn, double turnRadius, double angle)
- 	: mInterface(interface) {
+ 	: BaseState(interface) {
 	startSpeed = mInterface->getCarSpeed();
+
 	double inputs[] = {startSpeed, turnRadius};
 	turn = predictSteering(inputs) * (isLeftTurn ? -1.0 : 1.0); // Left (CCW) is negative for turning
+	turn = clamp(turn, -1, 1); // Maybe give an error or something when attempting an impossible turn
+
 //	turn = getTurn(turnRadius, startSpeed) * (isLeftTurn ? -1.0 : 1.0); // Left (CCW) is negative for turning
 
 	angle = fabs(angle); // Ignore the sign of angle; only listen to isLeftTurn
@@ -28,14 +31,19 @@ TurnState::TurnState(ControllerInterface *interface, bool isLeftTurn, double tur
 
 BaseState* TurnState::update(float dt) {
 	double currDist = (mInterface->getCarPosition() - finalPoint).magnitude();
-	if (currDist < 1) {
-		std::cout << "Turn complete" << std::endl; // There is... a small error in angle...
-		return new ConstantState(mInterface, startSpeed, 0/*mInterface->getAngle(finalDir, mInterface->getCarDirection())*/);
+	if (currDist < 1) { // So far, a 1m margin is really the best we can do
+		// There is also a small error in angle (maybe 5 degrees or less?)
+		std::cout << "Turn complete, angle error (rad) = " << mInterface->getAngle(finalDir, mInterface->getCarDirection())
+				  << std::endl;
+
+		return new ConstantState(mInterface, startSpeed, 0);
 	}
 	else if (currDist > lastDist) {
-		//TODO May want to more intelligently handle a miscalculated turn
-		std::cout << "Not quite perfect... oh well" << std::endl;
-		return new ConstantState(mInterface, startSpeed, mInterface->getAngle(finalDir, mInterface->getCarDirection()));
+		//May want to more intelligently handle a miscalculated turn
+		std::cout << "Not quite perfect... off by " << currDist << " with angle error (rad) = "
+				  << mInterface->getAngle(finalDir, mInterface->getCarDirection()) << std::endl;
+
+		return new ConstantState(mInterface, startSpeed, 0); // If following a road, just go to the next waypoint...
 	}
 	else {
 		mInterface->setSteering(turn);
@@ -47,22 +55,22 @@ BaseState* TurnState::update(float dt) {
 	}
 }
 
-double TurnState::getTurn(double turnRadius, double speed) {
-	// Rough nonlinear regression based on collected data-points
-	const double a = 0.0821,
-				 b = 0.8608,
-				 c = 0.01923,
-				 d = 5.415,
-				 e = 6.983;
-	const double x = speed, y = turnRadius;
-
-	const double turn = a * (b*y + exp(c*x + d)) / (y + e);
-	return clamp(turn, -1.0, 1.0);
-}
+//double TurnState::getTurn(double turnRadius, double speed) {
+//	// Rough nonlinear regression based on collected data-points
+//	const double a = 0.0821,
+//				 b = 0.8608,
+//				 c = 0.01923,
+//				 d = 5.415,
+//				 e = 6.983;
+//	const double x = speed, y = turnRadius;
+//
+//	const double turn = a * (b*y + exp(c*x + d)) / (y + e);
+//	return clamp(turn, -1.0, 1.0);
+//}
 
 //---- ConstantTurnState methods
 ConstantTurnState::ConstantTurnState(ControllerInterface *interface, double turn, double startSpeed)
-	: mInterface(interface) {
+	: BaseState(interface) {
 	this->turn = turn;
 	this->startSpeed = (startSpeed == 0 ? mInterface->getCarSpeed() : startSpeed);
 

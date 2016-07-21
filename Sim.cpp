@@ -4,7 +4,6 @@ Sim::Sim(App* app)
 	: mSceneMgr(0), scene(0), mApp(app),
 	  world(0), carInput(0),
 	  numCars(1), // Setting the number of cars
-	  idCarToControl(-1/*INVALID ID ON PURPOSE*/), // The ID of the car that the user can control
 	  carToWatch(0), // ID of car to watch
 	  frameRate(1.f / 60.f), targetTime(0),
 	  debugDraw(NULL) {
@@ -32,6 +31,7 @@ void Sim::setup(Ogre::SceneManager* sceneMgr) {
 	world = new CollisionWorld();
 	world->sim = this; // Maybe make more secure?
 
+	idCarToControl = -1;  // The ID of the car that the user can control
 	for (int i = 0; i < numCars; i++) {
 		Car* newCar = new Car(i);
 		newCar->setup("360", mSceneMgr, *world);
@@ -88,6 +88,8 @@ void Sim::update(float dt) {
 }
 
 Ogre::Vector3 Sim::getCameraPosition() {
+	if (carToWatch >= cars.size()) return Ogre::Vector3::ZERO;
+
 	Ogre::Vector3 pos = cars[carToWatch]->getPosition();
 	pos += 2 * Ogre::Vector3::UNIT_Y; // Lift camera above car
 	pos -= 8 * Axes::vectorToOgre(cars[carToWatch]->getForwardVector()); // Move behind car
@@ -96,6 +98,8 @@ Ogre::Vector3 Sim::getCameraPosition() {
 }
 
 Ogre::Quaternion Sim::getCameraOrientation() {
+	if (carToWatch >= cars.size()) return Ogre::Quaternion::IDENTITY;
+
 	Ogre::Quaternion orient = cars[carToWatch]->getOrientation();
 
 	Ogre::Vector3 downVector = Axes::vectorToOgre(cars[carToWatch]->getDownVector());
@@ -116,18 +120,16 @@ void Sim::keyPressed(const OIS::KeyEvent& ke) {
 	carInput->keyPressed(ke);
 
 	switch (ke.key) {
-//	case OIS::KC_NUMPAD0:
-//		carToWatch = 0;
-//		break;
-//	case OIS::KC_NUMPAD1:
-//		carToWatch = 1;
-//		break;
-
 	case OIS::KC_1:
 		controllers[0]->turn(true,  50, 45);
 		break;
+
 	case OIS::KC_2:
-		controllers[0]->turn(false, 75);
+		controllers[0]->turn(false, 30);
+		break;
+
+	case OIS::KC_3:
+		controllers[0]->laneChange(true, 3.7);
 		break;
 
 	default:

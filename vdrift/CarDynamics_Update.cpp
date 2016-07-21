@@ -70,7 +70,6 @@ void CarDynamics::tick(double dt) {
 	//TODO Technically the mass should update...
 }
 
-
 void CarDynamics::synchronizeChassis() {
 	chassis->setLinearVelocity(toBulletVector(body.getVelocity()));
 	chassis->setAngularVelocity(toBulletVector(body.getAngularVelocity()));

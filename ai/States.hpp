@@ -6,10 +6,15 @@
 
 #include <queue>
 
+// Base class for all states
 class BaseState {
 public:
+	BaseState(ControllerInterface* interface) : mInterface(interface) { };
 	virtual ~BaseState() { };
 	virtual BaseState* update(float dt) { return NULL; };
+
+protected:
+	ControllerInterface* mInterface;
 };
 
 // Maintain a given velocity and direction
@@ -21,7 +26,6 @@ public:
 	virtual BaseState* update(float dt);
 
 private:
-	ControllerInterface* mInterface;
 	double mSpeed;
 	double mAngle;
 };
@@ -36,7 +40,6 @@ public:
 	virtual BaseState* update(float dt);
 
 private:
-	ControllerInterface* mInterface;
 	MathVector<double, 2> mWaypoint;
 	double mRadius;
 };
@@ -51,11 +54,7 @@ public:
 	virtual BaseState* update(float dt);
 
 private:
-	ControllerInterface* mInterface;
-
 	double turn, startSpeed;
-	static double getTurn(double turnRadius, double speed);
-
 	MathVector<double, 2> finalPoint, finalDir;
 	double lastDist;
 };
@@ -72,11 +71,23 @@ public:
 	double getAverageRadius() { return (radiusX + radiusY) / 2; }
 
 private:
-	ControllerInterface* mInterface;
-
 	double turn, startSpeed;
 
 	// For debugging and testing
 	bool canHaveLooped, looped; MathVector<double, 2> startDir;
 	double minX, minY, maxX, maxY, radiusX, radiusY;
+};
+
+// Perform a lane change
+class LaneChangeState : public BaseState {
+public:
+	LaneChangeState(ControllerInterface* interface, bool isLeft, double laneWidth);
+	virtual ~LaneChangeState() { }
+
+	virtual BaseState* update(float dt);
+
+private:
+	bool mIsLeft, halfwayDone;
+	double theta, radius, startSpeed;
+	TurnState* currState;
 };
