@@ -67,9 +67,10 @@ public:
 		setFromCorners(min, max);
 	}
 
-	struct Ray {
+	class Ray {
+	public:
 		Ray(const MathVector<T, 3>& newOrig, const MathVector<T, 3>& newDir, T newSegLen)
-			: orig(newOrig), dir(newDir), segLen(newSegLen) {}
+			: orig(newOrig), dir(newDir), segLen(newSegLen) { }
 
 		MathVector<T, 3> orig, dir;
 		T segLen;

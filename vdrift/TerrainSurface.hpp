@@ -19,7 +19,7 @@ public:
 	std::string tireName;
 	CarTire* tire;
 
-	static CarTire* TIRE_DEFAULT; // Assigned during App::loadSurfaces
+//	static CarTire* TIRE_DEFAULT; // Assigned during App::loadSurfaces
 
 	TerrainSurface()
 		: friction(1.0f), frictionX(1.0f), frictionY(1.0f),

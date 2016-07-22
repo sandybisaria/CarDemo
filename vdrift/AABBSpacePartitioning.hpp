@@ -3,6 +3,8 @@
 #include "AABB.hpp"
 #include "MathVector.hpp"
 
+#include <list>
+
 template <typename DATATYPE>
 class AABBSpacePartitioningNode {
 public:

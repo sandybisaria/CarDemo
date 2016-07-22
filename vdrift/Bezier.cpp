@@ -180,6 +180,18 @@ bool Bezier:: collideSubDivQuadSimpleNorm(const MathVector<float, 3>& origin, co
 	}
 }
 
+void Bezier::readFrom(std::istream &file) {
+	assert(file);
+
+	for (int x = 0; x < 4; x++) {
+		for (int y = 0; y < 4; y++) {
+			file >> points[x][y][0];
+			file >> points[x][y][1];
+			file >> points[x][y][2];
+		}
+	}
+}
+
 void Bezier::reverse() {
 	MathVector<float, 3> oldpoints[ARR_SIZE][ARR_SIZE];
 

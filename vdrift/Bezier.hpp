@@ -3,7 +3,7 @@
 #include "MathVector.hpp"
 #include "AABB.hpp"
 
-#include <ostream>
+#include <iostream>
 #include <cassert>
 #include <cmath>
 #define _USE_MATH_DEFINES
@@ -40,6 +40,8 @@ public:
 								 MathVector<float, 3>& outtri) const;
 	bool collideSubDivQuadSimpleNorm(const MathVector<float, 3>& origin, const MathVector<float, 3>& direction,
 									 MathVector<float, 3>&outtri, MathVector<float, 3>& normal) const;
+
+	void readFrom(std::istream &file);
 
 	// Flip points on both axes
 	void reverse();
