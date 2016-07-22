@@ -65,6 +65,7 @@ file(GLOB HDRS
 	terrain/*.hpp
 	ai/*.hpp
 	ai/predictSteering/*.hpp
+	road/*.hpp
 )
 
 # Source files
@@ -75,6 +76,7 @@ file(GLOB SRCS
 	terrain/*.cpp
 	ai/*.cpp
 	ai/predictSteering/*.cpp
+	road/*.cpp
 )
 
 add_executable(CarDemo ${HDRS} ${SRCS})
