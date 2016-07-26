@@ -117,16 +117,45 @@ material 3S_glass
 {
 	parent car_glass2
 	diffuseMap 3S_glass.png
+	ambient 0.5607843399047852 0.5960784554481506 0.6235294342041016
+	diffuse 0.4486274786088984 0.4768627714643294 0.49882355479633134
+	specular 0.4490196406841278 0.4490196406841278 0.4490196406841278
+	cull_hardware clockwise
 }
 material 3S_interior
 {
 	parent car_interior
 	diffuseMap 3S_interior.png
+	ambient 0.02910086326301098 0.02910086326301098 0.02910086326301098
+	diffuse 0.023280690957318106 0.023280690957318106 0.023280690957318106
+	specular 0.5 0.5 0.5
+	cull_hardware clockwise
 }
 material 3S_wheel
 {
 	parent car_wheel
 	diffuseMap 3S_wheel.png
+	ambient 0.0 0.0 0.0
+	diffuse 0.0 0.0 0.0
+	specular 0.10000000149011612 0.10000000149011612 0.10000000149011612
+	cull_hardware clockwise
+}
+
+//  CAD
+material CAD_glass
+{
+	parent car_glass2
+	diffuseMap CAD_glass.png
+}
+material CAD_interior
+{
+	parent car_interior
+	diffuseMap CAD_interior.png
+}
+material CAD_wheel
+{
+	parent car_wheel
+	diffuseMap CAD_wheel.png
 }
 
 //  CT

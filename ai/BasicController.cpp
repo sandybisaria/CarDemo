@@ -120,7 +120,7 @@ void BasicController::updateSpeed(float dt) {
 
 	if (dt != 0) {
 		double acc = (speed - lastSpeed) / dt;
-		if (fabs(acc) < 0.01 && !reachedSpeed && fabs(eSpeed) < 0.1) { reachedSpeed = true; }
+		if (fabs(acc) < 0.01 && fabs(dLastESpeed) < 5 && !reachedSpeed && fabs(eSpeed) < 0.1) { reachedSpeed = true; }
 	}
 	lastSpeed = speed;
 }
@@ -179,8 +179,8 @@ MathVector<double, 2> BasicController::toFlatVector(MathVector<double, 3> vec, b
 }
 
 void BasicController::setupDataCollection() {
-	double minSpeed = 1, maxSpeed = 30, speedStep = 1;
-	double minTurn = 0.05, maxTurn = 1.00, turnStep = 0.01;
+	double minSpeed = 1, maxSpeed = 35, speedStep = 0.5;
+	double minTurn = 0.10, maxTurn = 1.00, turnStep = 0.01;
 
 	for (double speed = maxSpeed; speed >= minSpeed; speed -= speedStep) { speeds.push_back(speed); }
 	for (double turn = maxTurn; turn >= minTurn; turn -= turnStep) { turns.push_back(turn); turns.push_back(-turn); }
@@ -205,12 +205,18 @@ void BasicController::updateDataCollection(float dt) {
 		}
 	} else if (testStage == WAIT_STEER) {
 		ConstantTurnState* cts = (ConstantTurnState*) currentState;
-		if (cts->hasLooped() || timeElapsed > 60 * (50 - speeds[currentSpeed]) ) {
-			dataFile << mCar->getSpeedMPS() << " " << turns[currentTurn] << " " << cts->getAverageRadius() << std::endl;
-
+		bool tooMuchTime = timeElapsed > 60 * (50 - speeds[currentSpeed]);
+		if (cts->hasLooped() || tooMuchTime) {
+			if (tooMuchTime) {
+				std::cout << "TIMEOUT..." << std::endl;
+			} else {
+				// Store the steering angle instead... (that way, rangeMul can change and our algorithm will work still)
+				double steerAngle = turns[currentTurn] * mCar->getRangeMul() * mCar->getMaxAngle();
+				dataFile << mCar->getSpeedMPS() << " " << steerAngle << " " << cts->getAverageRadius()
+						 << std::endl;
+			}
 			currentTurn++;
-			// Turning radii above 100m very rare... but want to do both left and right turns
-			if (currentTurn >= turns.size() || (cts->getAverageRadius() > 100 && turns[currentTurn] < 0)) {
+			if (currentTurn >= turns.size() /*|| (cts->getAverageRadius() > 100 && turns[currentTurn] < 0)*/) {
 				currentTurn = 0;
 				currentSpeed++;
 

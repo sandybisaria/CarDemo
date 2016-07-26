@@ -90,7 +90,8 @@ public:
 	double getWheelSteerAngle(WheelPosition wp) const { return wheels[wp].getSteerAngle(); }
 
 	// Set steering angle to "val", where -1.0 = maximum left and 1.0 = maximum right
-	void setSteering(const double val, const double rangeMul); //TODO Determine typical rangeMul in-game
+	void setSteering(const double val, const double rangeMul);
+	double getMaxAngle() const { return maxAngle; }
 
 	// Collision params
 	float collR, collR2m, collW, collH,

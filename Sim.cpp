@@ -29,13 +29,13 @@ void Sim::setup(Ogre::SceneManager* sceneMgr) {
 	world = new CollisionWorld();
 	world->sim = this; // Maybe make more secure?
 
-	numCars = 2; // Setting the number of cars
-	carToWatch = 1; // ID of car to watch
-	idCarToControl = 1;  // The ID of the car that the user can control
+	numCars = 1; // Setting the number of cars
+	carToWatch = 0; // ID of car to watch
+	idCarToControl = 0;  // The ID of the car that the user can control
 
 	for (int i = 0; i < numCars; i++) {
 		Car* newCar = new Car(i);
-		newCar->setup("360", mSceneMgr, *world);
+		newCar->setup("CAD", mSceneMgr, *world);
 
 		cars.push_back(newCar);
 
@@ -80,10 +80,10 @@ void Sim::update(float dt) {
 		cars[i]->handleInputs(*inputs);
 	}
 
-//	if (debugDraw) {
-//		debugDraw->setDebugMode(1);
-//		debugDraw->step();
-//	}
+	if (debugDraw) {
+		debugDraw->setDebugMode(1);
+		debugDraw->step();
+	}
 
 	//TODO May want to see how Stuntrally "actually" loops
 }

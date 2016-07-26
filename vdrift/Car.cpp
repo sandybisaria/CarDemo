@@ -16,7 +16,7 @@
 Car::Car(int id)
 	: mId(id), mSceneMgr(0), mainNode(0),
 	  dyn(0),
-	  carColor(0, 1, 0) {
+	  carColor(1, 1, 1) {
 	setNumWheels(DEF_WHEEL_COUNT);
 }
 
@@ -62,6 +62,10 @@ double Car::getSpeedMPS() {
 	return dyn->getSpeedMPS();
 }
 
+double Car::getMaxAngle() const {
+	return dyn->getMaxAngle();
+}
+
 MathVector<double, 3> Car::getDownVector() {
 	return dyn->getDownVector();
 }
@@ -94,9 +98,6 @@ void Car::handleInputs(const std::vector<double>& inputs) {
 	double steerValue = inputs[CarInput::STEER_RIGHT];
 	if (std::abs(inputs[CarInput::STEER_LEFT]) > std::abs(inputs[CarInput::STEER_RIGHT]))
 		steerValue = -inputs[CarInput::STEER_LEFT];
-	// 0.81 is due to "normal" (as opposed to "easy") sim
-	// 0.7 for asphalt, 1.0 otherwise //TODO: Make dependent on terrain, or maybe get rid of this?
-	const double rangeMul = 0.81 * 0.7;
 	dyn->setSteering(steerValue, rangeMul);
 
 	int gearChange = 0;
@@ -211,9 +212,10 @@ void Car::loadModel() {
 		forDeletion(wheelNodes[w]);
 		wheelNodes[w]->attachObject(loadPart("wheel", w));
 
-		brakeNodes[w] = wheelNodes[w]->createChildSceneNode();
-		forDeletion(brakeNodes[w]);
-		brakeNodes[w]->attachObject(loadPart("brake", w));
+		// The CAD model does not have separate brake meshes; rather than specifically check, just don't render any brakes... (sorry for laziness)
+//		brakeNodes[w] = wheelNodes[w]->createChildSceneNode();
+//		forDeletion(brakeNodes[w]);
+//		brakeNodes[w]->attachObject(loadPart("brake", w));
 	}
 
 	loadMaterials();
@@ -278,7 +280,7 @@ Ogre::Entity* Car::loadPart(std::string partType, int partId) {
 void Car::setNumWheels(int nw) {
 	numWheels = nw;
 	wheelNodes.resize(numWheels);
-	brakeNodes.resize(numWheels);
+//	brakeNodes.resize(numWheels);
 }
 
 void Car::changeColor() {
@@ -330,21 +332,21 @@ void Car::updateModel() {
 	}
 
 	// Brakes
-	for (int w = 0; w < numWheels; w++) {
-		if (brakeNodes[w]) {
-			WheelPosition wp; wp = WheelPosition(w);
-			brakeNodes[w]->_setDerivedOrientation(mainNode->getOrientation());
-
-			// This transformation code is needed so the brake mesh can have the same alignment as the wheel mesh
-			brakeNodes[w]->yaw(Ogre::Degree(-90), Ogre::Node::TS_LOCAL);
-			if (w % 2 == 1) brakeNodes[w]->setScale(-1, 1, 1);
-
-			brakeNodes[w]->pitch(Ogre::Degree(180), Ogre::Node::TS_LOCAL);
-
-			// Turn only front wheels
-			if (w < 2) brakeNodes[w]->yaw(-Ogre::Degree(dyn->getWheelSteerAngle(wp)));
-		}
-	}
+//	for (int w = 0; w < numWheels; w++) {
+//		if (brakeNodes[w]) {
+//			WheelPosition wp; wp = WheelPosition(w);
+//			brakeNodes[w]->_setDerivedOrientation(mainNode->getOrientation());
+//
+//			// This transformation code is needed so the brake mesh can have the same alignment as the wheel mesh
+//			brakeNodes[w]->yaw(Ogre::Degree(-90), Ogre::Node::TS_LOCAL);
+//			if (w % 2 == 1) brakeNodes[w]->setScale(-1, 1, 1);
+//
+//			brakeNodes[w]->pitch(Ogre::Degree(180), Ogre::Node::TS_LOCAL);
+//
+//			// Turn only front wheels
+//			if (w < 2) brakeNodes[w]->yaw(-Ogre::Degree(dyn->getWheelSteerAngle(wp)));
+//		}
+//	}
 }
 
 void Car::updateLightMap() {

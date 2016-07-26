@@ -2,13 +2,13 @@
 
 #include "shiny/Platforms/Ogre/OgrePlatform.hpp"
 #include "shiny/Platforms/Ogre/OgreMaterial.hpp"
-//#include "shiny/Main/PropertyBase.hpp"
 
 #include <OgreConfigFile.h>
 #include <OgreRenderWindow.h>
 
 #include "App.hpp"
-//#include "util/Axes.hpp"
+
+//#define FOLLOW_CAR
 
 App::App(Ogre::Root* root)
 	: mShutDown(false), mFactory(0), mScene(0), mSim(0),
@@ -337,33 +337,30 @@ bool App::frameRenderingQueued(const Ogre::FrameEvent& evt) {
 
 // To control the main camera
 void App::updateCamera(const Ogre::FrameEvent& evt) {
-//	Ogre::Vector3 translation(Ogre::Vector3::ZERO);
-//	if (mKeyboard->isKeyDown(OIS::KC_W)) {
-//		translation += Ogre::Vector3::NEGATIVE_UNIT_Z;
-//	} if (mKeyboard->isKeyDown(OIS::KC_S)) {
-//		translation += Ogre::Vector3::UNIT_Z;
-//	} if (mKeyboard->isKeyDown(OIS::KC_E)) {
-//		translation += Ogre::Vector3::UNIT_Y;
-//	} if (mKeyboard->isKeyDown(OIS::KC_Q)) {
-//		translation += Ogre::Vector3::NEGATIVE_UNIT_Y;
-//	}
-////	translation *= 0.10;
-//	mCameraNode->translate(translation, Ogre::Node::TS_LOCAL);
+#ifndef FOLLOW_CAR
+	Ogre::Vector3 translation(Ogre::Vector3::ZERO);
+	if (mKeyboard->isKeyDown(OIS::KC_W)) {
+		translation += Ogre::Vector3::NEGATIVE_UNIT_Z;
+	} if (mKeyboard->isKeyDown(OIS::KC_S)) {
+		translation += Ogre::Vector3::UNIT_Z;
+	} if (mKeyboard->isKeyDown(OIS::KC_E)) {
+		translation += Ogre::Vector3::UNIT_Y;
+	} if (mKeyboard->isKeyDown(OIS::KC_Q)) {
+		translation += Ogre::Vector3::NEGATIVE_UNIT_Y;
+	}
+	translation *= 0.10;
+	mCameraNode->translate(translation, Ogre::Node::TS_LOCAL);
 
-	//FIXME The idea is to put the camera "behind" the car; this probably requires math
-//	pos += 3 * Ogre::Vector3::UNIT_Y;
-//	pos -= 10 * Ogre::Vector3::UNIT_X;
+	if (mKeyboard->isKeyDown(OIS::KC_A)) {
+		mCameraNode->yaw(Ogre::Radian( 0.005f), Ogre::Node::TS_LOCAL);
+	} if (mKeyboard->isKeyDown(OIS::KC_D)) {
+		mCameraNode->yaw(Ogre::Radian(-0.005f), Ogre::Node::TS_LOCAL);
+	}
+
+#else
 	mCameraNode->setPosition(mSim->getCameraPosition());
 	mCameraNode->setOrientation(mSim->getCameraOrientation());
-
-//	if (mKeyboard->isKeyDown(OIS::KC_A)) {
-//		mCameraNode->yaw(Ogre::Radian(0.005), Ogre::Node::TS_LOCAL);
-//	} if (mKeyboard->isKeyDown(OIS::KC_D)) {
-//		mCameraNode->yaw(Ogre::Radian(-0.005), Ogre::Node::TS_LOCAL);
-//	}
-
-//	std::cout << mSim->getCameraPosition() << std::endl;
-//	std::cout << mSim->getCameraOrientation() << std::endl;
+#endif
 }
 
 void App::windowClosed(Ogre::RenderWindow* rw) {
