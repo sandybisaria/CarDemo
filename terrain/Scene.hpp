@@ -1,6 +1,7 @@
 #pragma once
 
 class Sim;
+class Road;
 
 #include "../Sim.hpp"
 
@@ -36,4 +37,7 @@ private:
 
 	Ogre::TerrainGlobalOptions* mTerrainGlobals;
 	Ogre::TerrainGroup* mTerrainGroup;
+
+	void setupRoad();
+	Road* mRoad;
 };

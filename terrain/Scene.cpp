@@ -1,8 +1,11 @@
 #include "Scene.hpp"
 
+#include "../road/Road.hpp"
+
 Scene::Scene(Ogre::SceneManager* sceneMgr)
-	: mSim(NULL), mSceneMgr(sceneMgr), sun(0),
-	  mTerrainGlobals(0), mTerrainGroup(0) {
+	: mSim(0), mSceneMgr(sceneMgr), sun(0),
+	  mTerrainGlobals(0), mTerrainGroup(0),
+	  mRoad(0) {
 	terrSize = 513; worldSize = 10000.0;
 }
 
@@ -27,19 +30,19 @@ void Scene::setupTerrain(Sim* sim) {
 	sun->setSpecularColour(Ogre::ColourValue(0.4, 0.4, 0.4));
 
 	mTerrainGlobals = OGRE_NEW Ogre::TerrainGlobalOptions();
-
 	mTerrainGroup = OGRE_NEW Ogre::TerrainGroup(mSceneMgr, Ogre::Terrain::ALIGN_X_Z, terrSize, worldSize);
 
 	configureTerrainDefaults();
 	defineTerrain();
 
 	mTerrainGroup->loadAllTerrains(true);
-
 	mTerrainGroup->freeTemporaryResources();
 
 	mSceneMgr->setSkyDome(true, "CloudySky");
 
 	createBulletTerrain();
+
+	setupRoad();
 }
 
 void Scene::configureTerrainDefaults() {
@@ -111,5 +114,18 @@ void Scene::createBulletTerrain() {
 
 		mSim->getCollisionWorld()->getDynamicsWorld()->addCollisionObject(col);
 		mSim->getCollisionWorld()->addShape(shp);
+	}
+}
+
+void Scene::setupRoad() {
+	mRoad = new Road();
+
+	Ogre::Terrain* baseTerrain = mTerrainGroup->getTerrain(0, 0);
+	mRoad->setup(baseTerrain, mSceneMgr);
+
+	Ogre::String roadFile = "../data/scene/road.xml";
+	if (!mRoad->loadFile(roadFile)) {
+		std::cout << "Road failed to load" << std::endl;
+		return;
 	}
 }

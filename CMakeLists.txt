@@ -18,12 +18,11 @@ set(CMAKE_CXX_FLAGS_DEBUG  "${CMAKE_CXX_FLAGS_DEBUG} -O0")
 
 #set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/dist")
 
-# Update as needed
 find_package(OGRE REQUIRED)
 find_package(OIS REQUIRED)
 find_package(BULLET REQUIRED)
 
-# If on, compile the unit tests. The executable file will solely execute these tests
+# If on, compile the unit tests. The executable file will solely execute these tests.
 option(build_gtests "Build and run gtests" OFF)
 if (build_gtests)
 	find_package(GTest REQUIRED)
@@ -56,6 +55,9 @@ list(APPEND EXTLIBS "shiny.OgrePlatform")
 
 add_subdirectory(btOgre)
 list(APPEND EXTLIBS "btOgre")
+
+add_subdirectory(tinyxml)
+list(APPEND EXTLIBS "tinyxml")
 
 # Header files
 file(GLOB HDRS
@@ -91,25 +93,4 @@ target_link_libraries(CarDemo
 #	${CMAKE_THREAD_LIBS_INIT} # Needed for gtest?
 )
 
-## Make binary directories
-#file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/dist/bin)
-#file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/dist/data)
-#file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/dist/config)
-#
-## Execute in the binary directory
-#set(EXECUTABLE_OUTPUT_PATH "${PROJECT_BINARY_DIR}/dist/bin")
-#
-#install(TARGETS CarDemo
-#	RUNTIME DESTINATION bin
-#	CONFIGURATIONS ALL
-#)
-#
-#install(DIRECTORY ${CMAKE_SOURCE_DIR}/data
-#	DESTINATION ./
-#	CONFIGURATIONS Release RelWithDebInfo Debug
-#)
-#
-#install(DIRECTORY ${CMAKE_SOURCE_DIR}/config
-#	DESTINATION ./
-#	CONFIGURATIONS Release RelWithDebInfo Debug
-#)
+# If possible, make the executable in a bin/build folder inside this root directory
