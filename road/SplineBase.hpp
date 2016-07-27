@@ -7,6 +7,7 @@
 
 // Helper methods
 class TerrUtil {
+public:
 	static float getAngle(float x, float y);
 	static float getAngleAt(Ogre::Terrain* terr, float x, float z, float s);
 	static Ogre::Vector3 getNormalAt(Ogre::Terrain* terr, float x, float z, float s);

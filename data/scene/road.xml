@@ -1,6 +1,6 @@
 <Road>
 	<mtr name="Asphalt" />
-	<P pos="0 0 90" w="12" onTerr="1"/>
-	<P pos="65 0 65" w="12" onTerr="1" />
-	<P pos="90 0 0" w="12" onTerr="1" />
+	<P pos="0 0 90" w="12" onTerr="1" a="90" aT="0" />
+	<P pos="65 0 65" w="12" onTerr="1" a="135" aT="0" />
+	<P pos="90 0 0" w="12" onTerr="1" a="-180" aT="0" />
 </Road>

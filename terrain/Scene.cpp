@@ -128,4 +128,7 @@ void Scene::setupRoad() {
 		std::cout << "Road failed to load" << std::endl;
 		return;
 	}
+
+	//PSSM materials?
+	mRoad->rebuildRoadGeometry();
 }
