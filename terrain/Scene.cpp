@@ -118,7 +118,7 @@ void Scene::createBulletTerrain() {
 }
 
 void Scene::setupRoad() {
-	mRoad = new Road();
+	mRoad = new Road(mSim);
 
 	Ogre::Terrain* baseTerrain = mTerrainGroup->getTerrain(0, 0);
 	mRoad->setup(baseTerrain, mSceneMgr);

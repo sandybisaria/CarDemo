@@ -1,17 +1,25 @@
-#include <Ogre.h>
 #include "Road.hpp"
+
+#include "../Sim.hpp"
 
 #include "../tinyxml/tinyxml2.h"
 
-Road::Road() {
+#include <Ogre.h>
+
+Road::Road(Sim* sim)
+	: idStr(0),
+      mSim(sim) {
 	//Init some variables
 	setDefault();
 }
 
 void Road::setDefault() {
 	//Reset some variables
-	g_LenDim0 = 1.f;
+	g_LenDim0 = 1.f; g_iWidthDiv0 = 8;
 	g_SkirtLen = 1.f; g_SkirtH = 0.12f;
+	g_tcMul = 0.1f;
+	g_Height = 0.1f;
+	g_MergeLen = 180.f; g_LodPntLen = 10.f;
 }
 
 void Road::setup(Ogre::Terrain* terrain, Ogre::SceneManager* sceneMgr) {
@@ -37,16 +45,29 @@ bool Road::loadFile(Ogre::String fileName) {
 	// Load material
 	n = root->FirstChildElement("mtr");
 	if (n) {
-		a = n->Attribute("road"); // Valid road material names can be found in surfaces.cfg
-		if (a) { roadMtr = Ogre::String(a); }
+		// Valid road material names can be found in surfaces.cfg
+		a = n->Attribute("road"); if (a) { roadMtr = Ogre::String(a); }
 	}
 	// Skipping wall/pipe/col materials
 
 	n = root->FirstChildElement("dim");
 	if (n) {
 		a = n->Attribute("lenDim"); if (a) { g_LenDim0 = Ogre::StringConverter::parseReal(a); }
+		a = n->Attribute("widthSteps"); if (a) { g_iWidthDiv0 = Ogre::StringConverter::parseInt(a); }
+
+		a = n->Attribute("tcMul"); if (a) { g_tcMul = Ogre::StringConverter::parseReal(a); }
+
+		a = n->Attribute("heightOfs"); if (a) { g_Height = Ogre::StringConverter::parseReal(a); }
+	}
+
+	n = root->FirstChildElement("mrg");
+	if (n) {
 		a = n->Attribute("skirtLen"); if (a) { g_SkirtLen = Ogre::StringConverter::parseReal(a); }
 		a = n->Attribute("skirtH"); if (a) { g_SkirtH = Ogre::StringConverter::parseReal(a); }
+
+		a = n->Attribute("mergeLen"); if (a) { g_MergeLen = Ogre::StringConverter::parseReal(a); }
+		a = n->Attribute("lodPntLen"); if (a) { g_LodPntLen = Ogre::StringConverter::parseReal(a); }
+
 	}
 
 	// Load road points
@@ -98,7 +119,7 @@ bool Road::rebuildRoadGeometry() {
 
 	// LOD (will try to operate under a single LOD (zero); thus no for-loop
 	DataLod dl;
-	prepassLod(dr, DL0, dl, 0); // LOD of zero TODO FINISH
+	prepassLod(dr, DL0, dl, 0); // LOD of zero
 
 	DataLodMesh dlm;
 
@@ -126,6 +147,83 @@ void Road::insert(insertPos ip) {
 	}
 
 	recalculateTangents();
+}
+
+void Road::createMesh(Ogre::SubMesh *subMesh, Ogre::AxisAlignedBox &aaBox, const std::vector<Ogre::Vector3> &pos,
+					  const std::vector<Ogre::Vector3> &norm, const std::vector<Ogre::Vector2> &tcs,
+					  const std::vector<Ogre::uint16> &idx, Ogre::String sMtrName) {
+	size_t i, si = pos.size();
+	if (si == 0) { return; } // Error
+
+	subMesh->useSharedVertices = false;
+	subMesh->vertexData = new Ogre::VertexData;
+	subMesh->vertexData->vertexStart = 0;
+	subMesh->vertexData->vertexCount = si;
+
+	Ogre::VertexDeclaration* decl = subMesh->vertexData->vertexDeclaration;
+	size_t offset = 0;
+	offset += decl->addElement(0, offset, Ogre::VET_FLOAT3, Ogre::VES_POSITION).getSize();
+	offset += decl->addElement(0, offset, Ogre::VET_FLOAT3, Ogre::VES_NORMAL).getSize();
+	offset += decl->addElement(0, offset, Ogre::VET_FLOAT2, Ogre::VES_TEXTURE_COORDINATES).getSize();
+	// Skipping clr
+
+	Ogre::HardwareVertexBufferSharedPtr vbuffer = Ogre::HardwareBufferManager::getSingleton().createVertexBuffer(
+		decl->getVertexSize(0), si, Ogre::HardwareBuffer::HBU_STATIC);
+	float* vp = static_cast<float*> (vbuffer->lock(Ogre::HardwareBuffer::HBL_DISCARD));
+
+	// No clr
+	for (i = 0; i < si; i++) {
+		const Ogre::Vector3& p = pos[i];
+		*vp++ = p.x;  *vp++ = p.y;  *vp++ = p.z; aaBox.merge(p);
+		const Ogre::Vector3& n = norm[i];
+		*vp++ = n.x;  *vp++ = n.y;  *vp++ = n.z;
+		*vp++ = tcs[i].x;  *vp++ = tcs[i].y;
+	}
+	vbuffer->unlock();
+	subMesh->vertexData->vertexBufferBinding->setBinding(0, vbuffer);
+
+	// Index
+	Ogre::IndexData* id = subMesh->indexData;
+	id->indexCount = idx.size(); id->indexStart = 0;
+	id->indexBuffer = Ogre::HardwareBufferManager::getSingleton().createIndexBuffer(
+		Ogre::HardwareIndexBuffer::IT_16BIT, id->indexCount, Ogre::HardwareBuffer::HBU_STATIC);
+	Ogre::uint16* ip = static_cast<Ogre::uint16*> (id->indexBuffer->lock(Ogre::HardwareBuffer::HBL_DISCARD));
+
+	for (i = 0; i < idx.size(); i++) { *ip++ = idx[i]; }
+
+	id->indexBuffer->unlock();
+	subMesh->setMaterialName(sMtrName);
+}
+
+void Road::addMesh(Ogre::MeshPtr mesh, Ogre::String sMesh, const Ogre::AxisAlignedBox &aaBox, Ogre::Entity **pEnt,
+				   Ogre::SceneNode **pNode, Ogre::String sEnd) {
+	mesh->_setBounds(aaBox);
+	mesh->_setBoundingSphereRadius((aaBox.getMaximum() - aaBox.getMinimum()).length() / 2.f);
+	mesh->load();
+
+	unsigned short src, dest;
+	if (!mesh->suggestTangentVectorBuildParams(Ogre::VES_TANGENT, src, dest)) {
+		mesh->buildTangentVectors(Ogre::VES_TANGENT, src, dest);
+	}
+
+	*pEnt = mSceneMgr->createEntity("rd.ent" + sEnd, sMesh);
+	*pNode = mSceneMgr->getRootSceneNode()->createChildSceneNode("rd.node" + sEnd);
+	(*pNode)->attachObject(*pEnt);
+	(*pEnt)->setVisible(false); (*pEnt)->setCastShadows(false);
+	// VisibilityFlags?
+}
+
+void Road::addTri(int f1, int f2, int f3, int i) {
+	idx.push_back(f1); idx.push_back(f2); idx.push_back(f3);
+
+	// Assume blendTri == false (no blending)
+
+	// bltTri assumed to be true
+	if (i > 0 && i < at_ilBt) {
+		posBt.push_back((*atPos)[f1]);
+		posBt.push_back((*atPos)[f2]);
+		posBt.push_back((*atPos)[f3]);
+	}
 }
 
 void Road::prepassRange(DataRoad& dr) {
@@ -170,12 +268,92 @@ void Road::prepassLod(const DataRoad &dr, DataLod0 &DL0, DataLod &dl, int lod) {
 	int iLodDiv = ciLodDivs[lod];
 	dl.fLenDim = iLodDiv * g_LenDim0;
 	dl.tcLen = 0.f;
-	int inLoop = 0;
 
 	for (int seg = 0; seg < dr.segs; seg++) {
 		int seg1 = getNext(seg), seg0 = getPrev(seg);
 
-		//TODO NOT DONE
+		Ogre::Real sp = 0, sp1 = 0, sp0 = 0; // Pipes don't exist;
+		Ogre::Real p = 1.f, pl = 1.f;
+		bool pipe = false;
+
+		// Road
+		int iw = std::max(1, (int) (g_iWidthDiv0 / iLodDiv)); // p is 1
+		dl.v_iW.push_back(iw);
+		int iwl = std::max(1, (int) (g_iWidthDiv0 / iLodDiv)); // pl is 1, too
+
+		// Length steps
+		Ogre::Real len = getSegLen(seg);
+		int il = int(len / dl.fLenDim) / iwl * iwl + iwl;
+		Ogre::Real lenAdd = 1.f / il;
+
+		dl.v_iL.push_back(il);
+		dl.v_len.push_back(len);
+
+		// No stats
+
+		// Merge conditions
+		dl.sumLenMrg += len;
+		// Material should never change, so ignore case
+		if (mP.at(seg).onTerr != mP.at(seg1).onTerr || mP.at(seg).onTerr != mP.at(seg0).onTerr) {
+			dl.sumLenMrg = 0.f;
+			dl.v_bMerge.push_back(1);
+		} else if (dl.sumLenMrg >= g_MergeLen) {
+			dl.sumLenMrg -= g_MergeLen;
+			dl.v_bMerge.push_back(1);
+		} else {
+			dl.v_bMerge.push_back(0);
+		}
+
+		if (dl.isLod0) {
+			DL0.v0_iL.push_back(il);
+			DL0.v0_Loop.push_back(0); // inLoop will probably be false (no loop-de-loops in this sim)
+		}
+
+		// Length dir
+		Ogre::Vector3 vl = getLenDir(seg, 0, lenAdd), vw; vl.normalise();
+		Ogre::Real ay = mP.at(seg).aYaw, ar = mP.at(seg).aRoll;
+
+		// Width dir
+		if (mP.at(seg).onTerr && mP.at(seg1).onTerr) { vw = Ogre::Vector3(vl.z, 0, -vl.x); }
+		else										 { vw = getRot(ay, ar); }
+
+		// Normal dir
+		if (dl.isLod0) {
+			Ogre::Vector3 vn = vl.crossProduct(vw); vn.normalise();
+			DL0.v0_N.push_back(vn);
+		}
+
+		{
+			Ogre::Real wiMul = mP.at(seg).width;
+			vw *= wiMul;
+			dl.v_W.push_back(vw);
+		}
+
+		Ogre::Real l = 0.f;
+		for (int i = 0; i < il; i++) {
+			Ogre::Vector3 vl = getLenDir(seg, l, l + lenAdd);
+			l += lenAdd; dl.tcLen += vl.length();
+		}
+		dl.v_tc.push_back(dl.tcLen);
+		if (dl.isLod0) { DL0.v0_tc.push_back(dl.tcLen); }
+	}
+
+	for (int seg = 0; seg < dr.segs; seg++) {
+		int seg1 = getNext(seg);
+		int il = dl.v_iL[seg];
+		std::vector<int> viwL;
+
+		// Width steps per length point in current segment
+		int iw0 = dl.v_iW[seg], iw1 = dl.v_iW[seg1];
+		for (int i = -1; i <= il+1; ++i) {
+			int ii = std::max(0, std::min(il, i));
+			int iw = iw0 + (int) (Ogre::Real(ii) / Ogre::Real(il) * (iw1 - iw0));
+			viwL.push_back(iw);
+		}
+		int eq = iw1 == iw0 ? 1 : 0;
+
+		dl.v_iwEq.push_back(eq);
+		dl.v_iWL.push_back(viwL);
 	}
 }
 
@@ -249,9 +427,171 @@ void Road::buildSeg(const DataRoad &dr, const DataLod0 &DL0, DataLod &dl, DataLo
 			Ogre::Vector3 vwm = vw;
 
 			Ogre::Real wiMul = interpolateWidth(seg, l);
-			//TODO FINISH
+			vw *= wiMul;
+
+			bool onTerr1 = ds.onTerr || mP.at(seg).onTerr && i == 0 || mP.at(seg1).onTerr && i == il;
+
+			Ogre::Vector3 vn;
+				 if (i == 0)  { vn = DL0.v0_N[seg ]; }
+			else if (i == il) { vn = DL0.v0_N[seg1]; }
+			else {
+				vn = vl.crossProduct(vw);
+				vn.normalise();
+			}
+
+			int iw = dl.v_iWL[seg][i+1];
+
+			// Skip pipe amount vars
+
+			Ogre::Vector3 vH0, vH1;
+			int w0 = 0, w1 = iw;
+
+			Ogre::Real tcL = tc * g_tcMul;
+
+			for (int w = 0; w <= iw; w++) {
+				Ogre::Vector3 vP, vN;
+				Ogre::Real tcw = Ogre::Real(w) / Ogre::Real(iw);
+
+				Ogre::Real yTer = 0.f;
+
+				// Assuming fPipe == 0.f (no pipe)
+				vP = vL0 + vw * (tcw - 0.5);
+				vN = vn;
+				yTer = getTerrH(vP);
+
+				if (onTerr1) {
+					vP.y = yTer + g_Height * ((w == 0 || w == iw) ? 0.15f : 1.f);
+					vN = mTerrain ? TerrUtil::getNormalAt(mTerrain, vP.x, vP.z, dl.fLenDim * 0.5f) : Ogre::Vector3::UNIT_Y;
+				}
+
+				if (i == -1 || i == il + 1) { vP -= vn * skH; }
+
+				// Must be visible if in this for-loop
+				Ogre::Vector2 vtc(tcw * 1.f, tcL);
+				dlm.pos.push_back(vP);
+				dlm.norm.push_back(vN);
+				dlm.tcs.push_back(vtc);
+
+				if (w == w0) { vH0 = vP; }
+				if (w == w1) { vH1 = vP; }
+			}
+
+			// Skip walls and columns
+
+			l += (i == -1 || i == il) ? la0 : la;
+			dl.tcLen += len;
 		}
 	}
+
+	if (dl.isLod0) {
+		int lps = std::max(2, (int) (dl.v_len[seg] / g_LodPntLen));
+
+		for (int p = 0; p <= lps; p++) {
+			Ogre::Vector3 vp = interpolate(seg, Ogre::Real(p) / Ogre::Real(lps));
+			dlm.posLod.push_back(vp);
+		}
+	}
+
+	if (bNxt && !dlm.pos.empty()) {
+		createSegMeshes(dl, dlm, ds, rs);
+
+		if (dl.isLod0) {
+			for (int p = 0; p < dlm.posLod.size(); p++) { rs.lpos.push_back(dlm.posLod[p]); }
+			dlm.posLod.clear();
+		}
+
+		createSegCollision(dlm, ds);
+	}
+}
+
+void Road::createSegMeshes(const DataLod &dl, const DataLodMesh &dlm, DataSeg &ds, RoadSeg &rs) {
+	Ogre::String sEnd = Ogre::StringConverter::toString(idStr); idStr++;
+	Ogre::String sMesh = "rd.mesh." + sEnd; // No meshes for walls, etc.
+
+	posBt.clear(); idx.clear(); idxB.clear();
+	atPos = &dlm.pos; at_ilBt = dlm.iLmrg - 2;
+	int seg = ds.seg, seg1 = ds.seg1, seg0 = ds.seg0;
+
+	int iiw = 0;
+
+	// Equal width
+	if (dl.v_iwEq[seg] == 1) {
+		for (int i = 0; i < dlm.iLmrg - 1; i++) {
+			int iw = dl.v_iW[seg];
+			for (int w = 0; w < iw; w++) {
+				int f0 = iiw + w, f1 = f0 + (iw + 1);
+				addTri(f0+0,f1+1,f0+1,i);
+				addTri(f0+0,f1+0,f1+1,i);
+			}
+			iiw += iw + 1;
+		}
+	} else {
+		// Pipe transition only? TODO?
+		std::cout << "Should have done this" << std::endl;
+	}
+
+	// Skipped nTri
+
+	// Create Ogre mesh
+	Ogre::MeshPtr meshOld = Ogre::MeshManager::getSingleton().getByName(sMesh);
+	if (!meshOld.isNull()) { std::cout << "Mesh already exists: " + sMesh << std::endl; }
+
+	Ogre::AxisAlignedBox aaBox;
+	Ogre::MeshPtr mesh = Ogre::MeshManager::getSingleton().createManual(sMesh, "General");
+	Ogre::SubMesh* sm = mesh->createSubMesh();
+
+	createMesh(sm, aaBox, dlm.pos, dlm.norm, dlm.tcs, idx, rs.roadMtrStr);
+
+	// Skip wall, columns, blend
+
+	// Add mesh to scene
+	Ogre::Entity* ent = 0;
+	Ogre::SceneNode* node = 0;
+
+	addMesh(mesh, sMesh, aaBox, &ent, &node, "." + sEnd);
+	//TODO RenderQueueGroups?
+
+	//TODO CastShadows?
+
+	// Only one LOD (for now)
+	rs.road.node = node;
+	rs.road.ent = ent;
+	rs.road.mesh = mesh;
+	rs.road.meshStr = sMesh;
+	rs.empty = false;
+}
+
+void Road::createSegCollision(const DataLodMesh &dlm, const DataSeg &ds) {
+	btTriangleMesh* trimesh = new btTriangleMesh; vbtTriMesh.push_back(trimesh);
+
+#define vToBlt(v) btVector3(v.x, -v.z, v.y)
+#define addTriB(a, b, c) trimesh->addTriangle(vToBlt(a), vToBlt(b), vToBlt(c));
+
+	size_t si = posBt.size(), a = 0;
+	for (size_t i = 0; i < si / 3; i++, a += 3) {
+		addTriB(posBt[a], posBt[a+1], posBt[a+2]);
+	}
+
+	btCollisionShape* shape = new btBvhTriangleMeshShape(trimesh, true);
+
+	size_t su = SU_Road + ds.idMtr;
+	shape->setUserPointer((void*) su);
+	shape->setMargin(0.01f); // Dev put a ? next to this line...
+
+	btCollisionObject* bco = new btCollisionObject();
+	btTransform tr; tr.setIdentity();
+
+	bco->setActivationState(DISABLE_SIMULATION);
+	bco->setCollisionShape(shape); bco->setWorldTransform(tr);
+	bco->setFriction(0.8f); // Take note!
+	bco->setRestitution(0.f);
+	bco->setCollisionFlags(bco->getCollisionFlags() |
+						   btCollisionObject::CF_STATIC_OBJECT | btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT);
+
+	mSim->getCollisionWorld()->getDynamicsWorld()->addCollisionObject(bco);
+	mSim->getCollisionWorld()->addShape(shape);
+
+	// Skipping wall
 }
 
 void Road::destroyRoad() {
@@ -261,7 +601,7 @@ void Road::destroyRoad() {
 	for (int seg = 0; seg < vSegs.size(); seg++) { destroySeg(seg); }
 	vSegs.clear();
 
-	// idStr = 0?
+	idStr = 0;
 }
 
 void Road::destroySeg(int id) {
