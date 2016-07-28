@@ -42,6 +42,8 @@ public:
 	bool loadFile(Ogre::String fileName);
 	bool rebuildRoadGeometry();
 
+	void update();
+
 	std::deque<RoadSeg> vSegs;
 
 	int idStr;

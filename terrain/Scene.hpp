@@ -21,6 +21,8 @@ public:
 
 	void setupTerrain(Sim* sim);
 
+	void update();
+
 	int terrSize;
 	float worldSize;
 

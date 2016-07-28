@@ -222,11 +222,6 @@ bool App::loadSurfaces() {
 	std::list<std::string> secList;
 	params.getSectionList(secList);
 	for (std::list<std::string>::const_iterator sec = secList.begin(); sec != secList.end(); sec++) {
-//		TerrainSurface surf;
-//		surf.name = *sec;
-//		surfaces.push_back(surf);
-//		surfaceMap[surf.name] = (int)surfaces.size() - 1; //+1, 0 = not found
-
 		TerrainSurface* ts = new TerrainSurface();
 		ts->name = *sec;
 		surfaces.push_back(*ts);
@@ -249,8 +244,9 @@ bool App::loadSurfaces() {
 
 		// Tire
 		std::string tireFile;
-		if (!params.getParam(*sec + "." + "Tire", tireFile))
+		if (!params.getParam(*sec + "." + "Tire", tireFile)) {
 			tireFile = "Default"; // Default surface if not found
+		}
 		ts->tireName = tireFile;
 
 		if (tireMap.find(ts->tireName) == tireMap.end())
@@ -266,11 +262,6 @@ bool App::loadTire(std::string name) {
 	std::string tirePath = "../data/cars/common/" + name + ".tire";
 	ConfigFile tireParams;
 	if (!tireParams.load(tirePath)) return false;
-
-//	CarTire tire;
-//	tire.name = name;
-//	tires.push_back(tire);
-//	tireMap[tire.name] = (int)tires.size() - 1;
 
 	CarTire* t = new CarTire();
 	t->name = name;
@@ -331,6 +322,7 @@ bool App::frameRenderingQueued(const Ogre::FrameEvent& evt) {
 	updateCamera(evt);
 
 	mSim->update(evt.timeSinceLastFrame);
+	mScene->update();
 
 	return true;
 }
@@ -360,6 +352,7 @@ void App::updateCamera(const Ogre::FrameEvent& evt) {
 #else
 	mCameraNode->setPosition(mSim->getCameraPosition());
 	mCameraNode->setOrientation(mSim->getCameraOrientation());
+
 #endif
 }
 

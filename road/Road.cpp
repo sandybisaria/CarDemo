@@ -135,6 +135,18 @@ bool Road::rebuildRoadGeometry() {
 	}
 }
 
+void Road::update() {
+	// Refer to SplineRoad::UpdLodVis()
+
+	for (size_t seg = 0; seg < vSegs.size(); seg++) {
+		RoadSeg& rs = vSegs.at(seg);
+		if (rs.empty) { continue; }
+
+		// Only one LOD
+		rs.road.ent->setVisible(true);
+	}
+}
+
 void Road::insert(insertPos ip) {
 	RoadSeg rs;
 	SplinePoint pt = newP;
@@ -210,7 +222,7 @@ void Road::addMesh(Ogre::MeshPtr mesh, Ogre::String sMesh, const Ogre::AxisAlign
 	*pEnt = mSceneMgr->createEntity("rd.ent" + sEnd, sMesh);
 	*pNode = mSceneMgr->getRootSceneNode()->createChildSceneNode("rd.node" + sEnd);
 	(*pNode)->attachObject(*pEnt);
-	(*pEnt)->setVisible(true); (*pEnt)->setCastShadows(false);
+	(*pEnt)->setVisible(false); (*pEnt)->setCastShadows(false);
 	(*pEnt)->setVisibilityFlags(RV_Road);
 }
 

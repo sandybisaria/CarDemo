@@ -138,3 +138,7 @@ void Scene::setupRoad() {
 	//PSSM materials?
 	mRoad->rebuildRoadGeometry();
 }
+
+void Scene::update() {
+	if (mRoad) { mRoad->update(); }
+}
