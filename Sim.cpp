@@ -1,5 +1,7 @@
 #include "Sim.hpp"
 
+#define DEBUGDRAW
+
 Sim::Sim(App* app)
 	: mSceneMgr(0), scene(0), mApp(app),
 	  world(0), carInput(0),
@@ -35,7 +37,7 @@ void Sim::setup(Ogre::SceneManager* sceneMgr) {
 
 	for (int i = 0; i < numCars; i++) {
 		Car* newCar = new Car(i);
-		newCar->setup("CAD", mSceneMgr, *world);
+		newCar->setup((i == idCarToControl ? "CAD" : "360"), mSceneMgr, *world); // A Cadillac driving with Ferrari's...
 
 		cars.push_back(newCar);
 
@@ -80,10 +82,12 @@ void Sim::update(float dt) {
 		cars[i]->handleInputs(*inputs);
 	}
 
+#ifdef DEBUGDRAW
 	if (debugDraw) {
 		debugDraw->setDebugMode(1);
 		debugDraw->step();
 	}
+#endif
 
 	//TODO May want to see how Stuntrally "actually" loops
 }

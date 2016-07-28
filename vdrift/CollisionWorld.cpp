@@ -7,94 +7,9 @@
 #include "../util/Axes.hpp"
 #include "../util/ToBullet.hpp"
 
-void DynamicsWorld::solveConstraints(btContactSolverInfo& solverInfo) {
-	btDiscreteDynamicsWorld::solveConstraints(solverInfo);
+// DynamicsWorld::solveConstraints not implemented
 
-	//TODO Not needed until fluids are used
-//	int numManifolds = getDispatcher()->getNumManifolds();
-//	for (int i=0; i < numManifolds; ++i) {
-//		btPersistentManifold* contactManifold =  getDispatcher()->getManifoldByIndexInternal(i);
-//		const btCollisionObject* bA = contactManifold->getBody0();
-//		const btCollisionObject* bB = contactManifold->getBody1();
-//
-//		void *pA = bA->getUserPointer(), *pB = bB->getUserPointer();
-//		{
-//			ShapeData* sdA = (ShapeData*)pA, *sdB = (ShapeData*)pB, *sdCar=0, *sdFluid=0, *sdWheel=0;
-//			if (sdA) {
-//				if (sdA->type == ShapeType::Car) 		sdCar = sdA;
-//				else if (sdA->type == ShapeType::Fluid) sdFluid = sdA;
-//				else if (sdA->type == ShapeType::Wheel) sdWheel = sdA;
-//			}
-//			if (sdB) {
-//				if (sdB->type == ShapeType::Car)		sdCar = sdB;
-//				else if (sdB->type == ShapeType::Fluid) sdFluid = sdB;
-//				else if (sdB->type == ShapeType::Wheel) sdWheel = sdB;
-//			}
-
-//			if (sdFluid) { }
-//				if (sdWheel) {
-//					std::list<FluidBox*>& fl = sdWheel->pCarDyn->inFluidsWh[sdWheel->whNum];
-//					if (fl.empty())
-//						fl.push_back(sdFluid->pFluid);
-//				} else if (sdCar) {
-//					if (sdCar->pCarDyn->inFluids.empty())
-//						sdCar->pCarDyn->inFluids.push_back(sdFluid->pFluid);
-//				}
-//		}
-//	}
-}
-
-void IntTickCallback(btDynamicsWorld* world, btScalar timeStep) {
-	//TODO Not useful unless fluids are involved
-//	CollisionWorld* cw = (CollisionWorld*)world->getWorldUserInfo();
-//
-//	int numManifolds = world->getDispatcher()->getNumManifolds();
-//	for (int i=0; i < numManifolds; ++i) {
-//		btPersistentManifold* contactManifold = world->getDispatcher()->getManifoldByIndexInternal(i);
-//		const btCollisionObject* bA = contactManifold->getBody0();
-//		const btCollisionObject* bB = contactManifold->getBody1();
-//
-//		if ((bA->getCollisionFlags() & btCollisionObject::CF_NO_CONTACT_RESPONSE) ||
-//			(bB->getCollisionFlags() & btCollisionObject::CF_NO_CONTACT_RESPONSE))
-//			continue;
-//
-//		void* pA = bA->getUserPointer(), *pB = bB->getUserPointer();
-//		{
-//			ShapeData* sdA = (ShapeData*)pA, *sdB = (ShapeData*)pB, *sdCar=0, *sdFluid=0, *sdWheel=0;
-//			if (sdA) {
-//				if (sdA->type == ShapeType::Car) 		sdCar = sdA;
-//				else if (sdA->type == ShapeType::Fluid) sdFluid = sdA;
-//				else if (sdA->type == ShapeType::Wheel) sdWheel = sdA;
-//			}
-//			if (sdB) {
-//				if (sdB->type == ShapeType::Car)		sdCar = sdB;
-//				else if (sdB->type == ShapeType::Fluid) sdFluid = sdB;
-//				else if (sdB->type == ShapeType::Wheel) sdWheel = sdB;
-//			}
-//
-//			if (sdFluid && sdFluid->pFluid)  // Solid fluid hit TODO Fluids
-//				if (sdFluid->pFluid->solid)  sdFluid = 0;
-//
-//			if (sdCar && !sdFluid && !sdWheel) {
-//				bool dyn = (sdCar == sdA && !bB->isStaticObject()) || (sdCar == sdB && !bA->isStaticObject());
-//				int num = contactManifold->getNumContacts();
-//				for (int j=0; j < num; ++j) {
-//					btManifoldPoint& pt = contactManifold->getContactPoint(j);
-//					btScalar f = pt.getAppliedImpulse() * timeStep;
-//					if (f > 0.f) {
-//						DynamicsWorld::Hit hit;
-//						hit.dyn = dyn ? 1 : 0;  //TODO Dev suggested custom sound for object type
-//						hit.pos = pt.getPositionWorldOnA();
-//						hit.norm = pt.m_normalWorldOnB;
-//						hit.force = f;  hit.sdCar = sdCar;
-//						hit.vel = sdCar ? sdCar->dyn->prevVel : (btVector3(1, 1, 1) * 0.1f);
-//						cw->getDynamicsWorld()->vHits.push_back(hit);
-//					}
-//				}
-//			}
-//		}
-//	}
-}
+// IntTickCallback not implemented
 
 CollisionWorld::CollisionWorld()
 	: maxSubSteps(24), fixedTimeStep(1. / 160.), oldDyn(0), sim(0) /*Defaults according to Stuntrally settings*/ {
@@ -107,13 +22,10 @@ CollisionWorld::CollisionWorld()
 
 	world = new DynamicsWorld(dispatcher, broadphase, solver, config);
 
-	// In Stuntrally, each scene/track stores a value for gravity, so this may be overriden
-	world->setGravity(btVector3(0., 0., -9.81));
+	world->setGravity(btVector3(0.f, 0.f, -9.81f));
 	world->getSolverInfo().m_restitution = 0.0f;
 	world->getDispatchInfo().m_enableSPU = true;
 	world->setForceUpdateAllAabbs(false);
-
-//	world->setInternalTickCallback(IntTickCallback, this, false); // Not needed yet
 }
 
 CollisionWorld::~CollisionWorld() {
@@ -166,7 +78,8 @@ void CollisionWorld::clear() {
 	actions.resize(0);
 }
 
-btRigidBody* CollisionWorld::addRigidBody(const btRigidBody::btRigidBodyConstructionInfo& info, bool isCar, bool collideWithCars) {
+btRigidBody* CollisionWorld::addRigidBody(const btRigidBody::btRigidBodyConstructionInfo& info, bool isCar,
+										  bool collideWithCars) {
 	btRigidBody* body = new btRigidBody(info);
 	btCollisionShape* shape = body->getCollisionShape();
 
@@ -252,6 +165,7 @@ bool CollisionWorld::castRay(const MathVector<float, 3>& origin, const MathVecto
 			if (ptrU) {
 				switch (su) {
 				case SU_Road:
+					surf = sim->getTerrainSurface(surfType);
 					break;
 
 				case SU_Pipe:

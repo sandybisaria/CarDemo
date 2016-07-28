@@ -132,7 +132,7 @@ bool Car::loadFromConfig(CollisionWorld& world) {
 	if (nw >= MIN_WHEEL_COUNT && nw <= MAX_WHEEL_COUNT)
 		setNumWheels(nw);
 
-	// Load car collision params (Stuntrally puts it outside of CARDYNAMICS so...
+	// Load car collision params (Stuntrally puts this outside of CARDYNAMICS so... I will too... for now...)
 	// Center-of-mass offsets
 	dyn->comOfsL = 0.f;  cf.getParam("collision.com_ofs_L", dyn->comOfsL);
 	dyn->comOfsH = 0.f;  cf.getParam("collision.com_ofs_H", dyn->comOfsH);
