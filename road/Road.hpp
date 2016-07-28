@@ -20,17 +20,18 @@ struct RoadSeg {
 	};
 
 	// Single LOD
-	SegData road;
+	SegData road; // No SegData's for wall/col/blend
+
 	Ogre::String roadMtrStr;
 	int mtrId;
 
-	std::vector<Ogre::Vector3> lpos; // Points for LOD dist
-
+	std::vector<Ogre::Vector3> lpos; // Points for LOD dist; used to determine visibility... (but values not used yet)
 	bool empty;
 
 	RoadSeg() : empty(true), mtrId(0) { }
 };
 
+// So far only INS_End is used (the others more useful for a road editor)
 enum insertPos { INS_Begin, INS_Before_Cur, INS_Cur, INS_End };
 
 class Road : public SplineBase {
@@ -44,9 +45,7 @@ public:
 
 	void update();
 
-	std::deque<RoadSeg> vSegs;
-
-	int idStr;
+	void destroy();
 
 private:
 	Sim* mSim;
@@ -55,6 +54,9 @@ private:
 	Ogre::Terrain* mTerrain;
 
 	Ogre::String roadMtr;
+	int idStr;
+
+	std::deque<RoadSeg> vSegs; // Deque of all road segments
 
 //---- Geometry
 	Ogre::Real g_LenDim0; // Triangle dim in length

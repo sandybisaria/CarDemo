@@ -21,6 +21,8 @@ void Road::setDefault() {
 	g_tcMul = 0.1f;
 	g_Height = 0.1f;
 	g_MergeLen = 180.f; g_LodPntLen = 10.f;
+
+	isLooped = false; // Assume that roads are NOT looped!
 }
 
 void Road::setup(Ogre::Terrain* terrain, Ogre::SceneManager* sceneMgr) {
@@ -145,6 +147,10 @@ void Road::update() {
 		// Only one LOD
 		rs.road.ent->setVisible(true);
 	}
+}
+
+void Road::destroy() {
+	destroyRoad();
 }
 
 void Road::insert(insertPos ip) {

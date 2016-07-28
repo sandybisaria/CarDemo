@@ -13,6 +13,8 @@ Scene::Scene(Ogre::SceneManager* sceneMgr)
 Scene::~Scene() {
 	OGRE_DELETE mTerrainGlobals;
 	OGRE_DELETE mTerrainGroup;
+
+	if (mRoad) { mRoad->destroy(); }
 }
 
 void Scene::setupTerrain(Sim* sim) {

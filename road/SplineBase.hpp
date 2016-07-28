@@ -29,11 +29,6 @@ public:
 	AngType aType;
 
 	bool onTerr;
-//	int cols;
-//	int onPipe;
-//	int loop;
-
-//	Ogre::Real pipe;
 	int idMtr; // Material ID
 
 	bool notReal; // True means only for decoration, or point move (not a real road to be driven on)
