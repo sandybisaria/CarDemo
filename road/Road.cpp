@@ -3,6 +3,7 @@
 #include "../Sim.hpp"
 
 #include "../tinyxml/tinyxml2.h"
+#include "../terrain/RenderConst.hpp"
 
 #include <Ogre.h>
 
@@ -209,8 +210,8 @@ void Road::addMesh(Ogre::MeshPtr mesh, Ogre::String sMesh, const Ogre::AxisAlign
 	*pEnt = mSceneMgr->createEntity("rd.ent" + sEnd, sMesh);
 	*pNode = mSceneMgr->getRootSceneNode()->createChildSceneNode("rd.node" + sEnd);
 	(*pNode)->attachObject(*pEnt);
-	(*pEnt)->setVisible(false); (*pEnt)->setCastShadows(false);
-	// VisibilityFlags?
+	(*pEnt)->setVisible(true); (*pEnt)->setCastShadows(false);
+	(*pEnt)->setVisibilityFlags(RV_Road);
 }
 
 void Road::addTri(int f1, int f2, int f3, int i) {
@@ -549,7 +550,7 @@ void Road::createSegMeshes(const DataLod &dl, const DataLodMesh &dlm, DataSeg &d
 	Ogre::SceneNode* node = 0;
 
 	addMesh(mesh, sMesh, aaBox, &ent, &node, "." + sEnd);
-	//TODO RenderQueueGroups?
+	ent->setRenderQueueGroup(RQG_Road);
 
 	//TODO CastShadows?
 

@@ -1,6 +1,7 @@
 #include "Scene.hpp"
 
 #include "../road/Road.hpp"
+#include "RenderConst.hpp"
 
 Scene::Scene(Ogre::SceneManager* sceneMgr)
 	: mSim(0), mSceneMgr(sceneMgr), sun(0),
@@ -36,6 +37,11 @@ void Scene::setupTerrain(Sim* sim) {
 	defineTerrain();
 
 	mTerrainGroup->loadAllTerrains(true);
+	Ogre::TerrainGroup::TerrainIterator ti = mTerrainGroup->getTerrainIterator();
+	while (ti.hasMoreElements()) {
+		Ogre::Terrain* t = ti.getNext()->instance;
+		t->setVisibilityFlags(RV_Terrain);
+	}
 	mTerrainGroup->freeTemporaryResources();
 
 	mSceneMgr->setSkyDome(true, "CloudySky");

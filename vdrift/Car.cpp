@@ -5,6 +5,7 @@
 #include "../util/ConfigFile.hpp"
 #include "../vdrift/MathVector.hpp"
 #include "../vdrift/Quaternion.hpp"
+#include "../terrain/RenderConst.hpp"
 
 #include <OgreRoot.h>
 #include <OgreEntity.h>
@@ -273,6 +274,13 @@ Ogre::Entity* Car::loadPart(std::string partType, int partId) {
 	Ogre::Entity* entity = mSceneMgr->createEntity(resGrpId + extPartType + (partId != -1 ? toString(partId) : ""),
 												   mCarName + extPartType + ".mesh", resGrpId);
 	forDeletion(entity);
+
+	if (partType == "glass") {
+		entity->setRenderQueueGroup(RQG_CarGlass);
+		entity->setVisibilityFlags(RV_CarGlass);
+	} else {
+		entity->setVisibilityFlags(RV_Car);
+	}
 
 	return entity;
 }

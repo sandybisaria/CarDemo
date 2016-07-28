@@ -8,7 +8,7 @@
 
 #include "App.hpp"
 
-//#define FOLLOW_CAR
+#define FOLLOW_CAR
 
 App::App(Ogre::Root* root)
 	: mShutDown(false), mFactory(0), mScene(0), mSim(0),

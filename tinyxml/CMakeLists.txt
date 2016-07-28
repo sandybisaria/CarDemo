@@ -9,4 +9,3 @@ file(GLOB SOURCE_FILES *.cpp)
 add_library(${LIBNAME} STATIC ${SOURCE_FILES})
 
 link_directories(${CMAKE_CURRENT_BINARY_DIR})
-

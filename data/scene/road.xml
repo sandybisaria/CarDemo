@@ -1,8 +1,13 @@
 <Road>
-	<mtr name="Asphalt" />
+	<mtr road="roadAsphalt" />
 	<dim widthSteps="16" heightOfs="0.06" />
 	<mrg mergeLen="80" />
 	<P pos="0 0 90" w="12" onTerr="1" a="90" aT="0" />
 	<P pos="65 0 65" w="12" onTerr="1" a="135" aT="0" />
 	<P pos="90 0 0" w="12" onTerr="1" a="-180" aT="0" />
+	<P pos="65 0 -65" w="12" onTer="1" a="-135" aT="0" />
+	<P pos="0 0 -90" w="12" onTer="1" a="-90" aT="0" />
+	<P pos="-65 0 -65" w="12" onTer="1" a="-45" aT="0" />
+	<P pos="-90 0 0" w="12" onTer="1" a="0" aT="0" />
+	<P pos="-65 0 65" w="12" onTer="1" a="45" aT="0" />
 </Road>
