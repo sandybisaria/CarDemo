@@ -7,11 +7,15 @@
 
 #include <Ogre.h>
 
+int Road::count = -1;
+
 Road::Road(Sim* sim)
-	: idStr(0),
-      mSim(sim) {
+	: mSim(sim),
+	  idStr(0) {
 	//Init some variables
 	setDefault();
+
+	count++; // Band-aid solution to giving roads unique IDs
 }
 
 void Road::setDefault() {
@@ -30,15 +34,8 @@ void Road::setup(Ogre::Terrain* terrain, Ogre::SceneManager* sceneMgr) {
 	mSceneMgr = sceneMgr;
 }
 
-bool Road::loadFile(Ogre::String fileName) {
+bool Road::loadFromXML(tinyxml2::XMLElement* root) {
 	clear();
-
-	tinyxml2::XMLDocument doc;
-	tinyxml2::XMLError e = doc.LoadFile(fileName.c_str());
-	if (e != tinyxml2::XML_SUCCESS) { return false; }
-
-	tinyxml2::XMLElement* root = doc.RootElement();
-	if (!root) { return false; }
 
 	tinyxml2::XMLElement* n = NULL;
 	const char* a = NULL;
@@ -524,7 +521,8 @@ void Road::buildSeg(const DataRoad &dr, const DataLod0 &DL0, DataLod &dl, DataLo
 }
 
 void Road::createSegMeshes(const DataLod &dl, const DataLodMesh &dlm, DataSeg &ds, RoadSeg &rs) {
-	Ogre::String sEnd = Ogre::StringConverter::toString(idStr); idStr++;
+	Ogre::String sEnd = Ogre::StringConverter::toString(count) + ".";
+	sEnd += Ogre::StringConverter::toString(idStr); idStr++;
 	Ogre::String sMesh = "rd.mesh." + sEnd; // No meshes for walls, etc.
 
 	posBt.clear(); idx.clear(); idxB.clear();

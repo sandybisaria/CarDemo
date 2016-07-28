@@ -1,12 +1,11 @@
 #include "Scene.hpp"
+#include "RenderConst.hpp"
 
 #include "../road/Road.hpp"
-#include "RenderConst.hpp"
 
 Scene::Scene(Ogre::SceneManager* sceneMgr)
 	: mSim(0), mSceneMgr(sceneMgr), sun(0),
-	  mTerrainGlobals(0), mTerrainGroup(0),
-	  mRoad(0) {
+	  mTerrainGlobals(0), mTerrainGroup(0) {
 	terrSize = 513; worldSize = 10000.0;
 }
 
@@ -14,7 +13,11 @@ Scene::~Scene() {
 	OGRE_DELETE mTerrainGlobals;
 	OGRE_DELETE mTerrainGroup;
 
-	if (mRoad) { mRoad->destroy(); }
+	std::vector<Road*>::iterator i = mRoads.begin();
+	for (; i != mRoads.end(); i++) {
+		(*i)->destroy();
+	}
+	mRoads.clear();
 }
 
 void Scene::setupTerrain(Sim* sim) {
@@ -126,21 +129,38 @@ void Scene::createBulletTerrain() {
 }
 
 void Scene::setupRoad() {
-	mRoad = new Road(mSim);
-
 	Ogre::Terrain* baseTerrain = mTerrainGroup->getTerrain(0, 0);
-	mRoad->setup(baseTerrain, mSceneMgr);
 
-	Ogre::String roadFile = "../data/scene/road.xml";
-	if (!mRoad->loadFile(roadFile)) {
-		std::cout << "Road failed to load" << std::endl;
-		return;
+	Ogre::String roadsFile = "../data/scene/roads.xml";
+	tinyxml2::XMLDocument doc;
+	tinyxml2::XMLError e = doc.LoadFile(roadsFile.c_str());
+	if (e != tinyxml2::XML_SUCCESS) { return; }
+
+	tinyxml2::XMLElement* root = doc.RootElement();
+	if (!root) { return; }
+
+	tinyxml2::XMLElement* roadXML = root->FirstChildElement("Road");
+	while (roadXML) {
+		Road* road = new Road(mSim);
+		road->setup(baseTerrain, mSceneMgr);
+
+		if (!road->loadFromXML(roadXML)) {
+			std::cout << "Road failed to load" << std::endl;
+			continue;
+		}
+
+		//PSSM materials?
+		road->rebuildRoadGeometry();
+
+		mRoads.push_back(road);
+
+		roadXML = roadXML->NextSiblingElement("Road");
 	}
-
-	//PSSM materials?
-	mRoad->rebuildRoadGeometry();
 }
 
 void Scene::update() {
-	if (mRoad) { mRoad->update(); }
+	std::vector<Road*>::const_iterator i = mRoads.begin();
+	for (; i != mRoads.end(); i++) {
+		(*i)->update();
+	}
 }

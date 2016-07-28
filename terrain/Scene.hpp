@@ -41,5 +41,5 @@ private:
 	Ogre::TerrainGroup* mTerrainGroup;
 
 	void setupRoad();
-	Road* mRoad;
+	std::vector<Road*> mRoads;
 };

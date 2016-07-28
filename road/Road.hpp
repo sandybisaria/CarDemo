@@ -1,6 +1,7 @@
 #pragma once
 
 #include "SplineBase.hpp"
+#include "../tinyxml/tinyxml2.h"
 
 #include <BulletCollision/CollisionShapes/btTriangleMesh.h>
 
@@ -40,7 +41,7 @@ public:
 	void setDefault();
 
 	void setup(Ogre::Terrain* terrain, Ogre::SceneManager* sceneMgr);
-	bool loadFile(Ogre::String fileName);
+	bool loadFromXML(tinyxml2::XMLElement* root);
 	bool rebuildRoadGeometry();
 
 	void update();
@@ -54,7 +55,7 @@ private:
 	Ogre::Terrain* mTerrain;
 
 	Ogre::String roadMtr;
-	int idStr;
+	int idStr; static int count;
 
 	std::deque<RoadSeg> vSegs; // Deque of all road segments
 
