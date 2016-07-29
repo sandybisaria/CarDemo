@@ -50,4 +50,7 @@ static void getWheelPosStr(int i, int numWheels, WheelPosition& wl, WheelPositio
 	}
 }
 
-static double clamp(double val, double min, double max) { return std::max(std::min(val, max), min); }
+template <typename T>
+static T clamp(T val, T min, T max) {
+	return std::max(std::min(val, max), min);
+}

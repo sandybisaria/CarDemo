@@ -279,13 +279,13 @@ bool CarDynamics::load(ConfigFile& cf) {
 			MathVector<double, 3> vec;
 
 			if (!cf.getParam("suspension-" + possh + "L.hinge", hinge)) return false;
-			for (int i = 0; i < 3; i++) hinge[i] = clamp(hinge[i], -100, 100);
+			for (int i = 0; i < 3; i++) hinge[i] = clamp(hinge[i], -100.f, 100.f);
 			if (version == 2) versionConvert(hinge[0], hinge[1], hinge[2]);
 			vec.set(hinge[0], hinge[1], hinge[2]);
 			suspension[wl].setHinge(vec);
 
 			if (!cf.getParam("suspension-" + possh + "R.hinge", hinge)) return false;
-			for (int i = 0; i < 3; i++) hinge[i] = clamp(hinge[i], -100, 100);
+			for (int i = 0; i < 3; i++) hinge[i] = clamp(hinge[i], -100.f, 100.f);
 			if (version == 2) versionConvert(hinge[0], hinge[1], hinge[2]);
 			vec.set(hinge[0], hinge[1], hinge[2]);
 			suspension[wr].setHinge(vec);
@@ -595,16 +595,17 @@ void CarDynamics::removeBullet() {
 	}
 	constraints.resize(0);
 
-	for (i = rigids.size() - 1; i >= 0; i--) {
-		btRigidBody* body = rigids[i];
-//		if (body && body->getMotionState()) delete body->getMotionState(); TODO Commented due to double free error
+	//TODO Commented due to seg-faults
+//	for (i = rigids.size() - 1; i >= 0; i--) {
+//		btRigidBody* body = rigids[i];
+//		if (body && body->getMotionState()) delete body->getMotionState();
 
-		world->getDynamicsWorld()->removeRigidBody(body);
+//		world->getDynamicsWorld()->removeRigidBody(body);
 
 //		ShapeData* sd = (ShapeData*)body->getUserPointer();
 //		delete sd;
-//		delete body; TODO Commented due to double free error
-	}
+//		delete body;
+//	}
 
 	for (i = 0; i < shapes.size(); i++) {
 		btCollisionShape* shape = shapes[i];
@@ -621,7 +622,11 @@ void CarDynamics::removeBullet() {
 	}
 	shapes.resize(0);
 
-	for (i = 0; i < actions.size(); ++i) world->getDynamicsWorld()->removeAction(actions[i]);
+	//TODO Commented due to seg-faults
+//	for (i = 0; i < actions.size(); ++i) {
+//		world->getDynamicsWorld()->removeAction(actions[i]);
+//	}
+
 	actions.resize(0);
 }
 

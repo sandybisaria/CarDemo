@@ -1,8 +1,5 @@
 #pragma once
 
-#include "terrain/Scene.hpp"
-#include "Sim.hpp"
-
 #include "vdrift/TerrainSurface.hpp"
 #include "vdrift/CarTire.hpp"
 
@@ -18,6 +15,8 @@
 #include <vector>
 #include <map>
 
+// The App class is the main class of the simulation.
+// It sets up Ogre, the input system,
 class App
 	: public sh::MaterialListener,
 	  public Ogre::FrameListener,
@@ -29,11 +28,13 @@ public:
 
 	void run();
 
-	// Some resources are loaded during the App setup
-	TerrainSurface* getTerrainSurface(std::string name) { return &surfaces.at(surfaceMap.at(name)); }
+	TerrainSurface* getTerrainSurface(std::string name) {
+		return &surfaces.at(surfaceMap.at(name));
+	}
 	CarTire* getTire(std::string name) { return &tires.at(tireMap.at(name)); }
 
 private:
+//---- Setup methods
 	bool setup();
 
 	void setupResources();
@@ -43,14 +44,28 @@ private:
 	void setupListeners();
 
 	void setupScene();
-	bool loadSurfaces();
-	bool loadTire(std::string name); // Each surface has its own tire type
 
+//---- Stuntrally loads the surfaces and car tires in their App class...
+	bool loadSurfaces();
+	bool loadTire(std::string name);
+	// Each surface has its own tire type that is loaded on request
+
+	std::vector<TerrainSurface> surfaces;
+	std::map<std::string, size_t> surfaceMap; // Maps surface name to ID
+	std::vector<CarTire> tires;
+	std::map<std::string, size_t> tireMap; // Maps tire name to ID
+
+//---- sh::MaterialListener methods
 	void setupMaterials();
 	void setMaterialFactoryDefaults();
 
-	virtual void materialCreated(sh::MaterialInstance* m, const std::string& configuration, unsigned short lodIndex);
+	virtual void materialCreated(sh::MaterialInstance* m,
+								 const std::string& configuration,
+								 unsigned short lodIndex);
 
+	sh::Factory* mFactory;
+
+//---- Window/input/frame listener methods
 	virtual bool frameRenderingQueued(const Ogre::FrameEvent& evt);
 	void updateCamera(const Ogre::FrameEvent& evt);
 
@@ -59,18 +74,10 @@ private:
 	virtual bool keyPressed(const OIS::KeyEvent& ke);
 	virtual bool keyReleased(const OIS::KeyEvent& ke);
 
-	bool mShutDown;
+	bool mShutDown; // When true, trigger the app shutdown
 
-	Sim* mSim;
-	Scene* mScene;
-
-	std::vector<TerrainSurface> surfaces;
-	std::map<std::string, int> surfaceMap; // Map surface name to ID
-
-	std::vector<CarTire> tires;
-	std::map<std::string, int> tireMap; // Map tire name to ID
-
-	sh::Factory* mFactory;
+	class Sim* mSim;
+	class Scene* mScene;
 
 	Ogre::Root* mRoot;
 	Ogre::RenderWindow* mWindow;

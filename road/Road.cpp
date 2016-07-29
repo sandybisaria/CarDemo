@@ -2,8 +2,10 @@
 
 #include "../Sim.hpp"
 
-#include "../tinyxml/tinyxml2.h"
 #include "../terrain/RenderConst.hpp"
+#include "../terrain/ShapeData.hpp"
+
+#include "../vdrift/CollisionWorld.hpp"
 
 #include <Ogre.h>
 

@@ -1,12 +1,7 @@
 #pragma once
 
-class Sim;
-
 #include "MathVector.hpp"
-#include "CarDynamics.hpp"
 #include "CollisionContact.hpp"
-
-#include "../Sim.hpp"
 
 #include <btBulletCollisionCommon.h>
 #include <btBulletDynamicsCommon.h>
@@ -32,7 +27,7 @@ public:
 // Based on Stuntrally's COLLISION_WORLD in vdrift/collision_world.h
 class CollisionWorld {
 public:
-	CollisionWorld();
+	CollisionWorld(class Sim* s);
 	~CollisionWorld();
 
 	void clear();
@@ -44,13 +39,13 @@ public:
 	// Casts a ray into the collision world, and returns for first hit (caster is excluded)
 	bool castRay(const MathVector<float, 3>& position, const MathVector<float, 3>& direction, const float length,
 				 const btCollisionObject* caster, CollisionContact& contact,
-				 CarDynamics* carDyn, int nWheel, bool ignoreCars/*, bool camTilt, bool camDist = false*/) const; //TODO Okay to ignore cam bools?
+				 class CarDynamics* carDyn, int nWheel, bool ignoreCars/*, bool camTilt, bool camDist = false*/) const; //TODO Okay to ignore cam bools?
 
 	// World physics
-	void update(double dt);
-	CarDynamics* oldDyn;
+	void update(float dt);
+	class CarDynamics* oldDyn;
 
-	Sim* sim;
+	class Sim* sim;
 
 	void setMaxSubSteps(int ms) { maxSubSteps = ms; }
 	void setFixedTimeStep(double ft) { fixedTimeStep = ft; }
@@ -76,5 +71,5 @@ private:
 
 	// Remember that timeStep < maxSubSteps * fixedTimeStep (for stepSimulation)
 	int maxSubSteps;
-	double fixedTimeStep;
+	float fixedTimeStep;
 };

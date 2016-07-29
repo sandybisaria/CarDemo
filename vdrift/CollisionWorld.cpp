@@ -1,18 +1,17 @@
 #include "CollisionWorld.hpp"
 
-#include "TerrainSurface.hpp"
-#include "Bezier.hpp"
+#include "../Sim.hpp"
+
 #include "../terrain/ShapeData.hpp"
 
-#include "../util/Axes.hpp"
 #include "../util/ToBullet.hpp"
 
 // DynamicsWorld::solveConstraints not implemented
 
 // IntTickCallback not implemented
 
-CollisionWorld::CollisionWorld()
-	: maxSubSteps(24), fixedTimeStep(1. / 160.), oldDyn(0), sim(0) /*Defaults according to Stuntrally settings*/ {
+CollisionWorld::CollisionWorld(Sim* s)
+	: maxSubSteps(24), fixedTimeStep(1.f / 160.f), oldDyn(0), sim(s) {
 	config = new btDefaultCollisionConfiguration();
 	dispatcher = new btCollisionDispatcher(config);
 
@@ -199,29 +198,10 @@ bool CollisionWorld::castRay(const MathVector<float, 3>& origin, const MathVecto
 	return false;
 }
 
-void CollisionWorld::update(double dt) {
+void CollisionWorld::update(float dt) {
+	if (dt <= 0) { return; }
 	world->stepSimulation(dt, maxSubSteps, fixedTimeStep);
 
-	//TODO The rest of CollisionWorld::update is not useful for the physics simulation
-	// Use collision hit results, once a frame
-//	int n = world->vHits.size();
-//	if (n > 0) {
-//		// Pick the one with biggest force
-//		DynamicsWorld::Hit& hit = world->vHits[0];
-//		float force = 0.f;//, vel = 0.f;
-//		for (int i=0; i < n; ++i)
-//			if (world->vHits[i].force > force) {
-//				force = world->vHits[i].force;
-//				hit = world->vHits[i];
-//			}
-//
-//		CarDynamics* cd = hit.sdCar->dyn; oldDyn = cd;
-//		Ogre::Vector3 vel = Axes::vectorToOgre(toMathVector(hit.vel));
-//		Ogre::Vector3 norm = Axes::vectorToOgre(toMathVector(hit.norm));
-//		float vlen = vel.length(), normvel = abs(vel.dotProduct(norm));
-//	}
-//
-//	// Ignored cdOld and fHitForce
-//
-//	world->vHits.clear();
+	// The rest of Stuntrally's CollisionWorld::update is not useful for our
+	// physics simulation needs.
 }

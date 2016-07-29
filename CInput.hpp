@@ -6,9 +6,8 @@
 
 #include <map>
 
-class Sim;
-
 namespace PlayerActions {
+	// Certain actions from Stuntrally were uncommented due to lack of relevance
 	enum PlayerActions {
 		THROTTLE, BRAKE,
 		STEERING, HANDBRAKE,
@@ -20,11 +19,11 @@ namespace PlayerActions {
 	};
 }
 
-// Based on Stuntrally's CInput class, receiving input from the keyboard and storing it
-//TODO CInput and CarControlMap may possibly be combined if it makes sense
+// Based on Stuntrally's CInput class (CInput means "car input")
+// Receives and stores keyboard inputs
 class CInput {
 public:
-	CInput(Sim* sim);
+	CInput();
 
 	double* getPlayerInputState() { return playerInputState; }
 
@@ -33,8 +32,6 @@ public:
 
 private:
 	void loadInputDefaults();
-
-	Sim* mSim; //TODO Remove; not needed
 
 	std::map< OIS::KeyCode, PlayerActions::PlayerActions > triggerInputMap;
 	std::map< std::pair<OIS::KeyCode, OIS::KeyCode>, PlayerActions::PlayerActions > axisInputMap;

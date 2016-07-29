@@ -9,7 +9,7 @@ TurnState::TurnState(ControllerInterface *interface, bool isLeftTurn, double tur
 
 	double inputs[] = {startSpeed, turnRadius};
 	turn = predictSteering(inputs) * (isLeftTurn ? -1.0 : 1.0); // Left (CCW) is negative for turning
-	turn = clamp(turn, -1, 1); // Maybe give an error or something when attempting an impossible turn
+	turn = clamp(turn, -1.0, 1.0); // Maybe give an error or something when attempting an impossible turn
 
 //	turn = getTurn(turnRadius, startSpeed) * (isLeftTurn ? -1.0 : 1.0); // Left (CCW) is negative for turning
 

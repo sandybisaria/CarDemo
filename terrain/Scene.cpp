@@ -3,6 +3,8 @@
 
 #include "../road/Road.hpp"
 
+#include "../vdrift/CollisionWorld.hpp"
+
 Scene::Scene(Ogre::SceneManager* sceneMgr)
 	: mSim(0), mSceneMgr(sceneMgr), sun(0),
 	  mTerrainGlobals(0), mTerrainGroup(0) {

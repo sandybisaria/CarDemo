@@ -1,10 +1,12 @@
 #pragma once
 
 #include "CarConstants.hpp"
-#include <vector>
-#include <cassert>
 
 #include "../CInput.hpp"
+
+#include <cassert>
+#include <cmath>
+#include <vector>
 
 // Class for mapping keyboard inputs to valid car control inputs
 class CarControlMapLocal {
@@ -28,7 +30,8 @@ public:
 	}
 
 	// Skipped player int, race countdowns params, performance test params
-	const std::vector<double>& processInput(const double* channels, double carSpeed, double sssEffect,
+	const std::vector<double>& processInput(const double* channels,
+											double carSpeed, double sssEffect,
 											double sssVelFactor) {
 		assert(inputs.size() == CarInput::ALL);
 

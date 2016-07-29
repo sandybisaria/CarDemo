@@ -272,7 +272,7 @@ double CarDynamics::autoClutch(double lastClutch, double dt) const {
 	double thresh = threshold * (maxRPM / 7000.0) * ((1.0 - gearEffect) + gearFactor * gearEffect) + stallRPM;
 	if (clutch.isLocked()) thresh *= 0.5;
 	double cl = (rpm - stallRPM) / (thresh - stallRPM);
-	cl = clamp(cl, 0.f, 1.f);
+	cl = clamp(cl, 0.0, 1.0);
 
 	double newAuto = cl * shiftAutoClutch();
 
@@ -550,9 +550,9 @@ void CarDynamics::doTCS(int i, double normalForce) {
 			if (error < thresholdDis &&  tcsActive[i]) tcsActive[i] = false;
 
 			if (tcsActive[i]) {
-				double curClutch = clamp(clutch.getClutch(), 0, 1);
+				double curClutch = clamp(clutch.getClutch(), 0.0, 1.0);
 				gas -= error * 10.0 * curClutch;
-				gas = clamp(gas, 0, 1);
+				gas = clamp(gas, 0.0, 1.0);
 				engine.setThrottle(gas);
 			}
 		} else {

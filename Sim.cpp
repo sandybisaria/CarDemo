@@ -1,9 +1,11 @@
 #include "Sim.hpp"
+#include "App.hpp"
+
+#include "ai/BasicController.hpp"
 
 Sim::Sim(App* app)
 	: mSceneMgr(0), scene(0), mApp(app),
 	  world(0), carInput(0),
-	  frameRate(1.f / 60.f), targetTime(0),
 	  debugDraw(NULL), enableDebug(false) {
 }
 
@@ -12,12 +14,14 @@ Sim::~Sim() {
 	delete carInput;
 	delete debugDraw;
 
-	for (std::vector<Car*>::iterator it = cars.begin(); it != cars.end(); it++) {
+	for (std::vector<Car*>::iterator it = cars.begin();
+		 it != cars.end(); it++) {
 		delete (*it);
 	}
 	cars.clear();
 
-	for (std::vector<BasicController*>::iterator it = controllers.begin(); it != controllers.end(); it++) {
+	for (std::vector<BasicController*>::iterator it = controllers.begin();
+		 it != controllers.end(); it++) {
 		delete (*it);
 	}
 	controllers.clear();
@@ -26,12 +30,11 @@ Sim::~Sim() {
 void Sim::setup(Ogre::SceneManager* sceneMgr) {
 	mSceneMgr = sceneMgr;
 
-	world = new CollisionWorld();
-	world->sim = this; // Maybe make more secure?
+	world = new CollisionWorld(this);
 
-	numCars = 1; // Setting the number of cars
-	carToWatch = 0; // ID of car to watch
-	idCarToControl = 0;  // The ID of the car that the user can control
+	numCars = 1;
+	idCarToWatch = 0;
+	idCarToControl = 0;
 
 	for (int i = 0; i < numCars; i++) {
 		Car* newCar = new Car(i);
@@ -49,7 +52,7 @@ void Sim::setup(Ogre::SceneManager* sceneMgr) {
 //		bc->setupDataCollection();
 	}
 
-	carInput = new CInput(this);
+	carInput = new CInput();
 
 	// Debug drawing
 	debugDraw = new BtOgre::DebugDrawer(mSceneMgr->getRootSceneNode(), world->getDynamicsWorld());
@@ -58,11 +61,8 @@ void Sim::setup(Ogre::SceneManager* sceneMgr) {
 }
 
 void Sim::update(float dt) {
-//	// Was in the loop for fluids...
-//	for (int i = 0; i < numCars; i++) { cars[i]->updatePreviousVelocity(); }
-
 	// Update physics
-	if (dt > 0) world->update(dt);
+	world->update(dt);
 
 	// Update model
 	for (int i = 0; i < numCars; i++) { cars[i]->update(); }
@@ -71,9 +71,10 @@ void Sim::update(float dt) {
 	for (int i = 0; i < numCars; i++) {
 		const std::vector<double>* inputs;
 		if (i == idCarToControl) {
-			 inputs = &localMap.processInput(carInput->getPlayerInputState(), cars[i]->getSpeedDir(), 0.0, 0.0);
+			// SSS effects/factors all zero by default
+			inputs = &localMap.processInput(carInput->getPlayerInputState(),
+											cars[i]->getSpeedDir(), 0.0, 0.0);
 		} else {
-			//TODO Add "basic AI" for the vehicles
 			inputs = &controllers[i]->updateInputs(dt);
 		}
 
@@ -85,29 +86,35 @@ void Sim::update(float dt) {
 		debugDraw->step();
 	}
 
-	//TODO May want to see how Stuntrally "actually" loops
+	// In the future, may want to implement Stuntrally's looping
 }
 
 Ogre::Vector3 Sim::getCameraPosition() {
-	if (carToWatch >= cars.size()) return Ogre::Vector3::ZERO;
+	if (clamp(idCarToWatch, 0, (int) cars.size()) != idCarToWatch) {
+		return Ogre::Vector3::ZERO;
+	}
 
-	Ogre::Vector3 pos = cars[carToWatch]->getPosition();
+	Ogre::Vector3 pos = cars[idCarToWatch]->getPosition();
 	pos += 2 * Ogre::Vector3::UNIT_Y; // Lift camera above car
-	pos -= 8 * Axes::vectorToOgre(cars[carToWatch]->getForwardVector()); // Move behind car
+	pos -= 8 * Axes::vectorToOgre(
+		cars[idCarToWatch]->getForwardVector()); // Move behind car
 
 	return pos;
 }
 
 Ogre::Quaternion Sim::getCameraOrientation() {
-	if (carToWatch >= cars.size()) return Ogre::Quaternion::IDENTITY;
+	if (clamp(idCarToWatch, 0, (int) cars.size()) != idCarToWatch) {
+		return Ogre::Quaternion::IDENTITY;
+	}
 
-	Ogre::Quaternion orient = cars[carToWatch]->getOrientation();
+	Ogre::Quaternion orient = cars[idCarToWatch]->getOrientation();
 
-	Ogre::Vector3 downVector = Axes::vectorToOgre(cars[carToWatch]->getDownVector());
-	orient = orient * Ogre::Quaternion(Ogre::Degree(270), downVector); // Rotate to face front of car
+	Ogre::Vector3 downVector = Axes::vectorToOgre(cars[idCarToWatch]->getDownVector());
+	orient = orient * Ogre::Quaternion(
+		Ogre::Degree(270), downVector); // Rotate to face front of car
 
 	// Turn right-side-up; not sure why we can simply rotate around the Z axis
-	Ogre::Vector3 forwardVector = /*Axes::vectorToOgre(cars[carToWatch]->getForwardVector());*/ Ogre::Vector3::UNIT_Z;
+	Ogre::Vector3 forwardVector = Ogre::Vector3::UNIT_Z;
 	orient = orient * Ogre::Quaternion(Ogre::Degree(180), forwardVector);
 
 	return orient;

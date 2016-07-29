@@ -1,22 +1,8 @@
 #pragma once
 
-class App;
-class Scene;
-class Car;
-
-#include "terrain/Scene.hpp"
-
-#include "vdrift/CollisionWorld.hpp"
-#include "vdrift/Car.hpp"
 #include "vdrift/CarControlMap.hpp"
 
-#include "ai/BasicController.hpp"
-class BasicController;
-
 #include "btOgre/BtOgreDebug.h"
-
-#include "CInput.hpp"
-#include "App.hpp"
 
 #include "OgreSceneManager.h"
 
@@ -24,49 +10,47 @@ class BasicController;
 
 #include <vector>
 
+// The Sim class is responsible for managing aspects of the simulation, like
+// the vehicles, scene, and physics engine.
 class Sim {
 public:
-	Sim(App* app);
+	Sim(class App* app);
 	~Sim();
 
 	void setup(Ogre::SceneManager* sceneMgr);
+
 	void update(float dt);
 
 	Ogre::Vector3 getCameraPosition();
 	Ogre::Quaternion getCameraOrientation();
-	int carToWatch;
 
-	CollisionWorld* getCollisionWorld() { return world; }
+	class CollisionWorld* getCollisionWorld() { return world; }
 
-	Scene* scene;
+	class Scene* scene;
 
-	TerrainSurface* getTerrainSurface(std::string name);
+	class TerrainSurface* getTerrainSurface(std::string name);
 
-	// Explicitly called by the App
 	void keyPressed(const OIS::KeyEvent& ke);
 	void keyReleased(const OIS::KeyEvent& ke);
 
 private:
-	App* mApp;
+	class App* mApp;
 
 	Ogre::SceneManager* mSceneMgr;
 
 	CollisionWorld* world;
 
-	const double frameRate;
-	int targetTime;
-
-	std::vector<Car*> cars;
+	std::vector<class Car*> cars;
 	int numCars; // Number of cars to load
-	int idCarToControl;
+	int idCarToWatch, idCarToControl;
 
-	// Car controllers
-	std::vector<BasicController*> controllers;
+	std::vector<class BasicController*> controllers;
 
 	// Keyboard control
 	CInput* carInput;
 	CarControlMapLocal localMap;
 
+	// Bullet-Ogre debugging
 	BtOgre::DebugDrawer* debugDraw;
 	bool enableDebug;
 };

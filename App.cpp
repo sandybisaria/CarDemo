@@ -1,18 +1,22 @@
-#include <iostream>
+#include "App.hpp"
+#include "Sim.hpp"
 
 #include "shiny/Platforms/Ogre/OgrePlatform.hpp"
 #include "shiny/Platforms/Ogre/OgreMaterial.hpp"
 
+#include "terrain/Scene.hpp"
+
+#include "util/Axes.hpp"
+#include "util/ConfigFile.hpp"
+
 #include <OgreConfigFile.h>
 #include <OgreRenderWindow.h>
 
-#include "App.hpp"
-
 App::App(Ogre::Root* root)
 	: mShutDown(false), mFactory(0), mScene(0), mSim(0),
-	  mRoot(root), mWindow(0), mSceneMgr(0), mCamera(0), mCameraNode(0), followCam(true),
-	  mInputMgr(0), mKeyboard(0) {
-	Axes::init();
+	  mRoot(root), mWindow(0), mSceneMgr(0), mCamera(0), mCameraNode(0),
+	  followCam(true), mInputMgr(0), mKeyboard(0) {
+	Axes::init(); // The Axes functions need to be initialized before use
 }
 
 App::~App() {
@@ -24,46 +28,42 @@ App::~App() {
 	delete mSim;
 	delete mScene;
 
-	delete mFactory;
+	//TODO Commented due to seg-fault
+//	delete mFactory;
 }
 
 void App::run() {
-	if (!setup()) {
-		return;
-	}
+	if (!setup()) {	return;	}
 
-	mRoot->startRendering(); //TODO Allow for manual loop (locked fps)
+	// In the future, possibly allow for manual loop (locked fps)
+	mRoot->startRendering();
 }
 
 bool App::setup() {
-	//TODO Look up in user's system
+	// Change if your Ogre installation directory differs
 	const Ogre::String OGRE_PLUGINS_DIR("/usr/local/lib/OGRE/");
-
 	mRoot->loadPlugin(OGRE_PLUGINS_DIR + "RenderSystem_GL");
 	mRoot->loadPlugin(OGRE_PLUGINS_DIR + "Plugin_OctreeSceneManager");
-	//TODO Add Plugin_ParticleFX for particles
+	// The plugin Plugin_ParticleFX was omitted due to the (current) lack of particles
 
 	setupResources();
 
-	if (!setupRenderSystem()) {
-		return false;
-	}
+	if (!setupRenderSystem()) {	return false; }
 
 	setupInputSystem();
 
+	// ST_EXTERIOR_FAR seemed to be the most suitable scene manager type
 	mSceneMgr = mRoot->createSceneManager(Ogre::ST_EXTERIOR_FAR);
 
 	setupMaterials();
+
 	setupSim();
 
 	Ogre::TextureManager::getSingleton().setDefaultNumMipmaps(5);
 
-	//TODO Init GUI system
-
 	setupListeners();
-	setupScene();
 
-	//TODO Setup compositors for rendering effects?
+	setupScene();
 
 	return true;
 }
@@ -82,34 +82,23 @@ void App::setupResources() {
 			locType = i->first;
 			name = i->second;
 
-			Ogre::ResourceGroupManager::getSingleton().addResourceLocation(
-					name, locType);
+			Ogre::ResourceGroupManager::getSingleton().addResourceLocation(name, locType);
 		}
 	}
 	Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
 }
 
 bool App::setupRenderSystem() {
+	// Defaulting to OpenGL for cross-platform support
 	const std::string RENDER_SYSTEM("OpenGL Rendering Subsystem");
 	Ogre::RenderSystem* rs = mRoot->getRenderSystemByName(RENDER_SYSTEM);
 	if (rs->getName() != RENDER_SYSTEM) return false;
 
 	rs->setConfigOption("Full Screen", "No");
 	rs->setConfigOption("Video Mode", "800 x 600 @ 32-bit");
+	// Look up ConfigOptionMap if you want to set other config options
 
 	mRoot->setRenderSystem(rs);
-
-	// Would be useful for configuring render system options
-//	Ogre::ConfigOptionMap& cf = rs->getConfigOptions();
-//	Ogre::ConfigOptionMap::iterator it;
-//	for (it = cf.begin(); it != cf.end(); it++) {
-//		std::cout << it->first << std::endl;
-//		Ogre::StringVector& options = it->second.possibleValues;
-//		Ogre::StringVector::iterator jt;
-//		for (jt = options.begin(); jt != options.end(); jt++) {
-//			std::cout << '\t' << *jt << std::endl;
-//		}
-//	}
 
 	mWindow = mRoot->initialise(true, "CarDemo");
 	return true;
@@ -125,16 +114,19 @@ void App::setupInputSystem() {
 	pl.insert(std::make_pair(std::string("WINDOW"), windowHandleStr.str()));
 	mInputMgr = OIS::InputManager::createInputSystem(pl);
 
-	mKeyboard = static_cast<OIS::Keyboard*>(mInputMgr->createInputObject(OIS::OISKeyboard, true));
+	mKeyboard = static_cast<OIS::Keyboard*>(
+		mInputMgr->createInputObject(OIS::OISKeyboard, true));
 }
 
 void App::setupMaterials() {
-	sh::OgrePlatform* platform = new sh::OgrePlatform("General", "../data/materials2");
+	// Shiny material scripts (*.mat, etc.) stored in materials2 dir
+	sh::OgrePlatform* platform = new sh::OgrePlatform("General",
+													  "../data/materials2");
 	mFactory = new sh::Factory(platform);
 
 	setMaterialFactoryDefaults();
 
-	mFactory->setCurrentLanguage(sh::Language_GLSL); // Default, for Linux
+	mFactory->setCurrentLanguage(sh::Language_GLSL); // Default for Linux
 	mFactory->loadAllFiles();
 
 	mFactory->setMaterialListener(this);
@@ -159,12 +151,7 @@ void App::setMaterialFactoryDefaults() {
 	fct.setGlobalSetting("editor", "false");
 	fct.setSharedParameter("terrainWorldSize", sh::makeProperty<sh::FloatValue>(new sh::FloatValue(10000.0)));
 	//TODO What other defaults are needed (from App::SetFactoryDefaults)?
-
-	//TODO NEED STUFF FROM CScene::UpdFog TOO??
-//	fct.setSharedParameter("fogColorSun",  sh::makeProperty<sh::Vector4>(new sh::Vector4(0, 0, 0, 0))); //Hard-coded
-//	fct.setSharedParameter("fogColorAway",  sh::makeProperty<sh::Vector4>(new sh::Vector4(0, 0, 0, 0))); //Hard-coded
-//	fct.setSharedParameter("fogColorH",  sh::makeProperty<sh::Vector4>(new sh::Vector4(0, 0, 0, 0))); //Hard-coded
-//	fct.setSharedParameter("fogParamsH",  sh::makeProperty<sh::Vector4>(new sh::Vector4(0, 0, 0, 0))); //Hard-coded
+	// In the future, may need settings from CScene::UpdFog
 }
 
 void App::setupSim() {
@@ -180,7 +167,6 @@ void App::setupListeners() {
 }
 
 void App::setupScene() {
-	//TODO Explore multiple viewports for split-screen effects
 	//Would entail managing cameras in separate class
 	mCamera = mSceneMgr->createCamera("MainCamera");
 
@@ -189,7 +175,7 @@ void App::setupScene() {
 	mCameraNode->setDirection(Ogre::Vector3::UNIT_X);
 	mCameraNode->attachObject(mCamera);
 
-	//TODO Make configurable a la Stuntrally
+	// In the future, make user-configurable a la Stuntrally
 	mCamera->setNearClipDistance(0.2);
 	mCamera->setFarClipDistance(0); // Infinite clip distance
 
@@ -198,10 +184,8 @@ void App::setupScene() {
 	mCamera->setAspectRatio(Ogre::Real(vp->getActualWidth() /
 									   vp->getActualHeight()));
 
-	if (!loadSurfaces())
-		return; //TODO Error: Can't load surfaces
+	if (!loadSurfaces()) { return; }
 
-	//TODO Set up GUI?
 	mScene = new Scene(mSceneMgr);
 	mScene->setupTerrain(mSim);
 }
@@ -223,32 +207,41 @@ bool App::loadSurfaces() {
 		TerrainSurface* ts = new TerrainSurface();
 		ts->name = *sec;
 		surfaces.push_back(*ts);
-		surfaceMap[ts->name] = (int)surfaces.size() - 1;
+		surfaceMap[ts->name] = surfaces.size() - 1;
 
 		int id;
-		params.getParam(*sec + ".ID", id); // For sound..?
-		ts->setType(id);
+		params.getParam(*sec + ".ID", id); // The ID may only be used for sounds
+		ts->setType((unsigned int) id);
 
 		float temp = 0.0;
-		params.getParam(*sec + ".BumpWaveLength", temp);	ts->bumpWavelength = temp;
-		params.getParam(*sec + ".BumpAmplitude", temp);		ts->bumpAmplitude = temp;
+		params.getParam(*sec + ".BumpWaveLength", temp);
+		ts->bumpWavelength = temp;
+		params.getParam(*sec + ".BumpAmplitude", temp);
+		ts->bumpAmplitude = temp;
 
-		params.getParam(*sec + ".FrictionTread", temp);		ts->friction = temp;
-		if (params.getParam(*sec + ".FrictionX", temp))  	ts->frictionX = temp;
-		if (params.getParam(*sec + ".FrictionY", temp))  	ts->frictionY = temp;
+		params.getParam(*sec + ".FrictionTread", temp);
+		ts->friction = temp;
+		if (params.getParam(*sec + ".FrictionX", temp))
+			ts->frictionX = temp;
+		if (params.getParam(*sec + ".FrictionY", temp))
+			ts->frictionY = temp;
 
-		if (params.getParam(*sec + ".RollResistance", temp))ts->rollingResist = temp;
-		params.getParam(*sec + ".RollingDrag", temp);		ts->rollingDrag = temp;
+		if (params.getParam(*sec + ".RollResistance", temp))
+			ts->rollingResist = temp;
+		params.getParam(*sec + ".RollingDrag", temp);
+		ts->rollingDrag = temp;
 
-		// Tire
+		// Get the tire
 		std::string tireFile;
 		if (!params.getParam(*sec + "." + "Tire", tireFile)) {
-			tireFile = "Default"; // Default surface if not found
+			tireFile = "Default"; // Default tire if not found
 		}
 		ts->tireName = tireFile;
 
-		if (tireMap.find(ts->tireName) == tireMap.end())
-			if (!loadTire(ts->tireName)) return false;
+		// If the tire was not already initialized, load the file
+		if (tireMap.find(ts->tireName) == tireMap.end()) {
+			if (!loadTire(ts->tireName)) { return false; }
+		}
 
 		ts->tire = getTire(ts->tireName);
 	}
@@ -259,31 +252,32 @@ bool App::loadSurfaces() {
 bool App::loadTire(std::string name) {
 	std::string tirePath = "../data/cars/common/" + name + ".tire";
 	ConfigFile tireParams;
-	if (!tireParams.load(tirePath)) return false;
+	if (!tireParams.load(tirePath)) { return false; }
 
 	CarTire* t = new CarTire();
 	t->name = name;
 	tires.push_back(*t);
-	tireMap[t->name] = (int)tires.size() - 1;
+	tireMap[t->name] = tires.size() - 1;
 
 	float value;
 	for (int i = 0; i < 15; ++i) {
 		int numinfile = i;
-		if (i == 11)		numinfile = 111;
+			 if (i == 11)	numinfile = 111;
 		else if (i == 12)	numinfile = 112;
 		else if (i > 12)	numinfile -= 1;
+
 		std::stringstream str;  str << "params.a" << numinfile;
-		if (!tireParams.getParam(str.str(), value))  return false;
+		if (!tireParams.getParam(str.str(), value)) { return false; }
 		t->lateral[i] = value;
 	}
 	for (int i = 0; i < 11; ++i) {
 		std::stringstream str;  str << "params.b" << i;
-		if (!tireParams.getParam(str.str(), value))  return false;
+		if (!tireParams.getParam(str.str(), value)) { return false; }
 		t->longitudinal[i] = value;
 	}
 	for (int i = 0; i < 18; ++i) {
 		std::stringstream str;  str << "params.c" << i;
-		if (!tireParams.getParam(str.str(), value))  return false;
+		if (!tireParams.getParam(str.str(), value)) { return false; }
 		t->aligning[i] = value;
 	}
 
@@ -291,30 +285,26 @@ bool App::loadTire(std::string name) {
 	return true;
 }
 
-//TODO Investigate if required
-void App::materialCreated(sh::MaterialInstance* m, const std::string& configuration, unsigned short lodIndex) {
+void App::materialCreated(sh::MaterialInstance* m,
+						  const std::string& configuration,
+						  unsigned short lodIndex) {
 	Ogre::Technique* t = static_cast<sh::OgreMaterial*>(m->getMaterial())->
 			getOgreTechniqueForConfiguration(configuration, lodIndex);
 
-	if (m->hasProperty("instancing") &&
-			sh::retrieveValue<sh::StringValue>(m->getProperty("instancing"), 0).get() == "true") {
+	if (m->hasProperty("instancing") && sh::retrieveValue<sh::StringValue>(
+				m->getProperty("instancing"), 0).get() == "true") {
 		t->setShadowCasterMaterial("shadowcaster_instancing");
 	}
 
-	if (!m->hasProperty("transparent") ||
-			!sh::retrieveValue<sh::BooleanValue>(m->getProperty("transparent"), 0).get()) {
+	if (!m->hasProperty("transparent") || !sh::retrieveValue<sh::BooleanValue>(
+				m->getProperty("transparent"), 0).get()) {
 		t->setShadowCasterMaterial("shadowcaster_noalpha");
 	}
 }
 
 bool App::frameRenderingQueued(const Ogre::FrameEvent& evt) {
-	if (mShutDown) {
-		return false;
-	}
-
-	if (mWindow->isClosed()) {
-		return false;
-	}
+	if (mShutDown) { return false; }
+	if (mWindow->isClosed()) { return false; }
 
 	mKeyboard->capture();
 	updateCamera(evt);
@@ -373,6 +363,7 @@ bool App::keyPressed(const OIS::KeyEvent& ke) {
 	mSim->keyPressed(ke);
 
 	switch (ke.key) {
+	// Shut down
 	case OIS::KC_ESCAPE:
 		mShutDown = true;
 		break;
