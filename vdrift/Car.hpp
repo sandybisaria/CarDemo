@@ -1,11 +1,7 @@
 #pragma once
 
-class CarDynamics;
-class CollisionWorld;
-
-#include "CarDynamics.hpp"
 #include "../shiny/Main/MaterialInstance.hpp"
-#include "CollisionWorld.hpp"
+
 #include "../util/Axes.hpp"
 
 #include <OgreSceneManager.h>
@@ -13,19 +9,20 @@ class CollisionWorld;
 
 #include <vector>
 
-class Car
-	: public sh::MaterialInstanceListener {
+// The Car class combines Stuntrally's CAR and CarModel classes.
+// Each instance is responsible for both its Ogre model and its dynamics sim
+class Car : public sh::MaterialInstanceListener {
 public:
 	Car(int id);
 	~Car();
 
-	void setup(std::string carName, Ogre::SceneManager* sceneMgr, CollisionWorld& world);
+	void setup(std::string carName, Ogre::SceneManager* sceneMgr,
+			   class CollisionWorld& world);
 
-//	void updatePreviousVelocity();
 	void update();
 	void handleInputs(const std::vector<double>& inputs);
 
-	// Interface methods
+//---- Interface methods
 	double getSpeedDir();
 	double getSpeedMPS(); // Speed as "measured" internally by the car
 	double getMaxAngle() const;
@@ -35,12 +32,14 @@ public:
 	MathVector<double, 3> getDownVector();
 	MathVector<double, 3> getForwardVector();
 
-	// MaterialInstanceListener methods
-	virtual void requestedConfiguration(sh::MaterialInstance* m, const std::string& configuration) { }
-	virtual void createdConfiguration(sh::MaterialInstance* m, const std::string& configuration);
+//---- MaterialInstanceListener methods
+	virtual void requestedConfiguration(sh::MaterialInstance* m,
+										const std::string& configuration) { }
+	virtual void createdConfiguration(sh::MaterialInstance* m,
+									  const std::string& configuration);
 
 private:
-	bool loadFromConfig(CollisionWorld& world); // Load .car file
+	bool loadFromConfig(class CollisionWorld& world); // Load .car file
 	void loadModel(); // Instantiate model nodes and meshes
 	void loadMaterials();
 
@@ -54,22 +53,24 @@ private:
 
 	int numWheels;
 
-	std::string mCarName;
-	int mId; std::string resGrpId;
+	unsigned int mId; // Make sure each car has a unique ID (
+	std::string mCarName; // Really the type of car
+	std::string resGrpIdStr;
 	std::string carPath;
 
 	enum eMaterials {mtrCarBody, mtrCarBrake, numMaterials};
 	std::string mtrNames[numMaterials];
 
-	CarDynamics* dyn;
-	// 0.81 is due to "normal" (as opposed to "easy") sim (from Stuntrally) //TODO Maybe remove?
-	// 0.7 due to driving on asphalt (as opposed to other terrains) (from Stuntrally) //TODO Remove? Or make dependent on terrain?
-	const double rangeMul = 0.81 * 0.7;
+	class CarDynamics* dyn;
+
+	const double rangeMul;
 
 	Ogre::SceneManager* mSceneMgr;
 
 	Ogre::SceneNode* mainNode;
 	std::vector<Ogre::SceneNode*> wheelNodes;
+	//TODO Brake nodes currently disabled because the CAD model does not have them.
+	// It would be nice to support both models that have and that don't have them
 //	std::vector<Ogre::SceneNode*> brakeNodes;
 
 	std::vector<Ogre::SceneNode*> nodesToDelete;

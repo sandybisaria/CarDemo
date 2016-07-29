@@ -17,7 +17,7 @@ enum WheelPosition {
 };
 
 namespace CarInput {
-	// "Actual" car inputs that the car uses
+	// "Actual" car inputs that the car uses; some from Stuntrally are commented
 	enum CarInput {
 		THROTTLE, BRAKE,
 //		BOOST, FLIP,
@@ -30,7 +30,7 @@ namespace CarInput {
 	};
 }
 
-// To convert between different .car file formats
+// To convert between different .car file formats (up-converts v1 .car files)
 static void versionConvert(float& x, float& y, float& z) {
 	float tx = x, ty = y, tz = z;
 	x = ty;  y = -tx;  z = tz;

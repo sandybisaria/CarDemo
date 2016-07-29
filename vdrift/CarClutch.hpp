@@ -1,5 +1,6 @@
 #pragma once
 
+// Stuntrally's CARCLUTCH class
 class CarClutch {
 public:
 	// Makes an S2000-like car
@@ -42,22 +43,21 @@ public:
 	double getLastTorque() const { return lastTorque; }
 
 private:
-	// Constants
-	double clutchMaxTorque;
+//---- Constants
 	// The torque capacity (max transmitted torque) of the clutch is:
 	// TC = sliding * radius * area * max-pressure.
 	// Should be one-two times the max engine torque, typically 1.25
+	double clutchMaxTorque;
 
-	double threshold;
 	// Clutch pretends to be fully engaged when (engine speed - transmission speed)
 	// is less than (threshold * normal-force)
+	double threshold;
 
-
-	// Variables
+//---- Variables
 	double clutchPosition;
 	bool locked;
 
-	// For info only
+//---- For info only
 	double lastTorque;
 	double engineSpeed;
 	double driveSpeed;

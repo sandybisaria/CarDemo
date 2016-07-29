@@ -9,6 +9,7 @@
 #include <vector>
 
 // Class for mapping keyboard inputs to valid car control inputs
+// Stuntrally's CARCONTROLMAPLOCAL class
 class CarControlMapLocal {
 public:
 	CarControlMapLocal() {
@@ -19,12 +20,13 @@ public:
 	void reset() { inputs.resize(CarInput::ALL, 0.0f); }
 
 	// Speed sensitive steering (decrease steer angle range with higher speed)
-	// carSpeed in m/s
 	static double getSSSCoeff(double carSpeed, double sssVelFactor, double sssEffect) {
 		double coeff = 1.0f;
 		double carMPH = carSpeed * 2.23693629f;
 
-		if (carMPH > 1.0f) { coeff = std::max(1.f - sssEffect, 1.f - sssVelFactor * carSpeed * 0.02f); }
+		if (carMPH > 1.0f) {
+			coeff = std::max(1.f - sssEffect, 1.f - sssVelFactor * carSpeed * 0.02f);
+		}
 
 		return coeff;
 	}
@@ -50,7 +52,8 @@ public:
 		inputs[CarInput::STEER_LEFT]  = val < 0.f ? -val : 0.f;
 
 		// Shift
-		bool grUp = (bool) channels[PlayerActions::SHIFT_UP], grDn = (bool) channels[PlayerActions::SHIFT_DOWN];
+		bool grUp = (bool) channels[PlayerActions::SHIFT_UP],
+			 grDn = (bool) channels[PlayerActions::SHIFT_DOWN];
 		inputs[CarInput::SHIFT_UP]   = grUp && !grUpOld;
 		inputs[CarInput::SHIFT_DOWN] = grDn && !grDnOld;
 		grUpOld = grUp;  grDnOld = grDn;
@@ -62,5 +65,5 @@ private:
 	std::vector<double> inputs; // Indexed by CarInput values
 
 	// Shift (gear up/down)
-	bool grUpOld, grDnOld; //For only one player
+	bool grUpOld, grDnOld; // So you don't rapid-fire shifts by holding down
 };

@@ -8,7 +8,7 @@ CarDynamics::CarDynamics()
 	  drive(AWD), //prevVel(0, 0, 0),
 	  autoclutch(true), autoshift(true), autorear(true), shifted(true),
 	  shiftTime(0.2), remShiftTime(0.0), lastAutoClutch(1.0), gearToShift(0),
-	  steerValue(0.f), maxAngle(45.0), angularDamping(0.4),
+	  maxAngle(45.0), angularDamping(0.4),
 	  absOn(false), tcsOn(false) {
 	setNumWheels(DEF_WHEEL_COUNT);
 }

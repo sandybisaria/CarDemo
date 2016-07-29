@@ -5,11 +5,13 @@
 
 #include <vector>
 
+// Stuntrally's AABB (axis-aligned minimum bounding box) class
 template <typename T>
 class AABB {
 public:
 	AABB() {}
-	AABB(const AABB<T>& other) : pos(other.pos), center(other.center), size(other.size) {}
+	AABB(const AABB<T>& other)
+		: pos(other.pos), center(other.center), size(other.size) { }
 
 	const AABB<T>& operator=(const AABB<T>& other) {
 		pos = other.pos;
@@ -69,7 +71,8 @@ public:
 
 	class Ray {
 	public:
-		Ray(const MathVector<T, 3>& newOrig, const MathVector<T, 3>& newDir, T newSegLen)
+		Ray(const MathVector<T, 3>& newOrig, const MathVector<T, 3>& newDir,
+			T newSegLen)
 			: orig(newOrig), dir(newDir), segLen(newSegLen) { }
 
 		MathVector<T, 3> orig, dir;
@@ -124,7 +127,7 @@ public:
 	}
 
 	struct Frustum {
-		Frustum() : planes(6) {}
+		Frustum() : planes(6) { }
 		Frustum(T cFrustum[][4]) : planes(6) { set(cFrustum); }
 
 		void set(T cFrustum[][4]) {
@@ -152,7 +155,7 @@ public:
 	}
 
 private:
-	MathVector<T, 3> pos; // Minimum corner (center - size/2)
+	MathVector<T, 3> pos; // Minimum corner (center - 0.5*size)
 	MathVector<T, 3> center; // Exact center
 	MathVector<T, 3> size;
 };

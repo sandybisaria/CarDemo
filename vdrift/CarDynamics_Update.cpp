@@ -4,9 +4,7 @@
 
 // Last function executed (after integration) in Bullet's stepSimulation
 void CarDynamics::updateAction(btCollisionWorld* collisionWorld, btScalar dt) {
-	bool success = synchronizeBody(); // Obtain velocity/position orientation from Bullet after dt
-	if (!success) return; // If values invalid
-
+	synchronizeBody(); // Obtain velocity/position orientation from Bullet after dt
 	updateWheelContacts(); // Given new velocity/position
 	tick(dt); // Run internal simulation of transmission, body, driveline
 	synchronizeChassis(); // Update velocity on Bullet
@@ -27,7 +25,7 @@ void CarDynamics::update() {
 	//TODO updateBuoyancy()
 }
 
-bool CarDynamics::synchronizeBody() {
+void CarDynamics::synchronizeBody() {
 	MathVector<double, 3> v = toMathVector<double>(chassis->getLinearVelocity());
 	MathVector<double, 3> w = toMathVector<double>(chassis->getAngularVelocity());
 	MathVector<double, 3> p = toMathVector<double>(chassis->getCenterOfMassPosition());
@@ -37,8 +35,6 @@ bool CarDynamics::synchronizeBody() {
 	body.setOrientation(q);
 	body.setVelocity(v);
 	body.setAngularVelocity(w);
-
-	return true;
 }
 
 void CarDynamics::updateWheelContacts() {
@@ -49,12 +45,13 @@ void CarDynamics::updateWheelContacts() {
 		rayStart = rayStart - rayDir * wheels[i].getRadius();
 		float rayLen = 1.5f;
 
-		world->castRay(rayStart, rayDir, rayLen, chassis, wheelCon, this, i, false); // False because we have car collisions
+		// Last param set to false because we have car collisions
+		world->castRay(rayStart, rayDir, rayLen, chassis, wheelCon, this, i, false);
 	}
 }
 
 // One simulation step
-void CarDynamics::tick(double dt) {
+void CarDynamics::tick(float dt) {
 	// Must happen before updateDriveline
 	updateTransmission(dt);
 

@@ -1,17 +1,17 @@
 #include "Bezier.hpp"
 
 Bezier::Bezier()
-	: nextPatch(NULL), turn(0), distFromStart(0.f), length(0.f),
+	: nextPatch(NULL), turn(0), length(0.f),
 	  radius(1), roadRadius(100), roadCurvature(1) { }
 
 Bezier& Bezier::copyFrom(const Bezier& other) {
-	for (int x = 0; x < ARR_SIZE; x++)
-		for (int y = 0; y < ARR_SIZE; y++)
+	for (int x = 0; x < 4; x++)
+		for (int y = 0; y < 4; y++)
 			points[x][y] = other.points[x][y];
 
 	center = other.center; radius = other.radius; length = other.length;
-	distFromStart = other.distFromStart; nextPatch = other.nextPatch;
-	roadRadius = other.roadRadius; turn = other.turn; roadCurvature = other.roadCurvature;
+	nextPatch = other.nextPatch; roadRadius = other.roadRadius;
+	turn = other.turn; roadCurvature = other.roadCurvature;
 
 	return *this;
 }
@@ -30,11 +30,11 @@ void Bezier::setFromCorners(const MathVector<float, 3>& fl, const MathVector<flo
 
 	// Assign corners
 	points[0][0] = fl;
-	points[0][ARR_SIZE] = fr;
-	points[ARR_SIZE][ARR_SIZE] = br;
-	points[ARR_SIZE][0] = bl;
+	points[0][3] = fr;
+	points[3][3] = br;
+	points[3][0] = bl;
 
-	// Calculate intermediate front and back points TODO Dependant on ARR_SIZE = 4
+	// Calculate intermediate front and back points
 	temp = fr - fl;
 	if (temp.magnitude() < 0.0001) {
 		points[0][1] = fl;
@@ -55,7 +55,7 @@ void Bezier::setFromCorners(const MathVector<float, 3>& fl, const MathVector<flo
 
 	// Calculate intermediate left and right points
 	int i;
-	for (i = 0; i < ARR_SIZE; ++i) {
+	for (i = 0; i < 4; ++i) {
 		temp = points[3][i] - points[0][i];
 		if (temp.magnitude() > 0.0001) {
 			points[1][i] = points[0][i] + temp.normalized() * (temp.magnitude() / 3.0);
@@ -76,16 +76,17 @@ void Bezier::attach(Bezier& other, bool reverse) {
 
 	MathVector<float, 3> d1 = a - b, d2 = c - b;
 	float diff = d2.magnitude() - d1.magnitude();
-	double dd = ((d1.magnitude() < 0.0001) || (d2.magnitude() < 0.0001)) ? 0.0 : d1.normalized().dot(d2.normalized());
-	float angle = acos((dd >= 1.0L) ? 1.0L :(dd <= -1.0L) ? -1.0L : dd);
+	float dd = ((d1.magnitude() < 0.0001) || (d2.magnitude() < 0.0001)) ?
+			     0.f : d1.normalized().dot(d2.normalized());
+	float angle = acosf((dd >= 1.f) ? 1.f :(dd <= -1.f) ? -1.f : dd);
 	float d1d2mag = d1.magnitude() + d2.magnitude();
-	float alpha = (d1d2mag < 0.0001) ? 0.0f : (M_PI * diff + 2.0 * d1.magnitude() * angle) / d1d2mag / 2.0;
+	float alpha = (d1d2mag < 0.0001) ? 0.f : (float) (M_PI * diff + 2.f * d1.magnitude() * angle) / d1d2mag / 2.f;
 
 	if (fabs(alpha - M_PI/2.0) < 0.001) roadRadius = 10000.0;
-	else roadRadius = d1.magnitude() / 2.0 / cos(alpha);
+	else roadRadius = d1.magnitude() / 2.f / cosf(alpha);
 
 	if (d1.magnitude() < 0.0001) roadCurvature = 0.0;
-	else roadCurvature = 2.0 * cos(alpha) / d1.magnitude();
+	else roadCurvature = 2.f * cosf(alpha) / d1.magnitude();
 
 	// Determine it's a left or right turn at the connection
 	MathVector<float, 3> d = d1.cross(d2);
@@ -94,7 +95,6 @@ void Bezier::attach(Bezier& other, bool reverse) {
 	else turn = 1; // Right turn ahead
 
 	// Calculate distance from start of the road
-	if (other.nextPatch == NULL || reverse) other.distFromStart = distFromStart + d1.magnitude();
 	length = d1.magnitude();
 }
 
@@ -120,10 +120,10 @@ bool Bezier:: collideSubDivQuadSimpleNorm(const MathVector<float, 3>& origin, co
 	float vmin = 0;
 	float vmax = 1;
 
-	MathVector<float, 3> ul = points[ARR_SIZE-1][ARR_SIZE-1];
-	MathVector<float, 3> ur = points[ARR_SIZE-1][0];
+	MathVector<float, 3> ul = points[3][3];
+	MathVector<float, 3> ur = points[3][0];
 	MathVector<float, 3> br = points[0][0];
-	MathVector<float, 3> bl = points[0][ARR_SIZE-1];
+	MathVector<float, 3> bl = points[0][3];
 
 	bool loop = true;
 
@@ -156,10 +156,10 @@ bool Bezier:: collideSubDivQuadSimpleNorm(const MathVector<float, 3>& origin, co
 			sv = v * (tv[1] - tv[0]) + tv[0];
 
 			// Place max and min according to area hit
-			vmax = sv + (0.5 * areacut) * (vmax - vmin);
-			vmin = sv - (0.5 * areacut) * (vmax - vmin);
-			umax = su + (0.5 * areacut) * (umax - umin);
-			umin = su - (0.5 * areacut) * (umax - umin);
+			vmax = sv + (0.5f * areacut) * (vmax - vmin);
+			vmin = sv - (0.5f * areacut) * (vmax - vmin);
+			umax = su + (0.5f * areacut) * (umax - umin);
+			umin = su - (0.5f * areacut) * (umax - umin);
 		} else {
 			if ((i == 0) && QUAD_DIV_FAST_DISCARD) {
 				outtri = origin;
@@ -193,19 +193,19 @@ void Bezier::readFrom(std::istream &file) {
 }
 
 void Bezier::reverse() {
-	MathVector<float, 3> oldpoints[ARR_SIZE][ARR_SIZE];
+	MathVector<float, 3> oldpoints[4][4];
 
-	for (int n = 0; n < ARR_SIZE; ++n)
-		for (int i = 0; i < ARR_SIZE; ++i)
+	for (int n = 0; n < 4; ++n)
+		for (int i = 0; i < 4; ++i)
 			oldpoints[n][i] = points[n][i];
 
-	for (int n = 0; n < ARR_SIZE; ++n)
-		for (int i = 0; i < ARR_SIZE; ++i)
-			points[n][i] = oldpoints[ARR_SIZE-1-n][ARR_SIZE-1-i];
+	for (int n = 0; n < 4; ++n)
+		for (int i = 0; i < 4; ++i)
+			points[n][i] = oldpoints[3-n][3-i];
 }
 
 bool Bezier::checkForProblems() const {
-	MathVector<float,3> corners[ARR_SIZE];
+	MathVector<float,3> corners[4];
 	corners[0] = points[0][0];
 	corners[1] = points[0][3];
 	corners[2] = points[3][3];
@@ -213,7 +213,7 @@ bool Bezier::checkForProblems() const {
 
 	bool problem = false;
 
-	for (int i = 0; i < ARR_SIZE; ++i) {
+	for (int i = 0; i < 4; ++i) {
 		MathVector<float, 3> leg1(corners[(i+1)%4] - corners[i]);
 		MathVector<float, 3> leg2(corners[(i+2)%4] - corners[i]);
 		MathVector<float, 3> leg3(corners[(i+3)%4] - corners[i]);
@@ -251,8 +251,8 @@ AABB<float> Bezier::getAABB() const {
 	for (int n = 0; n < 6; ++n)
 		havevals[n] = false;
 
-	for (int x = 0; x < ARR_SIZE; ++x) {
-		for (int y = 0; y < ARR_SIZE; ++y) {
+	for (int x = 0; x < 4; ++x) {
+		for (int y = 0; y < 4; ++y) {
 			MathVector<float,3> temp(points[x][y]);
 
 			// Cache for bounding box stuff
@@ -302,13 +302,13 @@ MathVector<float, 3> Bezier::bernsteinTangent(float u, MathVector<float, 3> *p) 
 }
 
 MathVector<float, 3> Bezier::surfCoord(float px, float py) const {
-	MathVector<float, 3> temp[ARR_SIZE];
-	MathVector<float, 3> temp2[ARR_SIZE];
+	MathVector<float, 3> temp[4];
+	MathVector<float, 3> temp2[4];
 	int i, j;
 
 	// Get splines along x axis
-	for (j = 0; j < ARR_SIZE; j++) {
-		for (i = 0; i < ARR_SIZE; ++i) {
+	for (j = 0; j < 4; j++) {
+		for (i = 0; i < 4; ++i) {
 			temp2[i] = points[j][i];
 		}
 		temp[j] = bernstein(px, temp2);
@@ -318,22 +318,22 @@ MathVector<float, 3> Bezier::surfCoord(float px, float py) const {
 }
 
 MathVector<float, 3> Bezier::surfNorm(float px, float py) const {
-	MathVector<float, 3> temp[ARR_SIZE];
-	MathVector<float, 3> temp2[ARR_SIZE];
-	MathVector<float, 3> tempx[ARR_SIZE];
+	MathVector<float, 3> temp[4];
+	MathVector<float, 3> temp2[4];
+	MathVector<float, 3> tempx[4];
 
 	// Get splines along x axis
-	for (int j = 0; j < ARR_SIZE; j++) {
-		for (int i = 0; i < ARR_SIZE; ++i) {
+	for (int j = 0; j < 4; j++) {
+		for (int i = 0; i < 4; ++i) {
 			temp2[i] = points[j][i];
 		}
 		temp[j] = bernstein(px, temp2);
 	}
 
 	// Get splines along y axis
-	for (int j = 0; j < ARR_SIZE; j++)
+	for (int j = 0; j < 4; j++)
 	{
-		for (int i = 0; i < ARR_SIZE; ++i) {
+		for (int i = 0; i < 4; ++i) {
 			temp2[i] = points[i][j];
 		}
 		tempx[j] = bernstein(py, temp2);
@@ -417,24 +417,24 @@ bool Bezier::intersectsQuadrilateral(const MathVector<float, 3>& orig, const Mat
 		// Q is a trapezium.
 		u = alpha;
 		if (std::abs(beta_11 - (1.0)) < EPSILON) v = beta; // Q is a parallelogram.
-		else v = beta / ((u * (beta_11 - (1.0))) + (1.0)); // Q is a trapezium.
+		else v = beta / ((u * (beta_11 - (1.f))) + (1.f)); // Q is a trapezium.
 	} else if (std::abs(beta_11 - (1.0)) < EPSILON) {
 		// Q is a trapezium.
 		v = beta;
 		if ( ((v * (alpha_11 - (1.0))) + (1.0)) == 0 ) return false;
-		u = alpha / ((v * (alpha_11 - (1.0))) + (1.0));
+		u = alpha / ((v * (alpha_11 - (1.f))) + (1.f));
 	} else {
-		float A = (1.0) - beta_11;
-		float B = (alpha * (beta_11 - (1.0)))
-				- (beta * (alpha_11 - (1.0))) - (1.0);
+		float A = (1.f) - beta_11;
+		float B = (alpha * (beta_11 - (1.f)))
+				- (beta * (alpha_11 - (1.f))) - (1.f);
 		float C = alpha;
-		float D = (B * B) - ((4.0) * A * C);
+		float D = (B * B) - ((4.f) * A * C);
 		if (D < 0) return false;
 		float Q = (-0.5) * (B + ((B < (0.0) ? (-1.0) : (1.0))
 				* std::sqrt(D)));
 		u = Q / A;
 		if ((u < (0.0)) || (u > (1.0))) u = C / Q;
-		v = beta / ((u * (beta_11 - (1.0))) + (1.0));
+		v = beta / ((u * (beta_11 - (1.f))) + (1.f));
 	}
 
 	return true;
@@ -442,9 +442,9 @@ bool Bezier::intersectsQuadrilateral(const MathVector<float, 3>& orig, const Mat
 
 std::ostream& operator<<(std::ostream& os, const Bezier& b) {
 	os << "====" << std::endl;
-	for (int x = 0; x < Bezier::ARR_SIZE; x++) {
-		for (int y = 0; y < Bezier::ARR_SIZE; y++) {
-			os << b[y*Bezier::ARR_SIZE+x] << std::endl;
+	for (int x = 0; x < 4; x++) {
+		for (int y = 0; y < 4; y++) {
+			os << b[y*4+x] << std::endl;
 		}
 		os << "----" << std::endl;
 	}

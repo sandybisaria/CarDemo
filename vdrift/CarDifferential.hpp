@@ -2,6 +2,7 @@
 
 #include "CarConstants.hpp"
 
+// Stuntrally's CARDIFFERENTIAL class
 class CarDifferential {
 public:
 	CarDifferential()
@@ -13,7 +14,8 @@ public:
 		double cas = antiSlip;
 
 		// If torque-sensitive
-		if (antiSlipTorque > 0)	cas = antiSlipTorque * driveshaftTorque; //TODO Dev wanted to add minimum anti-slip
+		if (antiSlipTorque > 0)	cas = antiSlipTorque * driveshaftTorque;
+		//TODO Dev wanted to add minimum anti-slip
 
 		// Determine deceleration behavior
 		if (cas < 0) cas *= -antiSlipTorqueDecelFactor;
@@ -52,29 +54,29 @@ public:
 	const double& getSide2Torque() const { return side2Torque; }
 
 private:
-	// Constants
+//---- Constants
 	// Gear ratio
 	double finalDrive;
 
-	double antiSlip;
 	// For modeling of speed-sensitive limited-slip differentials.
 	// The maximum anti_slip torque that will be applied.
 	// For speed-sensitive limited-slip differentials,
 	// the anti-slip multiplier that's always applied.
+	double antiSlip;
 
-	double antiSlipTorque;
 	// For modeling of speed-sensitive limited-slip differentials.
 	// Anti-slip dependence on torque.
+	double antiSlipTorque;
 
-	double antiSlipTorqueDecelFactor;
 	// For modeling of speed-sensitive limited-slip differentials
 	// that are 1.5 or 2-way. Set to 0.0 for 1-way LSD.
+	double antiSlipTorqueDecelFactor;
 
-	double torqueSplit;
 	// For modeling of epicyclic differentials.
 	// Ranges from 0.0 to 1.0, where 0.0 applies all torque to side1
+	double torqueSplit;
 
-	// Variables
+//---- Variables
 	// side1 is left/front, side2 is right/back
 	double side1Speed, side2Speed;
 	double side1Torque, side2Torque;

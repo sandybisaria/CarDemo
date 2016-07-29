@@ -1,5 +1,6 @@
 #pragma once
 
+// Stuntrally's CARBRAKE class
 class CarBrake {
 public:
 	// Makes an S2000-like car
@@ -25,15 +26,15 @@ public:
 
 	// Used by autoclutch system
 	bool willLock() const { return locked; }
-	void setWillLock(double lock) { locked = lock; }
+	void setWillLock(bool lock) { locked = lock; }
 
-	void setFriction(const double& f) { fric = f; }
+	void setFriction(double f) { fric = f; }
 	double getFriction() { return fric; }
 
-	void setMaxPressure(const double& mp) { maxPress = mp; }
-	void setRadius(const double& r) { radius = r; }
-	void setArea(const double& a) { area = a; }
-	void setBias(const double& b) { bias = b; }
+	void setMaxPressure(double mp) { maxPress = mp; }
+	void setRadius(double r) { radius = r; }
+	void setArea(double a) { area = a; }
+	void setBias(double b) { bias = b; }
 
 	bool getLocked() const { return locked; }
 	double getBrakeFactor() const { return brakeFactor; }

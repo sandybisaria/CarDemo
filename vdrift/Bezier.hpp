@@ -8,6 +8,8 @@
 #include <cmath>
 #define _USE_MATH_DEFINES
 
+// Stuntrally's BEZIER class
+//TODO Investigate if actually needed; left in for now due to use in Collision classes
 class Bezier {
 public:
 	Bezier();
@@ -19,9 +21,6 @@ public:
 	Bezier& copyFrom(const Bezier& other);
 
 	friend std::ostream& operator<<(std::ostream& os, const Bezier& b);
-
-	float getDistFromStart() const { return distFromStart; }
-	void resetDistFromStart() { distFromStart = 0.f; }
 
 	void resetNextPatch() { nextPatch = NULL; }
 
@@ -55,20 +54,21 @@ public:
 
 	// Access corners of the patch (front left, front right, back left, back right)
 	const MathVector<float, 3>& getFrontLeft() { return points[0][0]; }
-	const MathVector<float, 3>& getFrontRight() { return points[0][ARR_SIZE-1]; }
-	const MathVector<float, 3>& getBackLeft() { return points[ARR_SIZE-1][0]; }
-	const MathVector<float, 3>& getBackRight() { return points[ARR_SIZE-1][ARR_SIZE-1]; }
+	const MathVector<float, 3>& getFrontRight() { return points[0][3]; }
+	const MathVector<float, 3>& getBackLeft() { return points[3][0]; }
+	const MathVector<float, 3>& getBackRight() { return points[3][3]; }
 
 	AABB<float> getAABB() const;
 
 	// x = n % 4, y = n / 4
-	const MathVector<float, 3>& operator[](const int n) const {
-		assert(n < ARR_SIZE * ARR_SIZE);
+	const MathVector<float, 3>& operator[](int n) const {
+		assert(n < 4 * 4);
 		int x = n % 4, y = n / 4;
 		return points[x][y];
 	}
-	const MathVector<float, 3>& getPoint(const unsigned int x, const unsigned int y) const {
-		assert(x < ARR_SIZE && y < ARR_SIZE); return points[x][y];
+	const MathVector<float, 3>& getPoint(unsigned int x,
+										 unsigned int y) const {
+		assert(x < 4 && y < 4); return points[x][y];
 	}
 
 	Bezier* getNextPatch() const { return nextPatch; }
@@ -89,21 +89,23 @@ private:
 
 	// Return true if the ray at orig with direction dir intersects the given quadrilateral.
 	// Also put the collision depth in t and the collision coordinates in (u, v)
-	bool intersectsQuadrilateral(const MathVector<float, 3>& orig, const MathVector<float, 3>& dir,
-								 const MathVector<float, 3>& v_00, const MathVector<float, 3>& v_10,
-								 const MathVector<float, 3>& v_11, const MathVector<float, 3>& v_01,
+	bool intersectsQuadrilateral(const MathVector<float, 3>& orig,
+								 const MathVector<float, 3>& dir,
+								 const MathVector<float, 3>& v_00,
+								 const MathVector<float, 3>& v_10,
+								 const MathVector<float, 3>& v_11,
+								 const MathVector<float, 3>& v_01,
 								 float &t, float &u, float &v) const;
 
-	const static int ARR_SIZE = 4;
-	MathVector<float, 3> points[ARR_SIZE][ARR_SIZE];
+	MathVector<float, 3> points[4][4];
 	MathVector<float, 3> center;
 	float radius;
 	float length;
-	float distFromStart; //TODO Is this needed or even relevant?
+	// Ignore distFromStart
 
 	Bezier* nextPatch;
 	float roadRadius;
-	int turn; //-1 = left turn, +1 = right turn, 0 = straight
+	int turn; // -1 = left turn, +1 = right turn, 0 = straight
 	float roadCurvature;
-	//TODO Ignore "racing line" variables
+	// Ignored "racing line" variables
 };

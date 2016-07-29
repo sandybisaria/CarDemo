@@ -2,6 +2,8 @@
 
 #include "predictSteering/predictSteering.h"
 
+#include <cfloat>
+
 //---- TurnState methods
 TurnState::TurnState(ControllerInterface *interface, bool isLeftTurn, double turnRadius, double angle)
  	: BaseState(interface) {

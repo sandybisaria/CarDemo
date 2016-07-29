@@ -1,24 +1,26 @@
 #include "Car.hpp"
 
 #include "CarConstants.hpp"
+#include "CarDynamics.hpp"
+
 #include "../shiny/Main/Factory.hpp"
-#include "../util/ConfigFile.hpp"
-#include "../vdrift/MathVector.hpp"
-#include "../vdrift/Quaternion.hpp"
+
 #include "../terrain/RenderConst.hpp"
 
 #include <OgreRoot.h>
 #include <OgreEntity.h>
 
-#include <iostream>
-
 #define toString(s) Ogre::StringConverter::toString(s)
 
 Car::Car(int id)
 	: mId(id), mSceneMgr(0), mainNode(0),
-	  dyn(0),
+	  dyn(0), rangeMul(0.81 * 0.7),
 	  carColor(1, 1, 1) {
 	setNumWheels(DEF_WHEEL_COUNT);
+
+	// For rangeMul: TODO May want to just put rangeMul as 1
+	// 0.81 is due to "normal" (as opposed to "easy") sim (from Stuntrally)
+	// 0.7 due to driving on asphalt (as opposed to other terrains) (from Stuntrally)
 }
 
 Car::~Car() {
@@ -38,12 +40,13 @@ Car::~Car() {
 
 void Car::setup(std::string carName, Ogre::SceneManager* sceneMgr, CollisionWorld& world) {
 	mCarName = carName;
-	resGrpId = mCarName + "_" + toString(mId);
+	resGrpIdStr = mCarName + "_" + toString(mId);
 	carPath = "../data/cars/" + mCarName;
 
 	dyn = new CarDynamics();
-	if (!loadFromConfig(world)) return; // Should return with error
-	dyn->shiftGear(1); // Start off in first gear
+	if (!loadFromConfig(world)) { return; }
+
+	dyn->shiftGear(1); // The car starts off in first gear
 
 	mSceneMgr = sceneMgr;
 	loadModel();
@@ -76,8 +79,8 @@ MathVector<double, 3> Car::getForwardVector() {
 }
 
 /* The format of the inputs vector is as follows:
- * 0 ->  1 (disengaged -> fully-engaged) = BRAKE, THROTTLE, HANDBRAKE, CLUTCH, STEER_RIGHT, STEER_LEFT
- * 0 or  1 (on or off) = SHIFT_UP/DOWN
+ * 0 -> 1 (disengaged -> fully-engaged) = BRAKE, THROTTLE, HANDBRAKE, CLUTCH, STEER_RIGHT, STEER_LEFT
+ * 0 or 1 (on or off) = SHIFT_UP/DOWN
  *
  * Note that SHIFT_DOWN takes "higher precedence" than SHIFT_UP (in case both are engaged)
  * Note that the steering value with greater magnitude takes precedence (0.7L vs 0.5R -> steer left)
@@ -87,11 +90,12 @@ void Car::handleInputs(const std::vector<double>& inputs) {
 
 	int curGear = dyn->getTransmission().getGear();
 
-	// Note that this in effect "inverts" the controls when in reverse, since the brake key acts like a throttle
+	// Note that this in effect "inverts" the controls when in reverse, since the brake key acts like a throttle.
+	// While not necessarily "realistic" it makes keyboard control more intuitive.
 	bool rear = curGear == -1; // Is car currently in reverse?
 
-	// We assume that we use -1 when trying to drive in reverse; change in the future...
-	double brake = !rear? inputs[CarInput::BRAKE] : inputs[CarInput::THROTTLE];
+	// We assume that we use -1 when trying to drive in reverse
+	double brake = !rear ? inputs[CarInput::BRAKE] : inputs[CarInput::THROTTLE];
 	dyn->setBrake(brake);
 
 	dyn->setHandBrake(inputs[CarInput::HANDBRAKE]);
@@ -102,8 +106,8 @@ void Car::handleInputs(const std::vector<double>& inputs) {
 	dyn->setSteering(steerValue, rangeMul);
 
 	int gearChange = 0;
-	if (inputs[CarInput::SHIFT_UP]   == 1.0) gearChange = (int)  1.0;
-	if (inputs[CarInput::SHIFT_DOWN] == 1.0) gearChange = (int) -1.0;
+	if (inputs[CarInput::SHIFT_UP]   == 1.0) gearChange =  1;
+	if (inputs[CarInput::SHIFT_DOWN] == 1.0) gearChange = -1;
 	int newGear = curGear + gearChange;
 	dyn->shiftGear(newGear);
 
@@ -124,15 +128,13 @@ bool Car::loadFromConfig(CollisionWorld& world) {
 	std::string carSimPath = carPath + "/sim/" + mCarName + ".car";
 
 	ConfigFile cf;
-	if (!cf.load(carSimPath))
-		return false; //TODO Error if car not found
+	if (!cf.load(carSimPath)) { return false; }
 
 	int nw = 0;
 	cf.getParam("wheels", nw);
-	if (nw >= MIN_WHEEL_COUNT && nw <= MAX_WHEEL_COUNT)
-		setNumWheels(nw);
+	if (nw >= MIN_WHEEL_COUNT && nw <= MAX_WHEEL_COUNT) { setNumWheels(nw); }
 
-	// Load car collision params (Stuntrally puts this outside of CARDYNAMICS so... I will too... for now...)
+	// Load car collision params (Stuntrally puts this outside of CARDYNAMICS so... I will too, for now)
 	// Center-of-mass offsets
 	dyn->comOfsL = 0.f;  cf.getParam("collision.com_ofs_L", dyn->comOfsL);
 	dyn->comOfsH = 0.f;  cf.getParam("collision.com_ofs_H", dyn->comOfsH);
@@ -173,7 +175,7 @@ bool Car::loadFromConfig(CollisionWorld& world) {
 	}
 
 	//TODO Load starting position/rotation from the scene, or receive from setup()
-	MathVector<double, 3> pos(0, mId * 10, 1); // mId * 10 is a cheap way to distance distinct cars
+	MathVector<double, 3> pos(0, mId * 10, 1); // mId * 10 is a cheap way to spread out multiple cars
 	Quaternion<double> rot;
 
 	float stOfsY = 0.f;
@@ -187,18 +189,15 @@ bool Car::loadFromConfig(CollisionWorld& world) {
 
 void Car::loadModel() {
 	// Each car has its own resource group
-	Ogre::ResourceGroupManager::getSingleton().createResourceGroup(resGrpId);
-	Ogre::Root::getSingleton().addResourceLocation(carPath + "/mesh", "FileSystem", resGrpId);
-	Ogre::Root::getSingleton().addResourceLocation(carPath + "/textures", "FileSystem", resGrpId);
+	Ogre::ResourceGroupManager::getSingleton().createResourceGroup(resGrpIdStr);
+	Ogre::Root::getSingleton().addResourceLocation(carPath + "/mesh", "FileSystem", resGrpIdStr);
+	Ogre::Root::getSingleton().addResourceLocation(carPath + "/textures", "FileSystem", resGrpIdStr);
 
 	mainNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
 	forDeletion(mainNode);
 
 	Ogre::SceneNode* carNode = mainNode->createChildSceneNode();
 	forDeletion(carNode);
-
-	//TODO Allow for camera to follow car (based on FollowCamera class)?
-	//TODO Create car reflection (based on CarReflection class)?
 
 	// Create car body, interior, and glass
 	carNode->attachObject(loadPart("body"));
@@ -213,7 +212,8 @@ void Car::loadModel() {
 		forDeletion(wheelNodes[w]);
 		wheelNodes[w]->attachObject(loadPart("wheel", w));
 
-		// The CAD model does not have separate brake meshes; rather than specifically check, just don't render any brakes... (sorry for laziness)
+		// The CAD model does not have separate brake meshes
+		// Rather than specifically check, just don't render any brakes... (sorry for laziness)
 //		brakeNodes[w] = wheelNodes[w]->createChildSceneNode();
 //		forDeletion(brakeNodes[w]);
 //		brakeNodes[w]->attachObject(loadPart("brake", w));
@@ -222,10 +222,10 @@ void Car::loadModel() {
 	loadMaterials();
 
 	// Set material of car body
-	mSceneMgr->getEntity(resGrpId + "_body")->setMaterialName(mtrNames[mtrCarBody]);
+	mSceneMgr->getEntity(resGrpIdStr + "_body")->setMaterialName(mtrNames[mtrCarBody]);
 
-	Ogre::ResourceGroupManager::getSingleton().initialiseResourceGroup(resGrpId);
-	Ogre::ResourceGroupManager::getSingleton().loadResourceGroup(resGrpId);
+	Ogre::ResourceGroupManager::getSingleton().initialiseResourceGroup(resGrpIdStr);
+	Ogre::ResourceGroupManager::getSingleton().loadResourceGroup(resGrpIdStr);
 }
 
 void Car::loadMaterials() {
@@ -242,23 +242,31 @@ void Car::loadMaterials() {
 	mtrNames[mtrCarBrake] = carBrakeMtr;
 
 	for (int i=0; i < 1; ++i) {
-		sh::Factory::getInstance().destroyMaterialInstance(mtrNames[i] + toString(mId));
-		sh::MaterialInstance* m = sh::Factory::getInstance().createMaterialInstance(mtrNames[i] + toString(mId), mtrNames[i]);
+		sh::Factory::getInstance().destroyMaterialInstance(
+			mtrNames[i] + toString(mId));
+		sh::MaterialInstance* m = sh::Factory::getInstance().createMaterialInstance(
+			mtrNames[i] + toString(mId), mtrNames[i]);
 
 		m->setListener(this);
 
 		// Set texture properties for the car
 		if (m->hasProperty("diffuseMap")) {
-			std::string v = sh::retrieveValue<sh::StringValue>(m->getProperty("diffuseMap"), 0).get();
-			m->setProperty("diffuseMap", sh::makeProperty<sh::StringValue>(new sh::StringValue(mCarName + "_" + v)));
+			std::string v = sh::retrieveValue<sh::StringValue>(
+				m->getProperty("diffuseMap"), 0).get();
+			m->setProperty("diffuseMap", sh::makeProperty<sh::StringValue>(
+				new sh::StringValue(mCarName + "_" + v)));
 		}
 		if (m->hasProperty("carPaintMap")) {
-			std::string v = sh::retrieveValue<sh::StringValue>(m->getProperty("carPaintMap"), 0).get();
-			m->setProperty("carPaintMap", sh::makeProperty<sh::StringValue>(new sh::StringValue(mCarName + "_" + v)));
+			std::string v = sh::retrieveValue<sh::StringValue>(
+				m->getProperty("carPaintMap"), 0).get();
+			m->setProperty("carPaintMap", sh::makeProperty<sh::StringValue>(
+				new sh::StringValue(mCarName + "_" + v)));
 		}
 		if (m->hasProperty("reflMap")) {
-			std::string v = sh::retrieveValue<sh::StringValue>(m->getProperty("reflMap"), 0).get();
-			m->setProperty("reflMap", sh::makeProperty<sh::StringValue>(new sh::StringValue(mCarName + "_" + v)));
+			std::string v = sh::retrieveValue<sh::StringValue>(
+				m->getProperty("reflMap"), 0).get();
+			m->setProperty("reflMap", sh::makeProperty<sh::StringValue>(
+				new sh::StringValue(mCarName + "_" + v)));
 		}
 
 		mtrNames[i] = mtrNames[i] + toString(mId);
@@ -270,9 +278,11 @@ void Car::loadMaterials() {
 Ogre::Entity* Car::loadPart(std::string partType, int partId) {
 	std::string extPartType = "_" + partType;
 
-	// partId has default value of -1 if not passed in
-	Ogre::Entity* entity = mSceneMgr->createEntity(resGrpId + extPartType + (partId != -1 ? toString(partId) : ""),
-												   mCarName + extPartType + ".mesh", resGrpId);
+	// partId has default value of -1 if nothing is passed in
+	std::string entityName = resGrpIdStr + extPartType + (partId != -1 ? toString(partId) : "");
+	Ogre::Entity* entity = mSceneMgr->createEntity(entityName,
+												   mCarName + extPartType + ".mesh",
+												   resGrpIdStr);
 	forDeletion(entity);
 
 	if (partType == "glass") {
@@ -287,7 +297,7 @@ Ogre::Entity* Car::loadPart(std::string partType, int partId) {
 
 void Car::setNumWheels(int nw) {
 	numWheels = nw;
-	wheelNodes.resize(numWheels);
+	wheelNodes.resize((unsigned int) numWheels);
 //	brakeNodes.resize(numWheels);
 }
 
@@ -316,11 +326,10 @@ void Car::changeColor() {
 		}
 	}
 
-	// Refer to CarModel::ChangeClr
+	// Refer to Stuntrally's CarModel::ChangeClr
 }
 
 void Car::updateModel() {
-
 	// Main body
 	Ogre::Vector3 pos = Axes::vectorToOgre(dyn->getPosition());
 	mainNode->setPosition(pos);
@@ -339,7 +348,7 @@ void Car::updateModel() {
 		wheelNodes[w]->setOrientation(whRot);
 	}
 
-	// Brakes
+	// Brakes TODO Temporarily disabled
 //	for (int w = 0; w < numWheels; w++) {
 //		if (brakeNodes[w]) {
 //			WheelPosition wp; wp = WheelPosition(w);
@@ -378,5 +387,5 @@ void Car::updateLightMap() {
 		}
 	}
 
-	// Refer to CarModel::UpdateLightMap
+	// Refer to Stuntrally's CarModel::UpdateLightMap
 }

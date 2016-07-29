@@ -3,6 +3,8 @@
 
 #include "ai/BasicController.hpp"
 
+#include "vdrift/CollisionWorld.hpp"
+
 Sim::Sim(App* app)
 	: mSceneMgr(0), scene(0), mApp(app),
 	  world(0), carInput(0),

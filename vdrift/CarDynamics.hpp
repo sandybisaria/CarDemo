@@ -1,22 +1,20 @@
 #pragma once
 
-class CollisionWorld;
-
-#include "MathVector.hpp"
-#include "CarEngine.hpp"
-#include "CarClutch.hpp"
-#include "CarTransmission.hpp"
-#include "CarDifferential.hpp"
+#include "AABB.hpp"
+#include "CarAero.hpp"
 #include "CarBrake.hpp"
+#include "CarClutch.hpp"
+#include "CarConstants.hpp"
+#include "CarDifferential.hpp"
+#include "CarEngine.hpp"
 #include "CarFuelTank.hpp"
 #include "CarSuspension.hpp"
+#include "CarTransmission.hpp"
 #include "CarWheel.hpp"
-#include "CarAero.hpp"
-#include "RigidBody.hpp"
-#include "AABB.hpp"
-#include "CollisionWorld.hpp"
-#include "CarConstants.hpp"
 #include "CollisionContact.hpp"
+#include "CollisionWorld.hpp"
+#include "MathVector.hpp"
+#include "RigidBody.hpp"
 
 #include "../util/ConfigFile.hpp"
 #include "../util/ToBullet.hpp"
@@ -24,67 +22,73 @@ class CollisionWorld;
 #include <btBulletCollisionCommon.h>
 #include <btBulletDynamicsCommon.h>
 
-#include <sstream>
 #include <cassert>
+#include <sstream>
 #include <vector>
 
 #ifdef COMPILE_UNIT_TESTS
 #include <gtest/gtest.h>
 #endif
 
-class Car;
-
-class CarDynamics
-	: public btActionInterface {
+// Stuntrally's CARDYNAMICS class; by far the hardest to re-implement.
+// There is no car damage in this simulation, so some methods were altered
+class CarDynamics : public btActionInterface {
 public:
 	CarDynamics();
 	~CarDynamics();
 
-	// Initialization
+//---- Initialization
 	bool load(ConfigFile& cf);
 	void init(MathVector<double, 3> pos, Quaternion<double> rot, CollisionWorld& world);
 
 	void alignWithGround();
-	CarTire* getTire(WheelPosition wp) const { return wheelContact[wp].getSurface()->tire; }
 
-	// Bullet interface
+//---- Bullet interface
 	virtual void updateAction(btCollisionWorld* collisionWorld, btScalar deltaTimeStep);
 	virtual void debugDraw(btIDebugDraw* debugDrawer) { }
 
 	void removeBullet();
 
-	// CollisionWorld interface
-	const CollisionContact& getWheelContact(WheelPosition(wp)) const { return wheelContact[wp]; }
-	CollisionContact& getWheelContact(WheelPosition(wp)) { return wheelContact[wp]; }
-//	btVector3 prevVel;
-//	void updatePreviousVelocity() { prevVel = chassis->getLinearVelocity(); }
+//---- CollisionWorld interface
+	const CollisionContact& getWheelContact(WheelPosition(wp)) const {
+		return wheelContact[wp];
+	}
+	CollisionContact& getWheelContact(WheelPosition(wp)) {
+		return wheelContact[wp];
+	}
 
-	// Update method
+//---- Update method
 	void update();
 
-	// Driveline input
+//---- Driveline input
 	void shiftGear(int value);
-	void setThrottle(double value) { engine.setThrottle(value); } //TODO Ignore damage for now
+	void setThrottle(double value) { engine.setThrottle(value); }
 	void setClutch(double value) { clutch.setClutch(value); }
-	void setBrake(double value) { for (int i = 0; i < brakes.size(); i++) brakes[i].setBrakeFactor(value); } //TODO No dmg
-	void setHandBrake(double value) { for (int i = 0; i < brakes.size(); i++) brakes[i].setHandbrakeFactor(value); } //TODO No dmg
+	void setBrake(double value) { for (int i = 0; i < brakes.size(); i++) brakes[i].setBrakeFactor(value); }
+	void setHandBrake(double value) { for (int i = 0; i < brakes.size(); i++) brakes[i].setHandbrakeFactor(value); }
+
 
 	// Speedometer output based on driveshaft RPM
-	double getSpeedMPS() const; // Compared to getSpeed, this is what the car sensors would likely read
+	double getSpeedMPS() const; // What the car sensors would report as the speed
 
-	// Chassis state access
-	const MathVector<double, 3>& getPosition() const { return chassisPosition; } // Used to render model
-	const Quaternion<double>& getOrientation() const { return chassisRotation; } // Used to render model
+//---- Chassis state access
+	// These methods used when rendering the car model
+	const MathVector<double, 3>& getPosition() const { return chassisPosition; }
+	const Quaternion<double>& getOrientation() const { return chassisRotation; }
+
 	MathVector<double, 3> getVelocity() const { return body.getVelocity(); }
-	double getSpeed() const { return body.getVelocity().magnitude(); }
-	double getSpeedDir() const;
+	double getSpeed() const {
+		// What Bullet physics says the speed "actually" is
+		return body.getVelocity().magnitude();
+	}
+	double getSpeedDir() const; // The speed of the car in the dir it's facing (I think)
 	MathVector<double, 3> getDownVector() const;
 	MathVector<double, 3> getForwardVector() const;
 
-	// Driveline state access
+//---- Driveline state access
 	const CarTransmission& getTransmission() const { return transmission; }
 
-	// Wheel state access
+//---- Wheel state access
 	Quaternion<double> getWheelOrientation(WheelPosition wp) const;
 	MathVector<double, 3> getWheelPosition(WheelPosition wp) const;
 	double getWheelSteerAngle(WheelPosition wp) const { return wheels[wp].getSteerAngle(); }
@@ -93,7 +97,7 @@ public:
 	void setSteering(const double val, const double rangeMul);
 	double getMaxAngle() const { return maxAngle; }
 
-	// Collision params
+//---- Collision params
 	float collR, collR2m, collW, collH,
 		  collHofs, collWofs, collLofs,
 		  collFlTrigH, comOfsH, comOfsL,
@@ -103,7 +107,7 @@ public:
 		  collTopFrHm, collTopMidHm, collTopBackHm;
 
 private:
-	// Initialization
+//---- Initialization
 	void setNumWheels(int nw);
 	void setDrive(const std::string& newDrive);
 	void addMassParticle(double newMass, MathVector<double, 3> newPos);
@@ -113,7 +117,7 @@ private:
 							  double dragCoefficient, double liftSurfaceArea, double liftCoefficient, double liftEfficiency);
 	void calculateMass(); // Substitute for CARDYNAMICS::UpdateMass()
 
-	// Driveline state
+//---- Driveline state
 	CarFuelTank fuelTank;
 	CarEngine engine;
 	CarClutch clutch;
@@ -123,13 +127,13 @@ private:
 	enum { FWD = 3, RWD = 12, AWD = 15 } drive;
 	double driveshaftRPM;
 
+	// "shifted" is false if the transmission has not shifted to "gearToShift" yet.
+	// It is set to true when it has
 	bool autoclutch, autoshift, autorear, shifted;
 	double shiftTime, remShiftTime, lastAutoClutch;
 	int gearToShift;
-	// "shifted" is false if the transmission has not shifted to "gearToShift" yet.
-	// It is set to true when it has
 
-	// Wheel state
+//---- Wheel state
 	int numWheels;
 	std::vector<CarWheel> wheels;
 	std::vector<CarBrake> brakes;
@@ -139,30 +143,33 @@ private:
 	std::vector<Quaternion<double> > wheelRots;
 	std::vector<CollisionContact> wheelContact;
 
-	MathVector<double, 3> getWheelPosition(WheelPosition wp, double displacementPercent) const; // For internal use
+	MathVector<double, 3> getWheelPosition(WheelPosition wp, double displacementPercent) const;
 	MathVector<double, 3> getLocalWheelPosition(WheelPosition wp, double displacementPercent) const;
 	MathVector<double, 3> getWheelPositionAtDisplacement(WheelPosition wp, double displacementPercent) const;
 	Quaternion<double> getWheelSteeringAndSuspensionOrientation(WheelPosition wp) const;
 
 	MathVector<double, 3> localToWorld(const MathVector<double, 3>& local) const;
 
-	bool wheelDriven(int i) const { return (1 << i) & drive; } // Sorry for the magic function
+	// Sorry for the magic function; 'twas from Stuntrally
+	bool wheelDriven(int i) const { return (1 << i) & drive; }
 
-	// Updater methods
-	bool synchronizeBody(); // False if any position is invalid
-	void updateWheelContacts();
-	void tick(double dt); // Update simulation
-	void synchronizeChassis();
+//---- CollisionWorld updater methods
+	void synchronizeBody(); // Pull in pos, vel, rot, etc. from Bullet
+	void tick(float dt); // Update simulation
+	void updateWheelContacts(); // Check for Bullet collisions
+	void synchronizeChassis(); // Report new velocities to Bullet
 
-	void updateBody(double dt, double driveTorque[]); // Advance chassis (body, suspension, wheels) sim by dt
-
+	// Called during tick()
 	void updateTransmission(double dt);
-	void updateDriveline(double dt, double driveTorque[]); // Update engine, return wheel drive torque
-	double calculateDriveshaftRPM() const; // Calculate clutch driveshaft RPM
-	double calculateDriveshaftSpeed(); // Calculate driveshaft speed given wheel angular velocity
+	void updateDriveline(double dt, double driveTorque[]);
+	void updateBody(double dt, double driveTorque[]);
 
-	void applyClutchTorque(double engineDrag, double clutchSpeed); // Apply clutch torque to engine
-	void calculateDriveTorque(double driveTorque[], double clutchTorque); // Calculate wheel drive torque
+
+	double calculateDriveshaftRPM() const;
+	double calculateDriveshaftSpeed();
+
+	void applyClutchTorque(double engineDrag, double clutchSpeed); // Applied to engine
+	void calculateDriveTorque(double driveTorque[], double clutchTorque);
 
 	int nextGear() const; // Calculate next gear based on engine RPM
 	double downshiftRPM(int gear, float avgWhHeight = 0.f) const; // Calculate downshift point based on gear and engine RPM
@@ -171,7 +178,7 @@ private:
 	double shiftAutoClutch() const;
 	double shiftAutoClutchThrottle(double throttle, double dt);
 
-	MathVector<double, 3> updateSuspension(int i, double dt); // Update suspension displacement, return suspension force
+	MathVector<double, 3> updateSuspension(int i, double dt); //Returns suspension force
 
 	void updateWheelTransform();
 	void updateWheelVelocity();
@@ -181,33 +188,38 @@ private:
 	void applyEngineTorqueToBody();
 	void applyAerodynamicsToBody();
 
-	void applyForce(const MathVector<double, 3>& force) { body.applyForce(force); } //TODO Skip camera body
-	void applyForce(const MathVector<double, 3>& force, const MathVector<double, 3>& offset) { body.applyForce(force, offset); }
+	void applyForce(const MathVector<double, 3>& force) { body.applyForce(force); }
+	void applyForce(const MathVector<double, 3>& force,	const MathVector<double, 3>& offset) {
+		body.applyForce(force, offset);
+	}
 	void applyTorque(const MathVector<double, 3>& torque) { body.applyTorque(torque); }
 
 	// Apply tire friction to body; return friction in world space
-	MathVector<double, 3> applyTireForce(int i, const double normalForce, const Quaternion<double>& wheelSpace);
+	MathVector<double, 3> applyTireForce(int i, const double normalForce,
+										 const Quaternion<double>& wheelSpace);
 	// Apply wheel torque to chassis
-	void applyWheelTorque(double dt, double driveTorque, int i, MathVector<double, 3> tireFriction,
+	void applyWheelTorque(double dt, double driveTorque, int i,
+						  MathVector<double, 3> tireFriction,
 						  const Quaternion<double>& wheelSpace);
 
-	// Aerodynamics
+//---- Aerodynamics variables
 	std::vector<CarAero> aerodynamics;
 	double rotCoeff[4];
 
-	// Steering
-	double steerValue; //TODO Not actually used for simulation
+//---- Steering variables
 	double maxAngle;
 	double angularDamping;
 
-	// Traction control state
+//---- Traction control state
 	bool absOn, tcsOn;
 	std::vector<int> absActive, tcsActive;
 
 	void doABS(int i, double normalForce);
 	void doTCS(int i, double normalForce);
 
-	// Chassis state
+	CarTire* getTire(WheelPosition wp) const { return wheelContact[wp].getSurface()->tire; }
+
+//---- Chassis state variables
 	btRigidBody* chassis;
 	btRigidBody* whTrigs;
 	RigidBody body;
@@ -217,7 +229,7 @@ private:
 	Quaternion<double> getBodyOrientation() const { return body.getOrientation(); } // Replaces CARDYNAMICS::Orientation
 	MathVector<double, 3> getBodyPosition() const { return body.getPosition(); } // Replaces CARDYNAMICS::Position
 
-	// Interpolated chassis state, using Bullet sim
+	// Interpolated chassis state, using Bullet sim; used in model rendering
 	MathVector<double, 3> chassisPosition;
 	Quaternion<double> chassisRotation;
 

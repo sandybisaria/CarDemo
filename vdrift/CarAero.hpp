@@ -2,9 +2,10 @@
 
 #include "MathVector.hpp"
 
+// Stuntrally's CARAERO class
 class CarAero {
 public:
-	// Default constructor = aerodynamically transparent device (i.e. no drag or lift)
+	// Default constructor: aerodynamically transparent device (i.e. no drag or lift)
 	CarAero()
 		: airDens(1.2), dragFrontArea(0), dragCoeff(0),
 		  liftSurfArea(0), liftCoeff(0), liftEff(0) {}
