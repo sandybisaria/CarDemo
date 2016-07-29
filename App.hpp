@@ -75,7 +75,7 @@ private:
 	Ogre::Root* mRoot;
 	Ogre::RenderWindow* mWindow;
 	Ogre::SceneManager* mSceneMgr;
-	Ogre::Camera* mCamera;
+	Ogre::Camera* mCamera; bool followCam;
 	Ogre::SceneNode* mCameraNode;
 
 	OIS::InputManager* mInputMgr;

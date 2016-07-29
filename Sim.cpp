@@ -1,12 +1,10 @@
 #include "Sim.hpp"
 
-#define DEBUGDRAW
-
 Sim::Sim(App* app)
 	: mSceneMgr(0), scene(0), mApp(app),
 	  world(0), carInput(0),
 	  frameRate(1.f / 60.f), targetTime(0),
-	  debugDraw(NULL) {
+	  debugDraw(NULL), enableDebug(false) {
 }
 
 Sim::~Sim() {
@@ -82,12 +80,10 @@ void Sim::update(float dt) {
 		cars[i]->handleInputs(*inputs);
 	}
 
-#ifdef DEBUGDRAW
 	if (debugDraw) {
-		debugDraw->setDebugMode(1);
+		debugDraw->setDebugMode(enableDebug ? 1 : 0);
 		debugDraw->step();
 	}
-#endif
 
 	//TODO May want to see how Stuntrally "actually" loops
 }
@@ -125,6 +121,11 @@ void Sim::keyPressed(const OIS::KeyEvent& ke) {
 	carInput->keyPressed(ke);
 
 	switch (ke.key) {
+	// Toggle debug drawing
+	case OIS::KC_B:
+		enableDebug = !enableDebug;
+		break;
+
 	// Testing turns
 	case OIS::KC_1:
 		controllers[0]->turn(true,  50, 45);

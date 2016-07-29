@@ -68,4 +68,5 @@ private:
 	CarControlMapLocal localMap;
 
 	BtOgre::DebugDrawer* debugDraw;
+	bool enableDebug;
 };

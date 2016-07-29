@@ -8,11 +8,9 @@
 
 #include "App.hpp"
 
-#define FOLLOW_CAR
-
 App::App(Ogre::Root* root)
 	: mShutDown(false), mFactory(0), mScene(0), mSim(0),
-	  mRoot(root), mWindow(0), mSceneMgr(0), mCamera(0), mCameraNode(0),
+	  mRoot(root), mWindow(0), mSceneMgr(0), mCamera(0), mCameraNode(0), followCam(true),
 	  mInputMgr(0), mKeyboard(0) {
 	Axes::init();
 }
@@ -329,31 +327,35 @@ bool App::frameRenderingQueued(const Ogre::FrameEvent& evt) {
 
 // To control the main camera
 void App::updateCamera(const Ogre::FrameEvent& evt) {
-#ifndef FOLLOW_CAR
-	Ogre::Vector3 translation(Ogre::Vector3::ZERO);
-	if (mKeyboard->isKeyDown(OIS::KC_W)) {
-		translation += Ogre::Vector3::NEGATIVE_UNIT_Z;
-	} if (mKeyboard->isKeyDown(OIS::KC_S)) {
-		translation += Ogre::Vector3::UNIT_Z;
-	} if (mKeyboard->isKeyDown(OIS::KC_E)) {
-		translation += Ogre::Vector3::UNIT_Y;
-	} if (mKeyboard->isKeyDown(OIS::KC_Q)) {
-		translation += Ogre::Vector3::NEGATIVE_UNIT_Y;
+	if (!followCam) {
+		Ogre::Vector3 translation(Ogre::Vector3::ZERO);
+		if (mKeyboard->isKeyDown(OIS::KC_W)) {
+			translation += Ogre::Vector3::NEGATIVE_UNIT_Z;
+		}
+		if (mKeyboard->isKeyDown(OIS::KC_S)) {
+			translation += Ogre::Vector3::UNIT_Z;
+		}
+		if (mKeyboard->isKeyDown(OIS::KC_E)) {
+			translation += Ogre::Vector3::UNIT_Y;
+		}
+		if (mKeyboard->isKeyDown(OIS::KC_Q)) {
+			translation += Ogre::Vector3::NEGATIVE_UNIT_Y;
+		}
+		translation *= 0.10;
+		mCameraNode->translate(translation, Ogre::Node::TS_LOCAL);
+
+		if (mKeyboard->isKeyDown(OIS::KC_A)) {
+			mCameraNode->yaw(Ogre::Radian(0.005f), Ogre::Node::TS_LOCAL);
+		}
+		if (mKeyboard->isKeyDown(OIS::KC_D)) {
+			mCameraNode->yaw(Ogre::Radian(-0.005f), Ogre::Node::TS_LOCAL);
+		}
 	}
-	translation *= 0.10;
-	mCameraNode->translate(translation, Ogre::Node::TS_LOCAL);
 
-	if (mKeyboard->isKeyDown(OIS::KC_A)) {
-		mCameraNode->yaw(Ogre::Radian( 0.005f), Ogre::Node::TS_LOCAL);
-	} if (mKeyboard->isKeyDown(OIS::KC_D)) {
-		mCameraNode->yaw(Ogre::Radian(-0.005f), Ogre::Node::TS_LOCAL);
+	else {
+		mCameraNode->setPosition(mSim->getCameraPosition());
+		mCameraNode->setOrientation(mSim->getCameraOrientation());
 	}
-
-#else
-	mCameraNode->setPosition(mSim->getCameraPosition());
-	mCameraNode->setOrientation(mSim->getCameraOrientation());
-
-#endif
 }
 
 void App::windowClosed(Ogre::RenderWindow* rw) {
@@ -373,6 +375,11 @@ bool App::keyPressed(const OIS::KeyEvent& ke) {
 	switch (ke.key) {
 	case OIS::KC_ESCAPE:
 		mShutDown = true;
+		break;
+
+	// Toggle follow-cam
+	case OIS::KC_C:
+		followCam = !followCam;
 		break;
 
 	default:

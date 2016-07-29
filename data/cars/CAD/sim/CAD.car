@@ -1,3 +1,5 @@
+# Values inspired by LK4 and 360
+
 drive = AWD
 # all positions have x,y,z dir going + to: right, front, up
 
@@ -17,46 +19,133 @@ yaw2  = 2.0
 #---------------------------
 [ wheel-FR ]
 position = 0.83426, 1.48383, -0.63809
-roll-height = 0.92
-mass = 15.0
+roll-height = 0.95
+mass = 40
 restitution = 0.1
 
 [ wheel-FL ]
 position = -0.85728, 1.48383, -0.63809
-roll-height = 0.92
-mass = 15.0
+roll-height = 0.95
+mass = 40
 restitution = 0.1
 
 [ suspension-FR ]
-position = 0.60, 1.12, -0.30
-hinge = -0.50, 0.90, -0.20
+position = 0.74426, 1.48383, -0.23809
+hinge = -3.80, 1.28383, 0
 
 [ suspension-FL ]
-position = -0.60, 1.12, -0.30
-hinge = 0.50, 0.90, -0.20
+position = -0.76728, 1.48383, -0.23809
+hinge = 3.80, 1.28383, 0
 
 
 # wheels rear (position and suspension mount)
 #---------------------------
 [ wheel-RR ]
 position = 0.83426, -1.44263, -0.63809
-roll-height = 0.93
-mass = 15.0
+roll-height = 0.95
+mass = 40
 restitution = 0.1
 
 [ wheel-RL ]
 position = -0.85728, -1.44263, -0.63809
-roll-height = 0.93
-mass = 15.0
+roll-height = 0.95
+mass = 40
 restitution = 0.1
 
 [ suspension-RR ]
-position = 0.70, -1.51, -0.30
-hinge = -1.00 , 0.0, -0.0
+position = 0.74426, -1.44263, -0.23809
+hinge = -3.80, -1.2, 0
 
 [ suspension-RL ]
-position = -0.70, -1.51, -0.30
-hinge = 1.00 , -0.0, -0.0
+position = -0.76728, -1.44263, -0.23809
+hinge = 3.80, -1.2, 0
+
+
+#  suspension
+#---------------------------
+[ suspension-front ]
+spring-constant = 52000
+bounce = 11000
+rebound = 8000
+travel = 0.62
+camber = -1.33
+caster = 6.12
+toe = 0.0
+anti-roll = 8000
+factors-file = first
+
+[ suspension-rear ]
+spring-constant = 48000
+bounce = 11000
+rebound = 8000
+travel = 0.62
+camber = -0.45
+caster = 0.28
+toe = 0.0
+anti-roll = 12000
+factors-file = first
+
+
+#  tires (more in .tire)
+#---------------------------
+[ tire-both ]
+radius = 0.41
+rolling-resistance = 1.3e-2, 6.5e-6
+rotational-inertia = 0.9
+tread = 0.0
+
+
+# used to calculate the weight distribution and balance
+# (for car total mass and inertia) also use engine mass and position
+#---------------------------
+[ particle-00 ]  # front
+mass = 455.0
+position =  0.8,1.5,0
+
+[ particle-01 ]
+mass = 455.0
+position = -0.8,1.5,0
+
+[ particle-02 ]  # rear
+mass = 455.0
+position =  0.8,-1.5,0
+
+[ particle-03 ]
+mass = 455.0
+position = -0.8,-1.5,0
+
+
+#  engine
+#---------------------------
+[ engine ]
+sound = engine
+position = 0.0, 1.6, -0.1
+mass = 180.0
+rpm-limit = 6300
+inertia = 0.30
+start-rpm = 1000
+stall-rpm = 400
+fuel-consumption = 1e-9
+friction = 230
+torque-val-mul = 0.75
+torque-curve-00 = 1000, 355
+torque-curve-01 = 1500, 410
+torque-curve-02 = 2000, 450
+torque-curve-03 = 2500, 500
+torque-curve-04 = 3000, 555
+torque-curve-05 = 3500, 623
+torque-curve-06 = 4000, 644
+torque-curve-07 = 4500, 625
+torque-curve-08 = 5000, 579
+torque-curve-09 = 5500, 530
+torque-curve-10 = 6000, 493
+torque-curve-11 = 6500, 461
+torque-curve-12 = 7000, 440
+real-pow-tq-mul = 1.2
+
+[ clutch ]
+max-torque-mul = 1.1
+
 
 # Rest from 360.car!
 # -----------------------------------------------------------------------------
@@ -78,40 +167,6 @@ fluidTrigH = 0.07
 friction = 0.4
 
 
-#  engine
-#---------------------------
-[ engine ]
-sound = engine360
-position = 0.0, -0.8, 0.15
-mass = 250.0
-rpm-limit = 8000
-inertia = 0.33
-start-rpm = 1000
-stall-rpm = 500
-fuel-consumption = 0.0001
-friction = 230
-torque-val-mul = 0.88
-torque-curve-00 = 1000, 325
-torque-curve-01 = 1500, 360
-torque-curve-02 = 2200, 388
-torque-curve-03 = 2700, 426
-torque-curve-04 = 3200, 452
-torque-curve-05 = 3800, 482
-torque-curve-06 = 4200, 511
-torque-curve-07 = 4800, 555
-torque-curve-08 = 5200, 576
-torque-curve-09 = 5600, 580
-torque-curve-10 = 6000, 576
-torque-curve-11 = 6500, 554
-torque-curve-12 = 7000, 526
-torque-curve-13 = 7500, 498
-torque-curve-14 = 8000, 475
-torque-curve-15 = 8500, 454
-torque-curve-16 = 9000, 409
-real-pow-tq-mul = 1.2
-
-[ clutch ]
-max-torque-mul = 1.3
 
 #  gearbox
 #---------------------------
@@ -137,40 +192,6 @@ position = 0.0, -1.50, -0.10
 capacity = 95.0
 volume = 80.0
 fuel-density = 0.8
-
-
-#  suspension
-#---------------------------
-[ suspension-front ]
-spring-constant = 119865
-bounce = 10000.0
-rebound = 9000.0
-travel = 0.22
-camber = -1.0
-caster = 6.12
-toe = 0.2
-anti-roll = 8000
-factors-file = first
-
-[ suspension-rear ]
-spring-constant = 114062
-bounce = 9000.0
-rebound = 8000.0
-travel = 0.24
-camber = -0.45
-caster = 0.28
-toe = 0.1
-anti-roll = 10000
-factors-file = first
-
-
-#  tires (more in .tire)
-#---------------------------
-[ tire-both ]
-radius = 0.32
-rolling-resistance = 1.3e-2, 6.5e-6
-rotational-inertia = 1.5
-tread = 0.0
 
 
 #  brakes
@@ -221,22 +242,3 @@ surface-area = 0.8
 lift-coefficient = -4.7
 efficiency = 0.95
 
-
-# used to calculate the weight distribution and balance
-# (for car total mass and inertia) also use engine mass and position
-#---------------------------
-[ particle-00 ]	# Chassis Front
-mass = 230
-position =  0.8, 1.1, -0.05
-
-[ particle-01 ]	#	Cooler front
-mass = 230
-position = -0.8, 1.1, -0.05
-
-[ particle-02 ]	#	Chassis left
-mass = 250
-position =  0.8, -1.1, -0.05
-
-[ particle-03 ]	#	Chassis right
-mass = 250
-position = -0.8, -1.1, -0.05 
