@@ -3,8 +3,10 @@
 #include "RotationalFrame.hpp"
 
 #include <cmath>
+
 #define _USE_MATH_DEFINES
 
+// Stuntrally's CARWHEEL class
 class CarWheel {
 public:
 	// Default makes an S2000-like car
@@ -21,10 +23,8 @@ public:
 		rollRes += vel * vel * quadRollRes;
 
 		double res = rollRes;
-
 		// Determine direction
-		if (vel < 0)
-			res = -res;
+		if (vel < 0) { res = -res; }
 
 		return res;
 	}
@@ -114,7 +114,7 @@ public:
 
 	double fluidRes;
 private:
-	// Constants
+//---- Constants
 	MathVector<double, 3> extendedPosition; // Position when suspension is fully extended (zero g)
 	double rollHeight; // How far off the road lateral forces are applied to the chassis
 	double mass;
@@ -123,13 +123,13 @@ private:
 	double linRollRes; // Linear rolling resistance on hard surface
 	double quadRollRes; // Quadratic rolling resistance on hard surface
 
-	// Variables
+//---- Variables
 	double inertiaCache;
-	double steerAngle; // Negative values -> steering left
+	double steerAngle; // Negative values = steering left!
 	double radius; // Total radius of wheel
 	double feedback; // Effect value of force feedback
 
-	// For info only
+//---- For info only
 	double angVel;
 	double camberDeg;
 

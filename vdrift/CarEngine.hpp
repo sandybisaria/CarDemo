@@ -1,17 +1,16 @@
 #pragma once
 
-#include "MathVector.hpp"
-#include "Spline.hpp"
-#include "RotationalFrame.hpp"
-#include "Matrix3.hpp"
 #include "LinearInterp.hpp"
+#include "MathVector.hpp"
+#include "Matrix3.hpp"
+#include "RotationalFrame.hpp"
+#include "Spline.hpp"
 
+// Stuntrally's CARENGINE class
 class CarEngine {
 public:
 	// Default makes an S2000-like car
 	CarEngine();
-
-	double realPowTorqueMul; //TODO Is not used or even assigned to
 
 	double getTorqueCurve(const double curThrottle, const double curRPM) const;
 	double getFrictionTorque(double curAngVel, double fricFactor, double throttlePos);
@@ -96,7 +95,7 @@ public:
 	bool isCombusting() const { return !stalled; }
 
 private:
-	// Constants
+//---- Constants
 	double maxRPM; // The "red line" in RPM
 	double idle; // Idle throttle percentage; calculated algorithmically
 	double startRPM; // Initial RPM
@@ -109,14 +108,14 @@ private:
 	MathVector<double, 3> position;
 	Spline<double> torqueCurve;
 
-	// Variables
+//---- Variables
 	double throttlePosition;
 	double clutchTorque;
 	bool outOfFuel;
 	bool revLimitExceeded;
 	RotationalFrame crankshaft;
 
-	// For info only
+//---- For info only
 	double frictionTorque;
 	double combustionTorque;
 	bool stalled;

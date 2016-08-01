@@ -3,6 +3,7 @@
 #include "MathVector.hpp"
 #include "LinearInterp.hpp"
 
+// Stuntrally's CARSUSPENSION class
 class CarSuspension {
 public:
 	// Default makes an S2000-like car
@@ -29,15 +30,16 @@ public:
 
 	double getForce() const { return force; }
 	const double getForce(double displacement, double vel) {
-		double damping = bounce;
-		if (vel < 0) damping = rebound;
+		double damping;
+		if (vel < 0) { damping = rebound; }
+		else		 { damping =  bounce; }
 
 		double dampFactor = damperFactors.interpolate(std::abs(vel));
 		double springFactor = springFactors.interpolate(displacement);
 
-		// Compressed -> spring force pushes car in positive z direction
+		// Compressed = spring force pushes car in positive z direction
 		double springForce = -displacement * springConstant * springFactor;
-		// Increasing compression -> damp force pushes car in positive z direction;
+		// Increasing compression = damp force pushes car in positive z direction;
 		double dampForce = -vel * damping * dampFactor;
 
 		double force = springForce + dampForce;
@@ -81,24 +83,26 @@ public:
 	}
 
 	void setDamperFactorPoints(std::vector<std::pair<double, double> >& curve) {
-		for (std::vector<std::pair<double, double> >::iterator i = curve.begin(); i != curve.end(); ++i) {
+		for (std::vector<std::pair<double, double> >::iterator i = curve.begin();
+			 i != curve.end(); ++i) {
 			damperFactors.addPoint(i->first, i->second);
 		}
 	}
 	void setSpringFactorPoints(std::vector<std::pair<double, double> >& curve) {
-		for (std::vector<std::pair<double, double> >::iterator i = curve.begin(); i != curve.end(); ++i) {
+		for (std::vector<std::pair<double, double> >::iterator i = curve.begin();
+			 i != curve.end(); ++i) {
 			springFactors.addPoint(i->first, i->second);
 		}
 	}
 
-	// Variables
+//---- Variables
 	double overTravel; // Amount past travel that suspension was requested to compress
 	double displacement; // Linear repr of suspension displacement, actually the displacement about the arc formed by the hinge
 	double velocity;
 	double force;
 
 private:
-	// Constants
+//---- Constants
 	MathVector<double, 3> hinge; // Point that wheels are rotated around as suspension compresses
 	double springConstant;
 	double bounce; // Suspension compression damping

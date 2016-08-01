@@ -2,6 +2,7 @@
 
 #include "MathVector.hpp"
 
+// Stuntrally's CARFUELTANK class
 class CarFuelTank {
 public:
 	// Default makes an S2000-like car
@@ -28,15 +29,15 @@ public:
 	}
 
 private:
-	// Constants
+//---- Constants
 	double capacity;
 	double density;
 	MathVector<double, 3> position;
 
-	// Variables
+//---- Variables
 	double mass;
 	double volume;
 
-	// For info only
+//---- For info only
 	void updateMass() { mass = density * volume; }
 };
