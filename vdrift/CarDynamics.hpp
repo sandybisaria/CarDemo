@@ -168,7 +168,7 @@ private:
 	double calculateDriveshaftRPM() const;
 	double calculateDriveshaftSpeed();
 
-	void applyClutchTorque(double engineDrag, double clutchSpeed); // Applied to engine
+	void applyClutchTorque(double engineDrag); // Applied to engine
 	void calculateDriveTorque(double driveTorque[], double clutchTorque);
 
 	int nextGear() const; // Calculate next gear based on engine RPM
@@ -183,7 +183,7 @@ private:
 	void updateWheelTransform();
 	void updateWheelVelocity();
 
-	void interpolateWheelContacts(double dt);
+	void interpolateWheelContacts();
 
 	void applyEngineTorqueToBody();
 	void applyAerodynamicsToBody();

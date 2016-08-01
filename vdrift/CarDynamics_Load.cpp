@@ -4,8 +4,7 @@
 #include "../terrain/ShapeData.hpp"
 
 CarDynamics::CarDynamics()
-	: world(0), chassis(0), whTrigs(0),
-	  drive(AWD), //prevVel(0, 0, 0),
+	: world(0), chassis(0), whTrigs(0), drive(AWD),
 	  autoclutch(true), autoshift(true), autorear(true), shifted(true),
 	  shiftTime(0.2), remShiftTime(0.0), lastAutoClutch(1.0), gearToShift(0),
 	  maxAngle(45.0), angularDamping(0.4),
@@ -28,12 +27,11 @@ void CarDynamics::setNumWheels(int nw) {
 bool CarDynamics::load(ConfigFile& cf) {
 	int nw = 0;
 	cf.getParam("wheels", nw);
-	if (nw >= MIN_WHEEL_COUNT && nw <= MAX_WHEEL_COUNT)
-		setNumWheels(nw);
+	if (nw >= MIN_WHEEL_COUNT && nw <= MAX_WHEEL_COUNT) { setNumWheels(nw); }
 
-	int version = 2;
+	int version = 2; // Default version is 2
 	cf.getParam("version", version);
-	if (version > 2) return false; //TODO Error: Unsupported version
+	if (version > 2) return false;
 
 	float tempVec[ConfigVariable::V_SIZE];
 	// Load engine params
@@ -41,7 +39,7 @@ bool CarDynamics::load(ConfigFile& cf) {
 		float mass, rpmLimit, inertia, friction, startRPM, stallRPM, fuelCons;
 		MathVector<double, 3> position;
 
-		//TODO Ignored engine.sound
+		// Ignored engine.sound
 
 		if (!cf.getParam("engine.rpm-limit", rpmLimit)) return false;
 		engine.setMaxRPM(rpmLimit);
@@ -78,6 +76,7 @@ bool CarDynamics::load(ConfigFile& cf) {
 		std::string torqueStr("engine.torque-curve-00");
 		std::vector<std::pair<double, double> > torques;
 
+		// Load the engine torque curve
 		int curveNum(0);
 		while (cf.getParam(torqueStr, torquePoint)) {
 			maxTorque = std::max(maxTorque, torquePoint[1] * mul);
@@ -99,10 +98,7 @@ bool CarDynamics::load(ConfigFile& cf) {
 			clutch.setMaxTorque(maxTorque * mul2);
 		}
 
-//		mul = 1;
-//		if (cf.getParam("engine.real-po-tq-mul", mul))
-//			engine.realPowTorqueMul = mul;
-		//TODO Skipped engine.sound-vol-mul and engine.real-po-tq-mul
+		// Ignored engine.sound-vol-mul and engine.real-po-tq-mul
 	}
 
 	// Load transmission params
@@ -117,6 +113,8 @@ bool CarDynamics::load(ConfigFile& cf) {
 		transmission.setGearRatio(-1, ratio);
 
 		if (!cf.getParam("transmission.gears", gears)) return false;
+
+		// Load the gear ratios
 		for (int i = 1; i <= gears; i++) {
 			std::stringstream s;
 			s << "transmission.gear-ratio-" << i;
@@ -217,7 +215,7 @@ bool CarDynamics::load(ConfigFile& cf) {
 		position.set(tempVec[0], tempVec[1], tempVec[2]);
 		fuelTank.setPosition(position);
 
-		// Note that the fuel tank does not need to be added to the set of mass-only particles
+		// The fuel tank is not added to the set of mass-only particles
 	}
 
 	// Load the suspension
@@ -246,16 +244,15 @@ bool CarDynamics::load(ConfigFile& cf) {
 			std::string file;
 			if (cf.getParam(searchStr + "factors-file", file)) {
 				std::string fullPath = "../data/cars/common/" + file + ".susp";
-				ConfigFile suspParams;
+				ConfigFile suspParams; // Suspension factor points may be in separate file
 				if (!suspParams.load(fullPath)) return false;
 
 				suspParams.getPoints("suspension", "damper-factor", damper); if (damper.size() == 0) return false;
 				suspParams.getPoints("suspension", "spring-factor", spring); if (spring.size() == 0) return false;
-			} else { // Load points
+			} else { // Load points from the .car file
 				cf.getPoints("suspension-" + pos, "damper-factor", damper); if (damper.size() == 0) return false;
 				cf.getPoints("suspension-" + pos, "spring-factor", spring); if (spring.size() == 0) return false;
 			}
-
 			suspension[wl].setDamperFactorPoints(damper); suspension[wr].setDamperFactorPoints(damper);
 			suspension[wl].setSpringFactorPoints(spring); suspension[wr].setSpringFactorPoints(spring);
 
@@ -320,7 +317,8 @@ bool CarDynamics::load(ConfigFile& cf) {
 
 		// Rotational inertia param is located in the tire section
 		float front, rear;
-		if (cf.getParam("tire-both.rotational-inertia", front)) { rear = front;
+		if (cf.getParam("tire-both.rotational-inertia", front)) {
+			rear = front;
 		} else {
 			if (!cf.getParam("tire-front.rotational-inertia", front)) return false;
 			if (!cf.getParam("tire-rear.rotational-inertia", rear)) return false;
@@ -397,7 +395,7 @@ bool CarDynamics::load(ConfigFile& cf) {
 		if (!cf.getParam("steering.max-angle", maxAngle)) return false;
 		setMaxSteeringAngle(maxAngle);
 
-		//TODO Skipped steering.flip-pow-mul
+		// Skipped steering.flip-pow-mul
 	}
 
 	// Load steering angular damping
@@ -452,7 +450,7 @@ bool CarDynamics::load(ConfigFile& cf) {
 		}
 	}
 
-	//TODO Skipped hover params
+	// Skipped hover params; we are not having hovering "cars"
 
 	calculateMass();
 
@@ -480,27 +478,27 @@ void CarDynamics::init(MathVector<double, 3> pos, Quaternion<double> rot, Collis
 	}
 
 	const MathVector<double, 3> verticalMargin(0, 0, 0.3);
-	btVector3 origin = toBulletVector(box.getCenter() + verticalMargin - centerOfMass);
 	btVector3 size = toBulletVector(box.getSize() - verticalMargin);
 
 	// Assuming the vehicle is not a sphere... of course
-	// y is length, x is width, h is height
+	// y is length, x is width, h is height (y| x- z^)
 	btCollisionShape* chassisShape;
-	{	// y| length; x- width; z^ height
-		btScalar w = size.getX() * 0.2, r = size.getZ() * 0.3, h = 0.45;
+	{
+		btScalar w = size.getX() * 0.2f, r = size.getZ() * 0.3f, h = 0.45;
 
 		//TODO I think this is what the Stuntrally devs meant, but investigate to be sure
 		btScalar l0 = 0.f, w0 = 0.f, h0 = 0.f;
 		if (collR > 0.f) { r = collR; l0 = collLofs; }
 		if (collW > 0.f) { w = collW; w0 = collWofs; }
 		if (collH > 0.f) { h = collH; h0 = collHofs; }
-		origin = btVector3(l0, w0, h0);
+		btVector3 origin = btVector3(l0, w0, h0);
 
 		const int numSph = 14; int i = 0;
 		btScalar rad[numSph]; btVector3 posi[numSph];
 
 		btScalar r2 = r * collR2m;
-		btScalar l1 = collPosLFront, l2 = collPosLBack, l1m = l1 * 0.5, l2m = l2 * 0.5;
+		btScalar l1 = collPosLFront, l2 = collPosLBack,
+			l1m = l1 * 0.5f,l2m = l2 * 0.5f;
 		float ww = 1.f;
 		float wt = collTopWMul * ww;
 
@@ -528,7 +526,8 @@ void CarDynamics::init(MathVector<double, 3> pos, Quaternion<double> rot, Collis
 
 	double chassisMass = body.getMass();
 	Matrix3<double> inertia = body.getInertia();
-	btVector3 chassisInertia(inertia[0], inertia[4], inertia[8]);
+	btVector3 chassisInertia((float) inertia[0], (float) inertia[4],
+							 (float) inertia[8]);
 
 	btTransform transform;
 	transform.setOrigin(toBulletVector(pos));
@@ -536,13 +535,14 @@ void CarDynamics::init(MathVector<double, 3> pos, Quaternion<double> rot, Collis
 	btDefaultMotionState* chassisState = new btDefaultMotionState();
 	chassisState->setWorldTransform(transform);
 
-	btRigidBody::btRigidBodyConstructionInfo info(chassisMass, chassisState, chassisShape, chassisInertia);
-	info.m_angularDamping = angularDamping;
+	btRigidBody::btRigidBodyConstructionInfo info((float) chassisMass, chassisState,
+												  chassisShape, chassisInertia);
+	info.m_angularDamping = (float) angularDamping;
 	info.m_restitution = 0.0;
-	info.m_friction = collFriction;  /// 0.4-0.7
+	info.m_friction = collFriction;  //Ranges from 0.4 to 0.7
 	shapes.push_back(chassisShape);
 
-	//TODO The second "true" is hard-coded; assume we allow car collisions!
+	// The second "true" is hard-coded; the car can collide with other cars!
 	chassis = world.addRigidBody(info, true, true); rigids.push_back(chassis);
 	chassis->setActivationState(DISABLE_DEACTIVATION);
 	chassis->setUserPointer(new ShapeData(ShapeType::Car, this));
@@ -558,21 +558,25 @@ void CarDynamics::init(MathVector<double, 3> pos, Quaternion<double> rot, Collis
 			wheelPos[0] += collLofs;
 			wheelPos[2] += collFlTrigH;
 
-			btSphereShape* whSph = new btSphereShape(whRad);
+			btSphereShape* whSph = new btSphereShape((float) whRad);
 			whTrigs = new btRigidBody(0.001f, 0, whSph);
 
 			whTrigs->setUserPointer(new ShapeData(ShapeType::Wheel, this, w));
 			whTrigs->setActivationState(DISABLE_DEACTIVATION);
-			whTrigs->setCollisionFlags(whTrigs->getCollisionFlags() | btCollisionObject::CF_NO_CONTACT_RESPONSE);
+			whTrigs->setCollisionFlags(whTrigs->getCollisionFlags() |
+									   btCollisionObject::CF_NO_CONTACT_RESPONSE);
 
 			world.getDynamicsWorld()->addRigidBody(whTrigs); rigids.push_back(whTrigs);
 			world.addShape(whSph); shapes.push_back(whSph);
 
-			btTypedConstraint* constr = new btPoint2PointConstraint(*chassis, *whTrigs, toBulletVector(wheelPos), btVector3(0, 0, 0));
+			btTypedConstraint* constr = new btPoint2PointConstraint(*chassis,
+																	*whTrigs,
+																	toBulletVector(wheelPos),
+																	btVector3(0, 0, 0));
 			world.getDynamicsWorld()->addConstraint(constr, true); constraints.push_back(constr);
 		}
 
-		//TODO Initialization for buoyancy computations
+		// Initialization for buoyancy computations would occur here if we included them
 	}
 
 	// Init wheels and suspension
@@ -595,17 +599,17 @@ void CarDynamics::removeBullet() {
 	}
 	constraints.resize(0);
 
-	//TODO Commented due to seg-faults
-//	for (i = rigids.size() - 1; i >= 0; i--) {
-//		btRigidBody* body = rigids[i];
-//		if (body && body->getMotionState()) delete body->getMotionState();
+	for (i = rigids.size() - 1; i >= 0; i--) {
+		btRigidBody* body = rigids[i];
+		if (body && body->getMotionState()) delete body->getMotionState();
 
-//		world->getDynamicsWorld()->removeRigidBody(body);
+		world->getDynamicsWorld()->removeRigidBody(body);
 
-//		ShapeData* sd = (ShapeData*)body->getUserPointer();
-//		delete sd;
-//		delete body;
-//	}
+		ShapeData* sd = (ShapeData*)body->getUserPointer();
+		delete sd;
+		delete body;
+	}
+	rigids.resize(0);
 
 	for (i = 0; i < shapes.size(); i++) {
 		btCollisionShape* shape = shapes[i];
@@ -616,17 +620,15 @@ void CarDynamics::removeBullet() {
 			for (c = 0; c < cs->getNumChildShapes(); ++c)
 				delete cs->getChildShape(c);
 		}
-//		ShapeData* sd = (ShapeData*)shape->getUserPointer();
-//		delete sd;
-//		delete shape; TODO Commented due to double free error
+		ShapeData* sd = (ShapeData*)shape->getUserPointer();
+		delete sd;
+		delete shape;
 	}
 	shapes.resize(0);
 
-	//TODO Commented due to seg-faults
-//	for (i = 0; i < actions.size(); ++i) {
-//		world->getDynamicsWorld()->removeAction(actions[i]);
-//	}
-
+	for (i = 0; i < actions.size(); ++i) {
+		world->getDynamicsWorld()->removeAction(actions[i]);
+	}
 	actions.resize(0);
 }
 
@@ -644,13 +646,17 @@ void CarDynamics::setDrive(const std::string& newDrive) {
 void CarDynamics::addMassParticle(double newMass, MathVector<double, 3> newPos) {
 	newPos[0] += comOfsL;
 	newPos[2] += comOfsH;
-	massOnlyParticles.push_back(std::pair<double, MathVector<double, 3> >(newMass, newPos));
+	massOnlyParticles.push_back(std::pair<double, MathVector<double, 3> >(
+		newMass, newPos));
 }
 
-void CarDynamics::addAerodynamicDevice(const MathVector<double, 3>& newPos, double dragFrontalArea,
-									   double dragCoefficient, double liftSurfaceArea, double liftCoefficient, double liftEfficiency) {
+void CarDynamics::addAerodynamicDevice(const MathVector<double, 3>& newPos,
+									   double dragFrontalArea, double dragCoefficient,
+									   double liftSurfaceArea, double liftCoefficient,
+									   double liftEfficiency) {
 	CarAero aero;
-	aero.set(newPos, dragFrontalArea, dragCoefficient, liftSurfaceArea, liftCoefficient, liftEfficiency);
+	aero.set(newPos, dragFrontalArea, dragCoefficient, liftSurfaceArea,
+			 liftCoefficient, liftEfficiency);
 	aerodynamics.push_back(aero);
 }
 
@@ -658,10 +664,10 @@ void CarDynamics::calculateMass() {
 	typedef std::pair<double, MathVector<double, 3> > MassPair;
 
 	double totalMass(0);
-	centerOfMass.set((double)0);
+	centerOfMass.set(0.0);
 
-	//
-	for (std::list< MassPair >::iterator i = massOnlyParticles.begin(); i != massOnlyParticles.end(); i++) {
+	for (std::list< MassPair >::iterator i = massOnlyParticles.begin();
+		 i != massOnlyParticles.end(); i++) {
 		totalMass += i->first;
 		centerOfMass = centerOfMass + i->second * i->first;
 	}
@@ -674,21 +680,21 @@ void CarDynamics::calculateMass() {
 	centerOfMass = centerOfMass * (1.0 / totalMass);
 
 	// Calculate inertia tensor
-	Matrix3<double> inertia;
-	for (int i = 0; i < 9; i++) { inertia[i] = 0; }
+	Matrix3<double> inertia; inertia.scale(0);
 
-	for (std::list< MassPair >::iterator i = massOnlyParticles.begin(); i != massOnlyParticles.end(); i++) {
+	for (std::list< MassPair >::iterator i = massOnlyParticles.begin();
+		 i != massOnlyParticles.end(); i++) {
 		// Transform into RigidBody coordinates
 		MathVector<double, 3> pos = i->second - centerOfMass;
 		double mass = i->first;
 		inertia[0] += mass * (pos[1] * pos[1] + pos[2] * pos[2]);
 		inertia[1] -= mass * (pos[0] * pos[1]);
 		inertia[2] -= mass * (pos[0] * pos[2]);
-		inertia[3] = inertia[1];
+		inertia[3]  = inertia[1];
 		inertia[4] += mass * (pos[2] * pos[2] + pos[0] * pos[0]);
 		inertia[5] -= mass * (pos[1] * pos[2]);
-		inertia[6] = inertia[2];
-		inertia[7] = inertia[5];
+		inertia[6]  = inertia[2];
+		inertia[7]  = inertia[5];
 		inertia[8] += mass * (pos[0] * pos[0] + pos[1] * pos[1]);
 	}
 	body.setInertia(inertia);

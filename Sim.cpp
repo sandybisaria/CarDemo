@@ -12,10 +12,6 @@ Sim::Sim(App* app)
 }
 
 Sim::~Sim() {
-	delete world;
-	delete carInput;
-	delete debugDraw;
-
 	for (std::vector<Car*>::iterator it = cars.begin();
 		 it != cars.end(); it++) {
 		delete (*it);
@@ -27,6 +23,10 @@ Sim::~Sim() {
 		delete (*it);
 	}
 	controllers.clear();
+
+	delete world;
+	delete carInput;
+	delete debugDraw;
 }
 
 void Sim::setup(Ogre::SceneManager* sceneMgr) {
