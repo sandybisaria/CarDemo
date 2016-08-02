@@ -1,27 +1,23 @@
 #pragma once
 
-#include <cmath>
 #include <cassert>
+#include <cmath>
 #include <cstring>
 #include <ostream>
 
-// Custom vector class, from vdrift/mathvector.h, based on MATHVECTOR
+// Stuntrally's MATHVECTOR classes
 template <typename T, unsigned int dimension>
 class MathVector {
 public:
 	MathVector() { for (size_t i = 0; i < dimension; i++) v[i] = 0; }
-
 	MathVector(const T& t) { for (size_t i = 0; i < dimension; i++) v[i] = t; }
-
 	MathVector(const MathVector<T, dimension>& other) { *this = other; }
-
 	MathVector(const T x, const T y) {
 		assert(dimension == 2);
 		v[0] = x; v[1] = y;
 	}
 
 	const T magnitude() const { return sqrt(magnitudeSquared()); }
-
 	const T magnitudeSquared() const {
 		T runningTotal(0);
 		for (size_t i = 0; i < dimension; i++) {
@@ -107,7 +103,7 @@ public:
 
 	MathVector<T, dimension> operator*(const T& scalar) const {
 		MathVector<T, dimension> output;
-		for (size_t i; i < dimension; i++) {
+		for (size_t i = 0; i < dimension; i++) {
 			output.v[i] = v[i] * scalar;
 		}
 		return output;
@@ -117,7 +113,7 @@ public:
 		assert(scalar != 0);
 
 		MathVector<T, dimension> output;
-		for (size_t i; i < dimension; i++) {
+		for (size_t i = 0; i < dimension; i++) {
 			output.v[i] = v[i] / scalar;
 		}
 		return output;
@@ -150,7 +146,7 @@ public:
 
 	template <typename T2>
 	bool operator==(const MathVector<T2, dimension>& other) const {
-		bool same(true);
+		bool same = true;
 
 		for (size_t i = 0; i < dimension; i++) {
 			same = same && (v[i] == other.v[i]);
@@ -176,15 +172,14 @@ private:
 	T v[dimension];
 };
 
-// Faster MathVector for 3-space
+// Optimized MathVector class for size 3
 template <class T>
 class MathVector<T, 3> {
 public:
-	MathVector() {}
-	MathVector(const T& t) : v(t) {}
-	MathVector(const T& x, const T& y, const T& z) : v(x, y, z) {}
+	MathVector() { }
+	MathVector(const T& t) : v(t) { }
+	MathVector(const T& x, const T& y, const T& z) : v(x, y, z) { }
 	MathVector(const MathVector<T, 3>& other) {
-		// High performance, but portability issues?
 		std::memcpy(&v, &other.v, sizeof(MathVectorXYZ));
 	}
 	template <typename T2>
@@ -209,7 +204,7 @@ public:
 		return MathVector<T, 3>(v.x * magInv, v.y * magInv, v.z * magInv);
 	}
 
-	inline const T dot(const MathVector<T, 3>& other) const {
+	const T dot(const MathVector<T, 3>& other) const {
 		return v.x * other.v.x + v.y * other.v.y + v.z * other.v.z;
 	}
 
@@ -224,12 +219,11 @@ public:
 		return (*this) - other * T(2.0) *other.dot(*this);
 	}
 
-	inline const T& operator[](const int n) const {
+	const T& operator[](const int n) const {
 		assert(n < 3);
 		return v[n];
 	}
-
-	inline T & operator[](const int n) {
+	T & operator[](const int n) {
 		assert(n < 3);
 		return v[n];
 	}
@@ -262,12 +256,12 @@ public:
 	}
 
 	template <typename T2>
-	inline bool operator==(const MathVector<T2,3> & other) const {
+	bool operator==(const MathVector<T2,3> & other) const {
 		return (v.x == other[0] && v.y == other[1] && v.z == other[2]);
 	}
 
 	template <typename T2>
-	inline bool operator!=(const MathVector<T2,3> & other) const {
+	bool operator!=(const MathVector<T2,3> & other) const {
 		return (v.x != other[0] || v.y != other[1] || v.z != other[2]);
 	}
 
@@ -275,24 +269,23 @@ public:
 		return MathVector<T,3> (-v.x, -v.y, -v.z);
 	}
 
-	inline void toAbsVal() {
+	void toAbsVal() {
 		v.x = fabs(v.x);
 		v.y = fabs(v.y);
 		v.z = fabs(v.z);
 	}
 
-	// Project this vector onto the vector 'vec'.  Neither needs to be a unit vector.
+	// Project this vector onto the vector 'vec'
 	MathVector<T,3> project(const MathVector<T,3>& vec) const {
 		T scalarProj = dot(vec.normalized());
 		return vec.normalized() * scalarProj;
 	}
 
 private:
-	// Special three-element vector
 	struct MathVectorXYZ {
 		T x, y, z;
-		inline const T& operator[](const int i) const { return ((T*)this)[i]; }
-		inline T& operator[](const int i) { return ((T*)this)[i]; }
+		const T& operator[](const int i) const { return ((T*)this)[i]; }
+		T& operator[](const int i) { return ((T*)this)[i]; }
 
 		MathVectorXYZ() : x(0), y(0), z(0) {}
 		MathVectorXYZ(const T& t) : x(t), y(t), z(t) {}

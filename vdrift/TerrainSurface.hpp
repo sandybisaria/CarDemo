@@ -4,17 +4,17 @@
 
 #include <string>
 
-// Based on TRACKSURFACE in vdrift/tracksurface.h
+// Based on Stuntrally's TRACKSURFACE class
 class TerrainSurface {
 public:
-	enum TYPE { NONE, ASPHALT, GRASS, GRAVEL, CONCRETE, SAND, COBBLES, NumTypes };
+	enum Type { NONE, ASPHALT, GRASS, GRAVEL, CONCRETE, SAND, COBBLES, NumTypes };
 
-
+	// Omitted the "2" versions of variables
 	float friction, frictionX, frictionY; // frictionX and frictionY are multipliers
-	float bumpWavelength, bumpAmplitude; // Omitted the "2" versions
+	float bumpWavelength, bumpAmplitude;
 	float rollingDrag, rollingResist;
 
-	TYPE type;
+	Type type;
 	std::string name;
 	std::string tireName;
 	CarTire* tire;
@@ -27,7 +27,7 @@ public:
 		  rollingDrag(1.0f), rollingResist(1.0f),
 		  type(GRASS), tireName("DEFAULT"), tire(CarTire::none()) {}
 
-	void setType(unsigned int i) { type = i < NumTypes ? (TYPE)i : NumTypes; }
+	void setType(unsigned int i) { type = i < NumTypes ? (Type)i : NumTypes; }
 
 	bool operator==(const TerrainSurface& other) const {
 		return (friction == other.friction) && (frictionX == other.frictionX) && (frictionY == other.frictionY) &&
@@ -42,7 +42,4 @@ public:
 	}
 };
 
-//TODO Will making char[][] fix this?
-//const static std::string terrTypeName[TerrainSurface::NumTypes + 1] {
-//	"[none]", "Asphalt", "Grass", "Gravel", "Concrete", "Sand", "Cobbles", "[all]"
-//};
+// Add the terrain type names when you need them...

@@ -2,7 +2,7 @@
 
 #include "MathVector.hpp"
 
-// From vdrift/quaternion.h
+// Stuntrally's QUATERNION class
 template <typename T>
 class Quaternion {
 public:
@@ -15,7 +15,7 @@ public:
 	}
 	Quaternion(const Quaternion<T>& other) { *this = other; }
 
-	// Load the [1,(0,0,0)] quaternion
+	// Load the [1,(0, 0, 0)] quaternion
 	void loadIdentity() {
 		v[3] = 1;
 		v[0] = v[1] = v[2] = 0;
@@ -59,6 +59,7 @@ public:
 			v[i] /= len;
 	}
 
+//---- From Stuntrally:
 	/// Set the given matrix to a matrix representation of this quaternion.
 	/// No array bound checking is done.
 	/// The matrix type can be any type that is accessible with [].
@@ -97,9 +98,9 @@ public:
 		destMat[15] = 1;
 	}
 
-	// Set the given matrix to a matrix representation of this quaternion.
-	// No array bound checking is done.
-	// The matrix type can be any type that is accessible with [].
+	/// Set the given matrix to a matrix representation of this quaternion.
+	/// No array bound checking is done.
+	/// The matrix type can be any type that is accessible with [].
 	template <typename T2>
 	void representAsMatrix3(T2& destMat) const {
 		T xx = v[0]*v[0];
@@ -127,7 +128,7 @@ public:
 		destMat[8] = 1.0-2.0*(xx+yy);
 	}
 
-	// May return a non-normalized quaternion
+//---- The following operator methods may return a non-normalized quaternion:
 	Quaternion<T> operator*(const Quaternion<T>& other ) const {
 		T A, B, C, D, E, F, G, H;
 
@@ -147,15 +148,11 @@ public:
 						  B + (-E - F + G + H) * 0.5);
 		return output;
 	}
-
-	// May return a non-normalized quaternion
 	Quaternion<T> operator*(const T& scalar) const {
 		Quaternion output(v[0]*scalar, v[1]*scalar, v[2]*scalar, v[3]*scalar);
 
 		return output;
 	}
-
-	// May return a non-normalized quaternion
 	Quaternion<T> operator+(const Quaternion<T>& other) const {
 		Quaternion output(v[0]+other.v[0], v[1]+other.v[1], v[2]+other.v[2], v[3]+other.v[3]);
 
@@ -178,19 +175,18 @@ public:
 		return !(*this == other);
 	}
 
-	// Returns the conjugate
+	// The conjugate
 	Quaternion<T> operator-() const {
 		Quaternion output;
 		output.v[3] = v[3];
-		for (size_t i = 0; i < 3; ++i)
-		{
+		for (size_t i = 0; i < 3; ++i) {
 			output.v[i] = -v[i];
 		}
 		return output;
 	}
 
 	// Rotate the quaternion around the given axis by the given amount.
-	// a is in radians.  The axis is assumed to be a unit vector
+	// a is in radians. The axis is assumed to be a unit vector
 	void rotate(const T& a, const T& ax, const T& ay, const T& az) {
 		Quaternion output;
 		output.setAxisAngle(a, ax, ay, az);
@@ -200,7 +196,7 @@ public:
 	}
 
 	// Set the quaternion to rotation a around the given axis.
-	// a is in radians.  the axis is assumed to be a unit vector.
+	// a is in radians. The axis is assumed to be a unit vector.
 	void setAxisAngle(const T& a, const T& ax, const T& ay, const T& az) {
 		T sina2 = sin(a/2);
 
@@ -223,8 +219,7 @@ public:
 
 		Quaternion qout = (*this) * qtemp * dirconj;
 
-		for (size_t i = 0; i < 3; ++i)
-			vec[i] = qout.v[i];
+		for (size_t i = 0; i < 3; ++i) { vec[i] = qout.v[i]; }
 	}
 
 	// Get the scalar angle (in radians) between two quaternions
@@ -238,13 +233,12 @@ public:
 		// Create vectors for quaternions
 		T vec1[3];
 		T vec2[3];
-		for (size_t i = 0; i < 3; ++i)
-			vec1[i] = vec2[i] = forward[i];
+		for (size_t i = 0; i < 3; ++i) { vec1[i] = vec2[i] = forward[i]; }
 
 		rotateVector(vec1);
 		quat2.rotateVector(vec2);
 
-		// return the angle between the vectors
+		// Return the angle between the vectors
 		T dotprod(0);
 		for (size_t i = 0; i < 3; ++i)
 			dotprod += vec1[i]*vec2[i];
@@ -252,7 +246,8 @@ public:
 		return acos(dotprod);
 	}
 
-	// Interpolate between this quaternion and another by scalar amount t [0,1] and return the result
+	// Interpolate between this quaternion and another by scalar amount t and return the result
+	// t ranges from 0 to 1
 	Quaternion<T> quatSlerp (const Quaternion<T>& quat2, const T& t) const {
 		T to1[4];
 		T omega, cosom, sinom, scale0, scale1;

@@ -1,13 +1,14 @@
 #pragma once
 
 #include "LinearFrame.hpp"
-#include "RotationalFrame.hpp"
 #include "MathVector.hpp"
 #include "Quaternion.hpp"
+#include "RotationalFrame.hpp"
 
+// Stuntrally's RIGIDBODY class
 class RigidBody {
 public:
-	// Accessor methods to LinearFrame
+//---- Accessor methods to LinearFrame
 	void setInitialForce(const MathVector<double, 3>& f) { linFr.setInitialForce(f); }
 	void setForce(const MathVector<double, 3>& f) { linFr.setForce(f); }
 	const MathVector<double, 3>& getForce() const { return linFr.getForce(); }
@@ -24,7 +25,7 @@ public:
 		return linFr.getVelocity() + rotFr.getAngularVelocity().cross(offset);
 	}
 
-	// Accessor methods to RotationalFrame
+//---- Accessor methods to RotationalFrame
 	void setInitialTorque(const MathVector<double, 3>& t) { rotFr.setInitialTorque(t); }
 	void setTorque(const MathVector<double, 3>& t) { rotFr.setTorque(t); }
 	const MathVector<double, 3>& getTorque() const { return rotFr.getTorque(); }
@@ -40,6 +41,7 @@ public:
 	const MathVector<double, 3>& getAngularVelocity() const { return rotFr.getAngularVelocity(); }
 
 
+//---- Make sure to set the required forces/torques in between integration steps
 	void integrateStep1(double dt) {
 		linFr.integrateStep1(dt);
 		rotFr.integrateStep1(dt);

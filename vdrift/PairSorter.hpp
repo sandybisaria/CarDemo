@@ -2,7 +2,7 @@
 
 #include <map>
 
-// Based on vdrift/pairsort.h
+// Stuntrally's PAIRSORTER classes
 template <typename T>
 class PairSorterByFirst {
 public:

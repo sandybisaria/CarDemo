@@ -6,13 +6,13 @@
 #include <cassert>
 #include <vector>
 
-// Based on vdrift/spline.h
+// Stuntrally's SPLINE class
 template <typename T>
 class Spline {
 public:
 	Spline()
 		: firstSlope(0.0), lastSlope(0.0),
-		  derivsCalculated(false), slope(0.0) {}
+		  derivsCalculated(false), slope(0.0) { }
 
 	void clear() {
 		points.clear();
@@ -34,8 +34,7 @@ public:
 			return points[0].second;
 		}
 
-		if (!derivsCalculated)
-			calculate();
+		if (!derivsCalculated) { calculate(); }
 
 		size_t low = 0;
 		size_t high = points.size() - 1;
@@ -44,10 +43,8 @@ public:
 		// Bisect to find the interval that the distance is on.
 		while ((high - low) > 1 ) {
 			index = size_t ((high + low) / 2.0);
-			if (points[index].first > x)
-				high = index;
-			else
-				low = index;
+			if (points[index].first > x) { high = index; }
+			else 						 { low  = index; }
 		}
 
 		const T diff = points[high].first - points[low].first;
@@ -116,13 +113,11 @@ private:
 			r[i] -= factor * r[i-1];
 		}
 
-		// Back-substitution
-
+		//---- Back-substitution
 		// Solve for y"[N].
 		secondDeriv.resize(n);
 		secondDeriv[n-1] = r [n-1] / b [n-1];
-		for (int i = n - 2; i >= 0; i--)
-		{
+		for (int i = n - 2; i >= 0; i--) {
 			// Use the solution for y"[i+1] to find y"[i].
 			secondDeriv[i] = (r[i] - (c[i] * secondDeriv[i+1])) / b[i];
 		}
@@ -135,6 +130,7 @@ private:
 		derivsCalculated = true;
 	}
 
+private:
 	std::vector<std::pair< T, T > > points;
 	mutable std::vector< T > secondDeriv;
 	T firstSlope;

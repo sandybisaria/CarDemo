@@ -2,23 +2,24 @@
 
 #include "MathVector.hpp"
 
+// Stuntrally's MATHPLANE class
 template <class T>
 class MathPlane {
 public:
-	MathPlane() {}
-	MathPlane(const T a, const T b, const T c, const T d) : v(a, b, c, d) {}
+	MathPlane() { }
+	MathPlane(const T a, const T b, const T c, const T d) : v(a, b, c, d) { }
 	MathPlane(const MathPlane<T>& other) { std::memcpy(&v, &other, sizeof(MathPlaneABCD)); }
 	template <typename T2>
 	MathPlane(const MathPlane<T2>& other) { *this = other; }
 
-	inline void set(const T a, const T b, const T c, const T d) { v = MathPlaneABCD(a, b, c, d); }
-	inline void set(const T* arr) { std::memcpy(&v, arr, sizeof(MathPlaneABCD)); }
+	void set(const T a, const T b, const T c, const T d) { v = MathPlaneABCD(a, b, c, d); }
+	void set(const T* arr) { std::memcpy(&v, arr, sizeof(MathPlaneABCD)); }
 
-	inline const T& operator[](const int i) const {
+	const T& operator[](const int i) const {
 		assert(i < 4);
-		return v[i];
+		return v[i]; // Shuts up the
 	}
-	inline T& operator[](const int i) {
+	T& operator[](const int i) {
 		assert(i < 4);
 		return v[i];
 	}
@@ -34,12 +35,12 @@ public:
 	}
 
 	template <typename T2>
-	inline bool operator==(const MathPlane<T2>& other) const {
+	bool operator==(const MathPlane<T2>& other) const {
 		return (v.a == other[0] && v.b == other[1] && v.c == other[2] && v.d == other[3]);
 	}
 
 	template <typename T2>
-	inline bool operator!=(const MathPlane<T2>& other) const {
+	bool operator!=(const MathPlane<T2>& other) const {
 		return (v.a != other[0] || v.b != other[1] || v.c != other[2] || v.d != other[3]);
 	}
 
@@ -52,8 +53,8 @@ public:
 private:
 	struct MathPlaneABCD {
 		T a, b, c, d;
-		inline const T& operator[](const int i) const { return ((T*)this)[i]; }
-		inline T& operator[](const int i) { return ((T*)this)[i]; }
+		const T& operator[](const int i) const { return ((T*)this)[i]; }
+		T& operator[](const int i) { return ((T*)this)[i]; }
 
 		MathPlaneABCD() : a(0), b(1), c(0), d(0) {}
 		MathPlaneABCD(const T na, const T nb, const T nc, const T nd) : a(na), b(nb), c(nc), d(nd) {}

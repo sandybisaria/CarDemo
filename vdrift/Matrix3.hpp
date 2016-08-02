@@ -2,7 +2,7 @@
 
 #include "MathVector.hpp"
 
-// From vdrift/matrix3.h
+// Stuntrally's MATRIX3 class
 template <typename T>
 class Matrix3 {
 public:
@@ -97,19 +97,17 @@ public:
 		T invDiv = 1.0 / div;
 
 		Matrix3 m;
-		m.data[0] = -f*h+e*i;
-		m.data[1] = c*h-b*i;
-		m.data[2] = -c*e+b*f;
-		m.data[3] = f*g-d*i;
-		m.data[4] = -c*g+a*i;
-		m.data[5] = c*d-a*f;
-		m.data[6] = -e*g+d*h;
-		m.data[7] = b*g-a*h;
-		m.data[8] = -b*d+a*e;
+		m.data[0] = -f*h + e*i;
+		m.data[1] =  c*h - b*i;
+		m.data[2] = -c*e + b*f;
+		m.data[3] =  f*g - d*i;
+		m.data[4] = -c*g + a*i;
+		m.data[5] =  c*d - a*f;
+		m.data[6] = -e*g + d*h;
+		m.data[7] =  b*g - a*h;
+		m.data[8] = -b*d + a*e;
 
-		for (int i = 0; i < 9; i++) {
-			m.data[i] *= invDiv;
-		}
+		for (int idx = 0; idx < 9; idx++) { m.data[idx] *= invDiv; }
 
 		return m;
 	}
@@ -139,20 +137,20 @@ public:
 			}
 		}
 
-		if (Matrix3<T>::dsyevj3(sm, ev, ew))
-			return false;
+		if (Matrix3<T>::dsyevj3(sm, ev, ew)) { return false; }
 
-		for(int i = 0; i < 3; i++) {
-			for(int j = 0; j < 3; j++)
-			{
+		for (int i = 0; i < 3; i++) {
+			for (int j = 0; j < 3; j++) {
 				v[i*3 + j] = ev[i][j];
 			}
 		}
 
 		w.set(ew);
+
 		return true;
 	}
 
+//---- The following method/comments are from Stuntrally:
 	// From "Efficient numerical diagonalization of hermitian 3x3 matrices"
 	// ----------------------------------------------------------------------------
 private:

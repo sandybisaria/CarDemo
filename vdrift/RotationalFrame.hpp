@@ -4,9 +4,8 @@
 #include "MathVector.hpp"
 #include "Matrix3.hpp"
 
-#define SUVAT // Using Suvat method of integration
-
-// From vdrift/rotationalframe.h
+// Stuntrally's ROTATIONALFRAME class, using the Suvat method of integration.
+// Alternative integration methods removed
 class RotationalFrame {
 public:
 	RotationalFrame() : haveOldTorque(false), integrationStep(0) {}
@@ -36,81 +35,35 @@ public:
 	}
 	const MathVector<double, 3>& getAngularVelocity() const { return angVel; }
 
-	// Modified velocity Verlet integration two-step method
-	// Both steps must be called per frame
-	// Forces can only be set between steps 1 and 2
+//---- Modified velocity Verlet integration two-step method
+//---- Both steps must be called per frame
+//---- Forces can only be set between steps 1 and 2
 	void integrateStep1(double dt) {
 		assert(integrationStep == 0);
 		assert(haveOldTorque); // Must call setInitialTorque()
-
-#ifdef MODIFIEDVERLET
-		angMom = angMom + oldTorque * dt * 0.5;
-		orientation = orientation + getSpinFromMomentum(angMom) * dt;
-		orientation.normalize();
-		recalculateSecondary();
-#endif
-
 		integrationStep++;
 	}
-
-	// Modified velocity Verlet integration two-step method
-	// Both steps must be called per frame
-	// Forces can only be set between steps 1 and 2
 	void integrateStep2(double dt) {
 		assert(integrationStep == 1);
 
-#ifdef MODIFIEDVERLET
-		angMom = ngMom + torque * dt * 0.5;
-#endif
-
-#ifdef NSV
-		angMom = angMom + torque * dt;
-		orientation = orientation + getSpinFromMomentum(angMom) * dt;
-		orientation.normalize()
-#endif
-
-#ifdef EULER
-		orientation = orientation + getSpinFromMomentum(angMom) * dt;
-		orientation.normalize();
-		angMom = angMom + torque * dt;
-#endif
-
-#ifdef SUVAT
 		orientation = orientation + getSpinFromMomentum(angMom + torque * dt * 0.5) * dt;
 		orientation.normalize();
 		angMom = angMom + torque * dt;
-#endif
-
-#ifdef SECOND_ORDER
-		MathVector<double, 3> angAcc = worldInvInertiaTensor.multiply(torque - angVel.cross(angMom));
-		MathVector<double, 3> avgRot = angVel + angAcc * dt / 2.0 + angAcc.cross(angVel) * dt * dt / 12.0;
-		Quaternion<double> dq = Quaternion<double>(avgRot[0], avgRot[1], avgRot[2], 0) * orientation * 0.5 * dt;
-		orientation = orientation + dq;
-		orientation.normalize();
-#endif
 
 		recalculateSecondary();
 		integrationStep = 0;
 		torque.set((double)0);
 	}
 
-	// Must only be called between integration steps 1 and 2
+//---- Must only be called between integration steps 1 and 2
 	const MathVector<double, 3> getLockUpTorque(double dt) const {
 		assert(integrationStep == 1);
-#ifdef MODIFIEDVERLET
-	return -angMom * 2 / dt;
-#else
-	return -angMom / dt;
-#endif
+		return -angMom / dt;
 	}
-
-	// Must only be called between integration steps 1 and 2
 	void applyTorque(const MathVector<double, 3>& t) {
 		assert(integrationStep == 1);
 		torque = torque + t;
 	}
-
-	// Must only be called between integration steps 1 and 2
 	void setTorque(const MathVector<double, 3>& t) {
 		assert(integrationStep == 1);
 		torque = t;
@@ -118,7 +71,7 @@ public:
 
 	const MathVector<double, 3>& getTorque() const { return oldTorque; }
 
-	// Must be called once when simulation starts to set initial torque
+//---- Must be called once when simulation starts to set initial torque
 	void setInitialTorque(const MathVector<double, 3>& t) {
 		assert(integrationStep == 0);
 
@@ -133,13 +86,15 @@ private:
 
 		orientation.representAsMatrix3(orientationMat);
 
-		worldInvInertiaTensor = orientationMat.transpose().multiply(invInertiaTensor).multiply(orientationMat);
-		worldInertiaTensor = orientationMat.transpose().multiply(inertiaTensor).multiply(orientationMat);
+		worldInvInertiaTensor = orientationMat.transpose().multiply(invInertiaTensor).
+								multiply(orientationMat);
+		worldInertiaTensor = orientationMat.transpose().multiply(inertiaTensor).
+							 multiply(orientationMat);
 
 		angVel = getAngularVelocityFromMomentum(angMom);
 	}
 
-	// orientationMat and worldInvIntertiaTensor must have been calculated
+//---- orientationMat and worldInvIntertiaTensor must have been calculated
 	MathVector<double, 3> getAngularVelocityFromMomentum(const MathVector<double, 3>& mom) const {
 		return worldInvInertiaTensor.multiply(mom);
 	}
@@ -150,22 +105,23 @@ private:
 		return (qav * orientation) * 0.5;
 	}
 
-	// Primary values
+//----- Primary
 	Quaternion<double> orientation;
-	MathVector<double, 3> angMom; // Angular momentum
+	MathVector<double, 3> angMom;
 	MathVector<double, 3> torque;
 
-	// Secondary values
+//---- Secondary
 	MathVector<double, 3> oldTorque;
 	Matrix3<double> orientationMat;
 	Matrix3<double> worldInvInertiaTensor;
 	Matrix3<double> worldInertiaTensor;
-	MathVector<double, 3> angVel; // Angular velocity
+	MathVector<double, 3> angVel;
 
-	// Constants
+//---- Constants
 	Matrix3<double> invInertiaTensor;
 	Matrix3<double> inertiaTensor;
 
+//---- Housekeeping
 	bool haveOldTorque;
 	int integrationStep;
 };
