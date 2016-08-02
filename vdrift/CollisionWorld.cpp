@@ -5,17 +5,16 @@
 #include "../terrain/ShapeData.hpp"
 
 #include "../util/ToBullet.hpp"
+#include "CarDynamics.hpp"
 
-// DynamicsWorld::solveConstraints not implemented
-
-// IntTickCallback not implemented
+// DynamicsWorld::solveConstraints not implemented (only deals with fluids)
 
 CollisionWorld::CollisionWorld(Sim* s)
 	: maxSubSteps(24), fixedTimeStep(1.f / 160.f), oldDyn(0), sim(s) {
 	config = new btDefaultCollisionConfiguration();
 	dispatcher = new btCollisionDispatcher(config);
 
-	btScalar ws = 10000;
+	btScalar ws = 10000; //TODO Get from scene config?
 	broadphase = new bt32BitAxisSweep3(btVector3(-ws, -ws, -ws), btVector3(ws, ws, ws));
 	solver = new btSequentialImpulseConstraintSolver();
 
@@ -64,7 +63,9 @@ void CollisionWorld::clear() {
 
 		if (shape->isCompound()) {
 			btCompoundShape* cs = (btCompoundShape*)shape;
-			for (c = 0; c < cs->getNumChildShapes(); ++c) delete cs->getChildShape(c);
+			for (c = 0; c < cs->getNumChildShapes(); ++c) {
+				delete cs->getChildShape(c);
+			}
 		}
 		delete shape;
 	}
@@ -83,8 +84,11 @@ btRigidBody* CollisionWorld::addRigidBody(const btRigidBody::btRigidBodyConstruc
 	btCollisionShape* shape = body->getCollisionShape();
 
 	#define COL_CAR (1 << 2)
-	if (isCar) world->addRigidBody(body, COL_CAR, 255 - (!collideWithCars ? COL_CAR : 0));
-	else world->addRigidBody(body);
+	if (isCar) {
+		// Apologize for the magic expression
+		world->addRigidBody(body, COL_CAR,
+							255 - (!collideWithCars ? COL_CAR : 0));
+	} else { world->addRigidBody(body); }
 
 	shapes.push_back(shape);
 	return body;
@@ -92,8 +96,10 @@ btRigidBody* CollisionWorld::addRigidBody(const btRigidBody::btRigidBodyConstruc
 
 struct MyRayResultCallback : public btCollisionWorld::RayResultCallback {
 	// Have excluded cam variables
-	MyRayResultCallback(const btVector3& rayFromWorld, const btVector3& rayToWorld, const btCollisionObject* exclude, bool ignoreCars)
-			: mRayFromWorld(rayFromWorld), mRayToWorld(rayToWorld), mExclude(exclude), mIgnoreCars(ignoreCars), mShapeId(0) { }
+	MyRayResultCallback(const btVector3& rayFromWorld, const btVector3& rayToWorld,
+						const btCollisionObject* exclude, bool ignoreCars)
+			: mRayFromWorld(rayFromWorld), mRayToWorld(rayToWorld),
+			  mExclude(exclude), mIgnoreCars(ignoreCars), mShapeId(0) { }
 
 	btVector3 mRayFromWorld, mRayToWorld;
 	btVector3 mHitNormalWorld, mHitPointWorld;
@@ -102,19 +108,19 @@ struct MyRayResultCallback : public btCollisionWorld::RayResultCallback {
 	const btCollisionObject* mExclude;
 	bool mIgnoreCars;
 
-	virtual btScalar addSingleResult(btCollisionWorld::LocalRayResult& rayResult, bool normalInWorldSpace) {
+	virtual btScalar addSingleResult(btCollisionWorld::LocalRayResult& rayResult,
+									 bool normalInWorldSpace) {
 		const btCollisionObject* obj = rayResult.m_collisionObject;
-		if (obj == mExclude) return 1.0;
+		if (obj == mExclude) { return 1.0; }
 
 		ShapeData* sd = (ShapeData*)(obj->getUserPointer());
 		if (sd) {
-			if (mIgnoreCars && sd->type == ShapeType::Car) return 1.0;
+			if (mIgnoreCars && sd->type == ShapeType::Car) { return 1.0; }
 
-			// Car ignores fluids (Not dealing with cars)
-			if (sd->type == ShapeType::Fluid) return 1.0;
-
-			// Ignore wheel triggers here
-			if (sd->type == ShapeType::Wheel) return 1.0;
+			// Car ignores fluids (in this callback)
+			if (sd->type == ShapeType::Fluid) { return 1.0; }
+			// Also ignore wheels
+			if (sd->type == ShapeType::Wheel) { return 1.0; }
 		}
 
 		// Caller will assign value of m_closestHitFraction
@@ -123,11 +129,12 @@ struct MyRayResultCallback : public btCollisionWorld::RayResultCallback {
 		m_closestHitFraction = rayResult.m_hitFraction;
 		m_collisionObject = obj;
 
-		if (!rayResult.m_localShapeInfo) mShapeId = 0;  // Crash heightfield?
-		else mShapeId = rayResult.m_localShapeInfo->m_shapePart; // Only for btTriangleMeshShape
+		if (!rayResult.m_localShapeInfo) { mShapeId = 0; }
+		else { mShapeId = rayResult.m_localShapeInfo->m_shapePart; } // Only for btTriangleMeshShape
 
-		if (normalInWorldSpace) mHitNormalWorld = rayResult.m_hitNormalLocal;
-		else mHitNormalWorld = m_collisionObject->getWorldTransform().getBasis() * rayResult.m_hitNormalLocal;
+		if (normalInWorldSpace) { mHitNormalWorld = rayResult.m_hitNormalLocal; }
+		else { mHitNormalWorld = m_collisionObject->getWorldTransform().getBasis() *
+								 rayResult.m_hitNormalLocal; }
 
 		mHitPointWorld.setInterpolate3(mRayFromWorld, mRayToWorld, rayResult.m_hitFraction);
 		return rayResult.m_hitFraction;
@@ -156,38 +163,33 @@ bool CollisionWorld::castRay(const MathVector<float, 3>& origin, const MathVecto
 		// This whole if-else statement seems to be used for determining the surface the wheel is on
 		if (col->isStaticObject()) {
 			int ptrU = (long) (col->getCollisionShape()->getUserPointer());
-			int su = ptrU & 0xFF00, mtr = ptrU & 0xFF; // Fancy arithmetic
+			int su = ptrU & 0xFF00, mtr = ptrU & 0xFF;
 
-			const std::string surfType = "Asphalt"; // Hard-coded for now
-
-			//TODO Will need TerrainData to determine what exactly is below the wheel
+			//TODO Will need TerrainData or something to determine what exactly is below the wheel
 			if (ptrU) {
 				switch (su) {
 				case SU_Road:
-					surf = sim->getTerrainSurface(surfType);
+					surf = sim->getTerrainSurface("Asphalt");
 					break;
 
 				case SU_Pipe:
 					break;
 
 				case SU_Terrain:
-					//TODO Go into TerrainData and get the TerrainSurface
-					surf = sim->getTerrainSurface(surfType);
+					surf = sim->getTerrainSurface("Asphalt");
 					break;
 
 				case SU_Fluid:
 					break;
 
 				default:
-					surf = sim->getTerrainSurface(surfType);
+					surf = sim->getTerrainSurface("Asphalt");
 					break;
 				}
 			} else {
-				surf = sim->getTerrainSurface(surfType);
+				surf = sim->getTerrainSurface("Asphalt");
 			}
 		}
-
-		//TODO When Track is implemented, use the Beziers to track collisions, or something...
 
 		contact.set(pos, norm, dist, surf, bzr, col);
 		return true;
@@ -200,6 +202,8 @@ bool CollisionWorld::castRay(const MathVector<float, 3>& origin, const MathVecto
 
 void CollisionWorld::update(float dt) {
 	if (dt <= 0) { return; }
+
+	// dt must be less than maxSubSteps*fixedTimeStep
 	world->stepSimulation(dt, maxSubSteps, fixedTimeStep);
 
 	// The rest of Stuntrally's CollisionWorld::update is not useful for our

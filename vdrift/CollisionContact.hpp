@@ -1,16 +1,17 @@
 #pragma once
 
-#include "TerrainSurface.hpp"
-#include "MathVector.hpp"
 #include "Bezier.hpp"
+#include "MathVector.hpp"
+#include "TerrainSurface.hpp"
 
 #include <btBulletCollisionCommon.h>
+
 #include <cassert>
 
 class CollisionContact {
 public:
 	CollisionContact()
-		: depth(0), surface(TerrainSurface::none()), patch(NULL), colObj(NULL) { }
+		: depth(0), surface(TerrainSurface::none()), patch(0), colObj(0) { }
 
 	const MathVector<float, 3>& getPosition() const { return position; }
 	const MathVector<float, 3>& getNormal() const { return normal; }
@@ -23,7 +24,7 @@ public:
 	void set(const MathVector<float, 3>& pos, const MathVector<float, 3>& norm, float dist,
 			 const TerrainSurface* ts, const Bezier* b, const btCollisionObject* c) {
 #ifndef COMPILE_UNIT_TESTS
-		assert(ts != NULL); // Ensures smooth testing
+		assert(ts != NULL); // Assertion only needed during actual simulation
 #endif
 		position = pos; normal = norm; depth = dist; surface = ts; patch = b; colObj = c;
 	}
@@ -47,6 +48,6 @@ private:
 	MathVector<float, 3> position, normal;
 	float depth;
 	const TerrainSurface* surface;
-	const Bezier* patch; // Unused
+	const Bezier* patch; //TODO Seemingly unused
 	const btCollisionObject* colObj;
 };
