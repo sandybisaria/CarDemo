@@ -1,4 +1,5 @@
 #include "Scene.hpp"
+
 #include "RenderConst.hpp"
 
 #include "../road/Road.hpp"
@@ -8,13 +9,14 @@
 Scene::Scene(Ogre::SceneManager* sceneMgr)
 	: mSim(0), mSceneMgr(sceneMgr), sun(0),
 	  mTerrainGlobals(0), mTerrainGroup(0) {
-	terrSize = 513; worldSize = 10000.0;
+	terrSize = 513; worldSize = 10000.0; //TODO Retrieve from a config?
 }
 
 Scene::~Scene() {
 	OGRE_DELETE mTerrainGlobals;
 	OGRE_DELETE mTerrainGroup;
 
+	// Delete roads
 	std::vector<Road*>::iterator i = mRoads.begin();
 	for (; i != mRoads.end(); i++) {
 		(*i)->destroy();
@@ -26,9 +28,10 @@ void Scene::setupTerrain(Sim* sim) {
 	mSim = sim;
 	mSim->scene = this;
 
+//---- Lighting and sky
 	mSceneMgr->setAmbientLight(Ogre::ColourValue(0.4, 0.4, 0.4));
 
-	Ogre::Vector3 lightDir(0.55, -0.3, 0.75);
+	Ogre::Vector3 lightDir(0.55, -0.3f, 0.75);
 	lightDir.normalise();
 
 	sun = mSceneMgr->createLight("SunLight");
@@ -37,8 +40,12 @@ void Scene::setupTerrain(Sim* sim) {
 	sun->setDiffuseColour(Ogre::ColourValue::White);
 	sun->setSpecularColour(Ogre::ColourValue(0.4, 0.4, 0.4));
 
+	mSceneMgr->setSkyDome(true, "CloudySky");
+
+//---- Terrain
 	mTerrainGlobals = OGRE_NEW Ogre::TerrainGlobalOptions();
-	mTerrainGroup = OGRE_NEW Ogre::TerrainGroup(mSceneMgr, Ogre::Terrain::ALIGN_X_Z, terrSize, worldSize);
+	mTerrainGroup = OGRE_NEW Ogre::TerrainGroup(mSceneMgr, Ogre::Terrain::ALIGN_X_Z,
+												terrSize, worldSize);
 
 	configureTerrainDefaults();
 	defineTerrain();
@@ -51,10 +58,9 @@ void Scene::setupTerrain(Sim* sim) {
 	}
 	mTerrainGroup->freeTemporaryResources();
 
-	mSceneMgr->setSkyDome(true, "CloudySky");
-
 	createBulletTerrain();
 
+//---- Road
 	setupRoad();
 }
 
@@ -75,12 +81,14 @@ void Scene::configureTerrainDefaults() {
 
 	importData.layerList.resize(1);
 	importData.layerList[0].worldSize = 100;
+	//TODO Determine the terrain textures from a config
 	importData.layerList[0].textureNames.push_back("asphalt_ds.dds");
 	importData.layerList[0].textureNames.push_back("asphalt_nh.dds");
 }
 
 void Scene::defineTerrain() {
 	Ogre::Image img;
+	//TODO Determine the terrain heightmap from a config
 	img.load("terrain.png", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 	mTerrainGroup->defineTerrain(0, 0, &img);
 }
@@ -93,16 +101,19 @@ void Scene::createBulletTerrain() {
 	// Min and max height were set to 0 to force the terrain to be completely flat
 	hfShape->setUseDiamondSubdivision(true);
 
+	// This scale is based on the tutorial, but it may not be true...
 	float metersBetweenVerts = baseTerrain->getWorldSize() / (baseTerrain->getSize() - 1);
-	btVector3 scale(metersBetweenVerts, metersBetweenVerts, 1); //FIXME This scale is based on the tutorial
+	btVector3 scale(metersBetweenVerts, metersBetweenVerts, 1);
 	hfShape->setLocalScaling(scale);
+
 	hfShape->setUserPointer((void*) SU_Terrain);
 
 	btCollisionObject* colObj = new btCollisionObject();
 	colObj->setCollisionShape(hfShape);
 	colObj->setFriction(0.9); colObj->setRestitution(0.0);
 	colObj->setCollisionFlags(colObj->getCollisionFlags() |
-		btCollisionObject::CF_STATIC_OBJECT | btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT);
+							  btCollisionObject::CF_STATIC_OBJECT |
+							  btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT);
 	mSim->getCollisionWorld()->getDynamicsWorld()->addCollisionObject(colObj);
 	mSim->getCollisionWorld()->addShape(hfShape);
 
@@ -123,7 +134,8 @@ void Scene::createBulletTerrain() {
 		col->setFriction(0.3);   //+
 		col->setRestitution(0.0);
 		col->setCollisionFlags(col->getCollisionFlags() |
-			btCollisionObject::CF_STATIC_OBJECT | btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT/**/);
+							   btCollisionObject::CF_STATIC_OBJECT |
+							   btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT);
 
 		mSim->getCollisionWorld()->getDynamicsWorld()->addCollisionObject(col);
 		mSim->getCollisionWorld()->addShape(shp);
@@ -133,6 +145,7 @@ void Scene::createBulletTerrain() {
 void Scene::setupRoad() {
 	Ogre::Terrain* baseTerrain = mTerrainGroup->getTerrain(0, 0);
 
+	//TODO Different road XML files for different scenes
 	Ogre::String roadsFile = "../data/scene/roads.xml";
 	tinyxml2::XMLDocument doc;
 	tinyxml2::XMLError e = doc.LoadFile(roadsFile.c_str());
@@ -151,7 +164,8 @@ void Scene::setupRoad() {
 			continue;
 		}
 
-		//PSSM materials?
+		// PSSM materials not included...
+
 		road->rebuildRoadGeometry();
 
 		mRoads.push_back(road);
@@ -161,8 +175,8 @@ void Scene::setupRoad() {
 }
 
 void Scene::update() {
-	std::vector<Road*>::const_iterator i = mRoads.begin();
-	for (; i != mRoads.end(); i++) {
+	std::vector<Road*>::const_iterator i;
+	for (i = mRoads.begin(); i != mRoads.end(); i++) {
 		(*i)->update();
 	}
 }

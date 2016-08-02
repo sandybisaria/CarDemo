@@ -2,8 +2,9 @@
 
 #include <OgreRenderQueue.h>
 
-// Copied from Stuntrally's RenderConst.h
-// Not all of
+//----- Copied from Stuntrally's RenderConst.h
+//----- Some flags, etc. removed
+//TODO Remove other unneeded constants
 
 //  Render Queue Groups used  //search for setRenderQueueGroup
 //------------------------------------------------------------------------

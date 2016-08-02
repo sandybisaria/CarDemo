@@ -16,16 +16,14 @@ namespace ShapeType {
 	enum ShapeType { Car, Fluid, Wheel, Other };
 }
 
-class CarDynamics;
-//TODO Add FluidBox class
 struct ShapeData {
 	ShapeType::ShapeType type;
-	CarDynamics* dyn;
+	class CarDynamics* dyn;
 	int wheelNum;
 
 	ShapeData(ShapeType::ShapeType t)
 		: type(t), dyn(0), wheelNum(0) { }
 
-	ShapeData(ShapeType::ShapeType t, CarDynamics* d, int whNum = 0)
+	ShapeData(ShapeType::ShapeType t, class CarDynamics* d, int whNum = 0)
 		: type(t), dyn(d), wheelNum(whNum) { }
 };

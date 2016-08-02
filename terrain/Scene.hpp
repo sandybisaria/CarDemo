@@ -1,18 +1,15 @@
 #pragma once
 
-class Sim;
-class Road;
+#include "ShapeData.hpp"
 
 #include "../Sim.hpp"
 
-#include "ShapeData.hpp"
+#include <BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h>
 
 #include <OgreSceneManager.h>
 
 #include <Terrain/OgreTerrain.h>
 #include <Terrain/OgreTerrainGroup.h>
-
-#include <BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h>
 
 class Scene {
 public:
@@ -41,5 +38,5 @@ private:
 	Ogre::TerrainGroup* mTerrainGroup;
 
 	void setupRoad();
-	std::vector<Road*> mRoads;
+	std::vector<class Road*> mRoads;
 };
