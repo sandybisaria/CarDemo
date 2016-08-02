@@ -5,16 +5,16 @@ Ogre::Quaternion Axes::qFixCar, Axes::qFixWh;
 void Axes::init() {
 	Quaternion<float> fix, fix2;
 	Ogre::Quaternion qr;
-	{ // For qFixCar
-		fix.rotate((float) M_PI, 0, 1, 0);
-		qr.w = fix.w(); qr.x = fix.x(); qr.y = fix.y(); qr.z = fix.z();
-		qFixCar = qr;
-	}
-	{ // For qFixWh
-		fix2.rotate((float) M_PI / 2, 0, 1, 0);
-		qr.w = fix2.w(); qr.x = fix2.x(); qr.y = fix2.y(); qr.z = fix2.z();
-		qFixWh = qr;
-	}
+
+	// For qFixCar
+	fix.rotate((float) M_PI, 0, 1, 0);
+	qr.w = fix.w(); qr.x = fix.x(); qr.y = fix.y(); qr.z = fix.z();
+	qFixCar = qr;
+
+	// For qFixWh
+	fix2.rotate((float) M_PI / 2, 0, 1, 0);
+	qr.w = fix2.w(); qr.x = fix2.x(); qr.y = fix2.y(); qr.z = fix2.z();
+	qFixWh = qr;
 }
 
 void Axes::vectorToOgre(Ogre::Vector3& vOut, const MathVector<float, 3>& vIn) {

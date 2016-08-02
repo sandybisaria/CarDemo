@@ -4,8 +4,7 @@
 #include <fstream>
 #include <sys/stat.h>
 
-// -----------------------------------------------------------------------------
-// ConfigVariable methods
+//---- ConfigVariable methods
 ConfigVariable::ConfigVariable()
 	: mSection(""), mName("") {
 	initVals();
@@ -21,17 +20,11 @@ void ConfigVariable::initVals() {
 	val_i = 0;
 	val_f = 0.f;
 	val_b = false;
-	for (int i = 0; i < V_SIZE; i++) {
-		val_v[i] = 0.f;
-	}
+	for (int i = 0; i < V_SIZE; i++) { val_v[i] = 0.f; }
 }
 
-ConfigVariable::~ConfigVariable() {
-
-}
-
+// Parses string to determine appropriate data type
 void ConfigVariable::set(std::string newVal) {
-	// Parses string to determine appropriate data type
 	newVal = ConfigFile::trim(newVal);
 
 	val_i = atoi(newVal.c_str());
@@ -39,22 +32,20 @@ void ConfigVariable::set(std::string newVal) {
 	val_s = newVal;
 
 	val_b = false;
-	if (val_i == 0)		val_b = false;
-	if (val_i == 1)		val_b = true;
+	if (val_i == 0) { val_b = false; }
+	if (val_i == 1)	{ val_b =  true; }
+	if (ConfigFile::toLower(newVal) == "on")	{ val_b =  true; }
+	if (ConfigFile::toLower(newVal) == "off")	{ val_b = false; }
+	if (ConfigFile::toLower(newVal) == "true")	{ val_b =  true; }
+	if (ConfigFile::toLower(newVal) == "false")	{ val_b = false; }
 
-	if (ConfigFile::toLower(newVal) == "on")	val_b = true;
-	if (ConfigFile::toLower(newVal) == "off")	val_b = false;
-	if (ConfigFile::toLower(newVal) == "true")	val_b = true;
-	if (ConfigFile::toLower(newVal) == "false")	val_b = false;
-
-	// now process as vector information
-	int pos = 0;
+	// Process as vector information
+	size_t pos = 0;
 	int arraypos = 0;
 	std::string::size_type nextpos = newVal.find(",", pos);
 	std::string frag;
 
-	while (nextpos < newVal.length() && arraypos < 3)
-	{
+	while (nextpos < newVal.length() && arraypos < 3) {
 		frag = newVal.substr(pos, nextpos - pos);
 		val_v[arraypos] = atof(frag.c_str());
 
@@ -63,34 +54,24 @@ void ConfigVariable::set(std::string newVal) {
 		nextpos = newVal.find(",", pos);
 	}
 
-	// don't forget the very last one
-	if (arraypos < 3)
-	{
+	// Don't forget the very last one
+	if (arraypos < 3) {
 		frag = newVal.substr(pos, newVal.length() - pos);
 		val_v[arraypos] = atof(frag.c_str());
 	}
 }
 
-// -----------------------------------------------------------------------------
-// ConfigFile methods
-ConfigFile::ConfigFile() {
-
-}
-
-ConfigFile::~ConfigFile() {
-
-}
-
+//---- ConfigFile methods
 bool ConfigFile::load(std::string filename) {
 	struct stat sb;
 	if (stat(filename.c_str(), &sb) != 0 || !S_ISREG(sb.st_mode)) {
-		return false; //TODO Error if directory not found
+		return false;
 	}
 	this->filename = filename;
 
 	std::ifstream f;
 	f.open(filename.c_str());
-	if (!f) return false;
+	if (!f) { return false; }
 
 	return load(f);
 }
@@ -110,8 +91,7 @@ bool ConfigFile::load(std::istream& f) {
 
 bool ConfigFile::getParam(std::string param, std::string& outVar) const {
 	const ConfigVariable* v = getVariable(param);
-	if (!v)
-		return false;
+	if (!v)	{ return false; }
 
 	outVar = v->val_s;
 	return true;
@@ -119,8 +99,7 @@ bool ConfigFile::getParam(std::string param, std::string& outVar) const {
 
 bool ConfigFile::getParam(std::string param, int& outVar) const {
 	const ConfigVariable* v = getVariable(param);
-	if (!v)
-		return false;
+	if (!v)	{ return false; }
 
 	outVar = v->val_i;
 	return true;
@@ -128,8 +107,7 @@ bool ConfigFile::getParam(std::string param, int& outVar) const {
 
 bool ConfigFile::getParam(std::string param, float& outVar) const {
 	const ConfigVariable* v = getVariable(param);
-	if (!v)
-		return false;
+	if (!v)	{ return false; }
 
 	outVar = v->val_f;
 	return true;
@@ -137,8 +115,7 @@ bool ConfigFile::getParam(std::string param, float& outVar) const {
 
 bool ConfigFile::getParam(std::string param, float* outVar) const {
 	const ConfigVariable* v = getVariable(param);
-	if (!v)
-		return false;
+	if (!v)	{ return false; }
 
 	for (int i = 0; i < ConfigVariable::V_SIZE; ++i) {
 		outVar[i] = v->val_v[i];
@@ -148,8 +125,7 @@ bool ConfigFile::getParam(std::string param, float* outVar) const {
 
 bool ConfigFile::getParam(std::string param, bool& outVar) const {
 	const ConfigVariable* v = getVariable(param);
-	if (!v)
-		return false;
+	if (!v)	{ return false; }
 
 	outVar = v->val_b;
 	return true;
@@ -170,19 +146,18 @@ void ConfigFile::getPoints(const std::string& sectionName, const std::string& pa
 }
 
 void ConfigFile::getParamList(std::list<std::string>& paramListOutput, std::string section) const {
-	bool all = (section == ""); // If empty, then search everything
+	bool all = (section == ""); // If no section specified, search everywhere
 
 	paramListOutput.clear();
 	std::map<std::string, bool> tempList;
 	for (bucketed_hashmap<std::string, ConfigVariable>::const_iterator i = variables.begin();
 		 i != variables.end(); i++) {
-		if (all)
-			tempList[i->mSection + "." + i->mName] = true;
-		else if (i->mSection == section)
-			tempList[i->mName] = true;
+			 if (all)	 { tempList[i->mSection+"."+i->mName] = true; }
+		else if (i->mSection == section) { tempList[i->mName] = true; }
 	}
 
-	for (std::map<std::string, bool>::iterator i = tempList.begin(); i != tempList.end(); i++) {
+	for (std::map<std::string, bool>::iterator i = tempList.begin();
+		 i != tempList.end(); i++) {
 		paramListOutput.push_back(i->first);
 	}
 }
@@ -191,10 +166,12 @@ void ConfigFile::getSectionList(std::list<std::string>& sectionListOutput) const
 	sectionListOutput.clear();
 
 	std::map<std::string, bool> tempList;
-	for(bucketed_hashmap<std::string, ConfigVariable>::const_iterator i = variables.begin(); i != variables.end(); i++) {
+	for(bucketed_hashmap<std::string, ConfigVariable>::const_iterator i = variables.begin();
+		i != variables.end(); i++) {
 		tempList[i->mSection] = true;
 	}
-	for(std::map<std::string, bool>::iterator i = tempList.begin(); i != tempList.end(); i++) {
+	for(std::map<std::string, bool>::iterator i = tempList.begin();
+		i != tempList.end(); i++) {
 		sectionListOutput.push_back(i->first);
 	}
 }
@@ -210,20 +187,14 @@ std::string ConfigFile::strip(std::string s, char strip) {
 	std::string::size_type pos = 0;
 	std::string res = "";
 
-	int length = s.length();
+	size_t length = s.length();
 	while (pos < length) {
-		if (s.c_str()[pos] == strip)
-			break;
+		if (s.c_str()[pos] == strip) { break; }
 		pos++;
 	}
 
-	if (pos > 0) {
-		res = s.substr(0, pos);
-	}
-
-	if (pos + 1 < length) {
-		res = res + s.substr(pos+1, (length-pos)-1);
-	}
+	if (pos > 0) 		  { res = s.substr(0, pos); }
+	if (pos + 1 < length) {	res = res + s.substr(pos+1, (length-pos)-1); }
 
 	return res;
 }
@@ -239,9 +210,7 @@ std::string ConfigFile::toLower(std::string s) {
 		if (s.c_str()[pos] <= 90 && s.c_str()[pos] >= 65) {
 			tc[0] = s.c_str()[pos] + 32;
 			res = res + tc;
-		} else {
-			res = res + s.substr(pos, 1);
-		}
+		} else { res = res + s.substr(pos, 1); }
 
 		pos++;
 	}
@@ -314,8 +283,6 @@ const ConfigVariable* ConfigFile::getVariable(std::string param) const {
 	return v;
 }
 
-// -----------------------------------------------------------------------------
-// Testing
 #ifdef COMPILE_UNIT_TESTS
 #include <gtest/gtest.h>
 

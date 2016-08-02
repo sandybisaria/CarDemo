@@ -1,13 +1,14 @@
 #pragma once
 
 #include "../vdrift/MathVector.hpp"
-#include "../vdrift/Quaternion.hpp"
 #include "../vdrift/Matrix3.hpp"
+#include "../vdrift/Quaternion.hpp"
 
-#include "LinearMath/btVector3.h"
-#include "LinearMath/btQuaternion.h"
 #include "LinearMath/btMatrix3x3.h"
+#include "LinearMath/btQuaternion.h"
+#include "LinearMath/btVector3.h"
 
+// vdrift to Bullet utility methods
 static btVector3 toBulletVector(const MathVector<float, 3>& v) {
 	return btVector3(v[0], v[1], v[2]);
 }

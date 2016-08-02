@@ -1,20 +1,21 @@
 #pragma once
 
-#include "bucketed_hashmap.h"
+#include "bucketed_hashmap.hpp"
 
 #include <iostream>
-#include <vector>
 #include <list>
-#include <string>
 #include <map>
+#include <string>
+#include <vector>
 
+// Stuntrally's CONFIGVARIABLE class
 class ConfigVariable {
 	friend class ConfigFile;
 
 public:
 	ConfigVariable();
 	ConfigVariable(std::string section, std::string name);
-	~ConfigVariable();
+	~ConfigVariable() { }
 
 	void set(std::string newVal);
 
@@ -36,17 +37,17 @@ private:
 
 class ConfigFile {
 public:
-	ConfigFile();
-	~ConfigFile();
+	ConfigFile() { }
+	~ConfigFile() { }
 
 	bool load(std::string filename);
 	bool load(std::istream& f);
 
-	// getParam methods return true if param was found
+//---- Return true if param was found
 	bool getParam(std::string param, std::string& outVar) const;
 	bool getParam(std::string param, int& outVar) const;
 	bool getParam(std::string param, float& outVar) const;
-	bool getParam(std::string param, float* outVar) const; // For float[V_SIZE]
+	bool getParam(std::string param, float* outVar) const; // For float[]
 	bool getParam(std::string param, bool& outVar) const;
 
 	void getPoints(const std::string& sectionName, const std::string& paramPrefix,
@@ -56,7 +57,7 @@ public:
 
 	void getSectionList(std::list<std::string>& sectionListOutput) const;
 
-	//TODO Use C++ library functions rather than our own...
+	// May want to use C++ library functions rather than our own
 	static std::string trim(std::string s);
 	static std::string strip(std::string s, char strip);
 	static std::string toLower(std::string s);
@@ -64,6 +65,7 @@ public:
 private:
 	void processLine(std::string& curSection, std::string lineStr);
 	void add(std::string& paramName, ConfigVariable& newVar);
+
 	const ConfigVariable* getVariable(std::string param) const;
 
 	std::string filename;

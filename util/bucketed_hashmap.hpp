@@ -1,10 +1,11 @@
 // Borrowed from Stuntrally
 
 #pragma once
-#include <vector>
-#include <map>
+
 #include <cassert>
+#include <map>
 #include <string>
+#include <vector>
 
 namespace HASH_NAMESPACE
 {

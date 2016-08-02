@@ -3,13 +3,14 @@
 #include "../vdrift/MathVector.hpp"
 #include "../vdrift/Quaternion.hpp"
 
-#include <OgreVector3.h>
 #include <OgreQuaternion.h>
+#include <OgreVector3.h>
 
 #include <cmath>
+
 #define _USE_MATH_DEFINES
 
-// vdrift to Ogre utility
+// vdrift to Ogre utility methods
 struct Axes {
 	static Ogre::Quaternion qFixCar, qFixWh;
 	static void init();
