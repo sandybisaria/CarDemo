@@ -20,21 +20,25 @@ struct RoadSeg {
 		SegData() : node(0), ent(0), meshStr("") { }
 	};
 
-	// Single LOD
+	// Single LOD, so only one SegData
 	SegData road; // No SegData's for wall/col/blend
 
 	Ogre::String roadMtrStr;
 	int mtrId;
 
-	std::vector<Ogre::Vector3> lpos; // Points for LOD dist; used to determine visibility... (but values not used yet)
+	// Points for LOD dist; used to determine visibility... (but values not used yet)
+	std::vector<Ogre::Vector3> lpos;
+
 	bool empty;
 
 	RoadSeg() : empty(true), mtrId(0) { }
 };
 
-// So far only INS_End is used (the others more useful for a road editor)
+// So far only INS_End is used (the others would be more useful for a road editor)
 enum insertPos { INS_Begin, INS_Before_Cur, INS_Cur, INS_End };
 
+// Based off of Stuntrally's SplineRoad class
+// SplineEdit and other intermediary classes (on the inheritance tree) were not implemented
 class Road : public SplineBase {
 public:
 	Road(Sim* sim);
@@ -57,9 +61,10 @@ private:
 	Ogre::String roadMtr;
 	int idStr; static int count;
 
-	std::deque<RoadSeg> vSegs; // Deque of all road segments
+	std::deque<RoadSeg> vSegs;
 
 //---- Geometry
+	//TODO Add more params as needed (refer to Stuntrally road XMLs)
 	Ogre::Real g_LenDim0; // Triangle dim in length
 	int g_iWidthDiv0; // Width divisions (a constant for road, except pipes..)
 	Ogre::Real g_SkirtLen, g_SkirtH; // Skirt for hiding gaps
@@ -105,7 +110,7 @@ private:
 	void prepassRange(DataRoad& dr);
 	void prepassAngles(DataRoad& dr);
 
-	// Default LOD is 0
+	// Struct for base LOD
 	struct DataLod0 {
 		std::vector<int> v0_iL; // Length steps
 		std::vector<Ogre::Real> v0_tc; // Texture coords
@@ -134,7 +139,7 @@ private:
 
 		int lod, iLodDiv;
 		Ogre::Real fLenDim;
-		bool isLod0; // No isPace;
+		bool isLod0; // No isPace variable
 
 		DataLod()
 			: tcLen(0.f), sumLenMrg(0.f),
@@ -162,7 +167,7 @@ private:
 		int seg, seg1, seg0;
 		int idMtr;
 		bool onTerr;
-		// Skipped pipe and hasPlend and iwC and jfw's
+		// Skipped pipe, hasPlend, iwC, jfw vars
 	};
 
 	void buildSeg(const DataRoad& dr, const DataLod0& DL0, DataLod& dl, DataLodMesh& dlm, DataSeg& ds, int segM);

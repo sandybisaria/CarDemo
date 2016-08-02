@@ -58,8 +58,7 @@ void SplinePoint::setDefault() {
 
 //---- SplineBase methods
 SplineBase::SplineBase()
-	: isLooped(true) {
-
+	: isLooped(false) {
 }
 
 void SplineBase::setPos(int index, Ogre::Vector3 value) {
@@ -103,13 +102,12 @@ Ogre::Real SplineBase::interpolateWidth(int id, Ogre::Real t) const {
 void SplineBase::recalculateTangents() {
 	// Catmull-Rom approach
 	int num = mP.size();
-	if (num < 2)  return;
+	if (num < 2) { return; }
 
-	for (int i = 0; i < num; ++i)	{
-		// tangent   next-prev
+	for (int i = 0; i < num; ++i) {
 		int next = getNext(i), prev = getPrev(i);
-		mP[i].tan  = 0.5f * (mP.at(next).pos   - mP.at(prev).pos  );
-		mP[i].wtan = 0.5f * (mP.at(next).width - mP.at(prev).width);
+		mP.at(i).tan  = 0.5f * (mP.at(next).pos   - mP.at(prev).pos  );
+		mP.at(i).wtan = 0.5f * (mP.at(next).width - mP.at(prev).width);
 	}
 }
 

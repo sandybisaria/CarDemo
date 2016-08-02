@@ -1,11 +1,12 @@
 #pragma once
 
 #include <OgreVector3.h>
+
 #include <Terrain/OgreTerrain.h>
 
 #include <deque>
 
-// Helper methods
+// Utility class
 class TerrUtil {
 public:
 	static float getAngle(float x, float y);
@@ -13,9 +14,10 @@ public:
 	static Ogre::Vector3 getNormalAt(Ogre::Terrain* terr, float x, float z, float s);
 };
 
+//TODO Still to be determined exactly what AngType does
 enum AngType {AT_Manual = 0, AT_Auto, AT_Both, AT_ALL };
 
-// Point/variable
+// Stuntrally's SplinePoint class
 class SplinePoint {
 public:
 	SplinePoint();
@@ -36,7 +38,8 @@ public:
 };
 
 
-// SplineBase - only interpolation
+// Stuntrally's SplineBase class
+// Has only interpolation
 class SplineBase {
 public:
 	SplineBase();

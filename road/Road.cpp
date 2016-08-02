@@ -9,14 +9,12 @@
 
 #include <Ogre.h>
 
-int Road::count = -1;
+int Road::count = -1; // The first road has an ID of 0...
 
 Road::Road(Sim* sim)
 	: mSim(sim),
 	  idStr(0) {
-	//Init some variables
 	setDefault();
-
 	count++; // Band-aid solution to giving roads unique IDs
 }
 
@@ -28,7 +26,7 @@ void Road::setDefault() {
 	g_Height = 0.1f;
 	g_MergeLen = 180.f; g_LodPntLen = 10.f;
 
-	isLooped = false; // Assume that roads are NOT looped!
+	isLooped = false; // Assume that roads aren't looped
 }
 
 void Road::setup(Ogre::Terrain* terrain, Ogre::SceneManager* sceneMgr) {
