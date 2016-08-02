@@ -34,9 +34,9 @@ void Sim::setup(Ogre::SceneManager* sceneMgr) {
 
 	world = new CollisionWorld(this);
 
-	numCars = 1;
-	idCarToWatch = 0;
-	idCarToControl = 0;
+	numCars = 2;
+	idCarToWatch = 1;
+	idCarToControl = 1;
 
 	for (int i = 0; i < numCars; i++) {
 		Car* newCar = new Car(i);

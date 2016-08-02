@@ -16,7 +16,9 @@ BaseState* LaneChangeState::update(float dt) {
 	BaseState* res = currState->update(dt);
 	if (res != NULL) {
 		if (!halfwayDone) {
+			delete currState;
 			currState = new TurnState(mInterface, !mIsLeft, radius, theta);
+
 			halfwayDone = true;
 			return NULL;
 		} else {
@@ -24,8 +26,7 @@ BaseState* LaneChangeState::update(float dt) {
 			std::cout << "I've changed lanes, but my angle error is (was) " << angleOff << std::endl;
 
 			MathVector<double, 2> startToEnd = mInterface->getCarPosition() - startPos;
-			//TODO This multiplication bug nonsense is nonsense; why should I have to multiply like this -_-
-			MathVector<double, 2> longitudinalVec; longitudinalVec[0] = finalDir[0] * startToEnd.dot(finalDir); longitudinalVec[1] = finalDir[1] * startToEnd.dot(finalDir);
+			MathVector<double, 2> longitudinalVec = finalDir * startToEnd.dot(finalDir);
 			MathVector<double, 2> lateralVec = startToEnd - longitudinalVec;
 			std::cout << "Actual lateral distance traveled was " << lateralVec.magnitude() << std::endl;
 

@@ -1,13 +1,15 @@
 #pragma once
 
-class BaseState;
-class ControllerInterface;
-
 #include "../vdrift/Car.hpp"
 #include "../vdrift/CarConstants.hpp"
 
+class ControllerInterface;
+
+// The BasicController class determines the inputs for passive vehicles (not controlled
+// by the keyboard or autonomous vehicle code). Various states determine the car's behavior.
 class BasicController {
 	friend class ControllerInterface;
+
 public:
 	BasicController(Car* car);
 	~BasicController();
@@ -36,7 +38,9 @@ private:
 	std::vector<double> inputs;
 
 	ControllerInterface* myInterface;
-	BaseState* currentState;
+
+	class BaseState* currentState;
+	void changeState(class BaseState* newState);
 
 //---- Speed PID control (speed in m/s)
 	double kPSpeed,
@@ -81,6 +85,7 @@ private:
 // Interface that exposes BasicController methods to its states
 class ControllerInterface {
 	friend class BasicController;
+
 public:
 //---- Setter methods
 	void setTargetSpeed(double newSpeed) { mController->setTargetSpeed(newSpeed); }

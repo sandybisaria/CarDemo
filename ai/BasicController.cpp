@@ -3,7 +3,8 @@
 #include "States.hpp"
 
 BasicController::BasicController(Car* car)
-	: mCar(car), testing(false) {
+	: mCar(car), testing(false),
+	  myInterface(0), currentState(0) {
 	reset();
 
 	// PID constants
@@ -37,6 +38,11 @@ void BasicController::reset() {
 	reachedAngle = false;
 }
 
+void BasicController::changeState(BaseState *newState) {
+	if (currentState != NULL) { delete currentState; }
+	currentState = newState;
+}
+
 void BasicController::setTargetSpeed(double newSpeed) {
 	if (targetSpeed != newSpeed) { // Should we ever reset these?
 		iSpeedAcc = 0;
@@ -57,32 +63,31 @@ void BasicController::setTargetAngle(double newAngle, bool resetDir) {
 	if (resetDir) { initDir = mCar->getForwardVector(); }
 }
 
+//---- Control methods
 void BasicController::goToPoint(MathVector<double, 2> waypoint, double radius) {
-	currentState = new WaypointState(myInterface, waypoint, radius);
+	changeState(new WaypointState(myInterface, waypoint, radius));
 }
 
 void BasicController::setSpeed(double speed) {
-	currentState = new ConstantState(myInterface, speed, targetAngle);
+	changeState(new ConstantState(myInterface, speed, targetAngle));
 }
 
 void BasicController::setAngle(double angle) {
-	currentState = new ConstantState(myInterface, targetSpeed, angle);
+	changeState(new ConstantState(myInterface, targetSpeed, angle));
 }
 
 void BasicController::turn(bool isLeftTurn, double turnRadius, double angle) {
-	currentState = new TurnState(myInterface, isLeftTurn, turnRadius, angle);
+	changeState(new TurnState(myInterface, isLeftTurn, turnRadius, angle));
 }
 
 void BasicController::laneChange(bool isLeft, double laneWidth) {
-	currentState = new LaneChangeState(myInterface, isLeft, laneWidth);
+	changeState(new LaneChangeState(myInterface, isLeft, laneWidth));
 }
 
+//---- Update methods
 const std::vector<double>& BasicController::updateInputs(float dt) {
 	BaseState* nextState = currentState->update(dt);
-	if (nextState != NULL) {
-		delete currentState;
-		currentState = nextState;
-	}
+	if (nextState != NULL) { changeState(nextState); }
 
 	updateSpeed(dt);
 	if (!dirAlreadyUpdated) { updateDirection(dt); }
@@ -160,6 +165,7 @@ void BasicController::updateDirection(float dt) {
 	lastAngle = angle;
 }
 
+//---- Utility methods
 double BasicController::getAngle(MathVector<double, 2> fromDir, MathVector<double, 2> toDir) {
 	double angle = acos(fromDir.dot(toDir));
 
@@ -178,18 +184,23 @@ MathVector<double, 2> BasicController::toFlatVector(MathVector<double, 3> vec, b
 	return normalize ? res.normalized() : res;
 }
 
+//---- Debug data collection methods
 void BasicController::setupDataCollection() {
 	double minSpeed = 1, maxSpeed = 35, speedStep = 0.5;
 	double minTurn = 0.10, maxTurn = 1.00, turnStep = 0.01;
 
-	for (double speed = maxSpeed; speed >= minSpeed; speed -= speedStep) { speeds.push_back(speed); }
-	for (double turn = maxTurn; turn >= minTurn; turn -= turnStep) { turns.push_back(turn); turns.push_back(-turn); }
+	for (double speed = maxSpeed; speed >= minSpeed; speed -= speedStep) {
+		speeds.push_back(speed);
+	}
+	for (double turn = maxTurn; turn >= minTurn; turn -= turnStep) {
+		turns.push_back(turn); turns.push_back(-turn);
+	}
 
 	assert(speeds.size() > 0 && turns.size() > 0);
 	currentSpeed = currentTurn = 0;
 
 	testing = true; testStage = WAIT_SPEED; timeElapsed = 0;
-	currentState = new ConstantState(myInterface, speeds[currentSpeed], 0);
+	changeState(new ConstantState(myInterface, speeds[currentSpeed], 0));
 	std::cout << "SETUP COMPLETE! " << speeds[currentSpeed] << " " << turns[currentTurn] << std::endl;
 
 	dataFile.open("data.txt", std::ios::app);
@@ -200,7 +211,8 @@ void BasicController::updateDataCollection(float dt) {
 	if (testStage == WAIT_SPEED) {
 		if (hasReachedTargetSpeed() || timeElapsed > 60) {
 			std::cout << "HAS REACHED: " << targetSpeed << std::endl;
-			currentState = new ConstantTurnState(myInterface, turns[currentTurn], speeds[currentSpeed]);
+			changeState(new ConstantTurnState(myInterface, turns[currentTurn],
+											  speeds[currentSpeed]));
 			testStage = WAIT_STEER; timeElapsed = 0;
 		}
 	} else if (testStage == WAIT_STEER) {
@@ -216,7 +228,7 @@ void BasicController::updateDataCollection(float dt) {
 						 << std::endl;
 			}
 			currentTurn++;
-			if (currentTurn >= turns.size() /*|| (cts->getAverageRadius() > 100 && turns[currentTurn] < 0)*/) {
+			if (currentTurn >= turns.size()) {
 				currentTurn = 0;
 				currentSpeed++;
 
@@ -226,12 +238,13 @@ void BasicController::updateDataCollection(float dt) {
 				} else {
 					std::cout << "COMP SPEED: " << speeds[currentSpeed-1] << std::endl;
 
-					currentState = new ConstantState(myInterface, speeds[currentSpeed], 0);
+					changeState(new ConstantState(myInterface, speeds[currentSpeed], 0));
 					testStage = WAIT_SPEED; timeElapsed = 0;
 				}
 			} else {
 				std::cout << "COMP TURN: " << turns[currentTurn-1] << std::endl;
-				currentState = new ConstantTurnState(myInterface, turns[currentTurn], speeds[currentSpeed]);
+				changeState(new ConstantTurnState(myInterface, turns[currentTurn],
+												  speeds[currentSpeed]));
 				testStage = WAIT_STEER; timeElapsed = 0;
 			}
 		}

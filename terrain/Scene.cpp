@@ -61,7 +61,7 @@ void Scene::setupTerrain(Sim* sim) {
 	createBulletTerrain();
 
 //---- Road
-	setupRoad();
+//	setupRoad();
 }
 
 void Scene::configureTerrainDefaults() {

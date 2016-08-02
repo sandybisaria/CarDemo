@@ -17,6 +17,7 @@ protected:
 	ControllerInterface* mInterface;
 };
 
+//---- Environment-agnostic states
 // Maintain a given velocity and direction
 class ConstantState : public BaseState {
 public:
@@ -92,3 +93,5 @@ private:
 	MathVector<double, 2> finalDir, startPos;
 	TurnState* currState;
 };
+
+//---- Environment-aware states
