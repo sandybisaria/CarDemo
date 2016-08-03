@@ -2,6 +2,8 @@
 
 #include "RenderConst.hpp"
 
+#include "../Sim.hpp"
+
 #include "../road/Road.hpp"
 
 #include "../vdrift/CollisionWorld.hpp"
@@ -61,7 +63,7 @@ void Scene::setupTerrain(Sim* sim) {
 	createBulletTerrain();
 
 //---- Road
-//	setupRoad();
+	setupRoad();
 }
 
 void Scene::configureTerrainDefaults() {

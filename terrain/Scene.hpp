@@ -2,8 +2,6 @@
 
 #include "ShapeData.hpp"
 
-#include "../Sim.hpp"
-
 #include <BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h>
 
 #include <OgreSceneManager.h>
@@ -16,7 +14,7 @@ public:
 	Scene(Ogre::SceneManager* sceneMgr);
 	~Scene();
 
-	void setupTerrain(Sim* sim);
+	void setupTerrain(class Sim* sim);
 
 	void update();
 
@@ -29,7 +27,7 @@ private:
 
 	void createBulletTerrain();
 
-	Sim* mSim;
+	class Sim* mSim;
 
 	Ogre::SceneManager* mSceneMgr;
 	Ogre::Light* sun;
