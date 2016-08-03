@@ -89,7 +89,7 @@ factors-file = first
 #  tires (more in .tire)
 #---------------------------
 [ tire-both ]
-radius = 0.41
+radius = 0.385
 rolling-resistance = 1.3e-2, 6.5e-6
 rotational-inertia = 0.9
 tread = 0.0
@@ -119,7 +119,7 @@ position = -0.8,-1.5,0
 #---------------------------
 [ engine ]
 sound = engine
-position = 0.0, 1.6, -0.1
+position = 0, 1.9, 0
 mass = 180.0
 rpm-limit = 6300
 inertia = 0.30
@@ -147,26 +147,35 @@ real-pow-tq-mul = 1.2
 max-torque-mul = 1.1
 
 
-# Rest from 360.car!
-# -----------------------------------------------------------------------------
-
 #  collision shape params
 #---------------------------
 [ collision ]
 com_ofs_H = 0.0
-radius = 0.32
-width = 0.67
-height = 0.39
-posLrear = -2.07
-posLfront = 1.98
-offsetL = 0.24
-offsetW = -0.01
-offsetH = 0.29
-start-offsetY = 0.43
-fluidTrigH = 0.07
+radius = 0.304
+width = 0.74
+height = 0.2
+posLrear = -2.1
+posLfront = 2.11
+offsetL = -0.10
+offsetW = 0.03
+offsetH = 0.26
+start-offsetY = 0.2
+fluidTrigH = 0.15
 friction = 0.4
+TopFr = 0.5
+TopMid = -0.3
+TopBack = -1.1
+FrWmul = 1
+FrHmul = 1.8
+TopWmul = 0.8
+radius2mul = 0.8
+TopFrHm = 1.2
+TopMidHm = 1.7
+TopBackHm = 1.5
 
 
+# Rest from 360.car!
+# -----------------------------------------------------------------------------
 
 #  gearbox
 #---------------------------

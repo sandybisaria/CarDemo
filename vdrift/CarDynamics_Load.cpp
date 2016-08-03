@@ -485,12 +485,11 @@ void CarDynamics::init(MathVector<double, 3> pos, Quaternion<double> rot, Collis
 	btCollisionShape* chassisShape;
 	{
 		btScalar w = size.getX() * 0.2f, r = size.getZ() * 0.3f, h = 0.45;
-
-		//TODO I think this is what the Stuntrally devs meant, but investigate to be sure
-		btScalar l0 = 0.f, w0 = 0.f, h0 = 0.f;
-		if (collR > 0.f) { r = collR; l0 = collLofs; }
-		if (collW > 0.f) { w = collW; w0 = collWofs; }
-		if (collH > 0.f) { h = collH; h0 = collHofs; }
+//		btScalar w = collW, r = fabsf(collR), h = collH;
+		btScalar l0 = collLofs, w0 = collWofs, h0 = collHofs;
+		if (collR > 0.f) { r = collR; }
+		if (collW > 0.f) { w = collW; }
+		if (collH > 0.f) { h = collH; }
 		btVector3 origin = btVector3(l0, w0, h0);
 
 		const int numSph = 14; int i = 0;
@@ -499,13 +498,12 @@ void CarDynamics::init(MathVector<double, 3> pos, Quaternion<double> rot, Collis
 		btScalar r2 = r * collR2m;
 		btScalar l1 = collPosLFront, l2 = collPosLBack,
 			l1m = l1 * 0.5f,l2m = l2 * 0.5f;
-		float ww = 1.f;
-		float wt = collTopWMul * ww;
+		float wt = collTopWMul;
 
-		rad[i] = r2;  posi[i] = btVector3( l1 , -w*ww, -h*collFrHMul);  ++i;  // front
-		rad[i] = r2;  posi[i] = btVector3( l1 ,  w*ww, -h*collFrHMul);  ++i;
-		rad[i] = r;   posi[i] = btVector3( l1m, -w*ww, -h*collFrHMul);  ++i;  // front near
-		rad[i] = r;   posi[i] = btVector3( l1m,  w*ww, -h*collFrHMul);  ++i;
+		rad[i] = r2;  posi[i] = btVector3( l1 , -w, -h*collFrHMul);  ++i;  // front
+		rad[i] = r2;  posi[i] = btVector3( l1 ,  w, -h*collFrHMul);  ++i;
+		rad[i] = r;   posi[i] = btVector3( l1m, -w, -h*collFrHMul);  ++i;  // front near
+		rad[i] = r;   posi[i] = btVector3( l1m,  w, -h*collFrHMul);  ++i;
 
 		rad[i] = r;   posi[i] = btVector3( l2m, -w,    -h);  ++i;  // rear near
 		rad[i] = r;   posi[i] = btVector3( l2m,  w,    -h);  ++i;
