@@ -99,7 +99,7 @@ const std::vector<double>& BasicController::updateInputs(float dt) {
 }
 
 void BasicController::updateSpeed(float dt) {
-	const double speed = mCar->getSpeedMPS();
+	const double speed = mCar->getSpeed();
 	const double eSpeed = targetSpeed - speed;
 
 	// Simple PID controller
@@ -186,8 +186,8 @@ MathVector<double, 2> BasicController::toFlatVector(MathVector<double, 3> vec, b
 
 //---- Debug data collection methods
 void BasicController::setupDataCollection() {
-	double minSpeed = 1, maxSpeed = 35, speedStep = 0.5;
-	double minTurn = 0.10, maxTurn = 1.00, turnStep = 0.01;
+	double minSpeed = 1, maxSpeed = 35, speedStep = 0.25;
+	double minTurn = 0.50, maxTurn = 1.00, turnStep = 0.01;
 
 	for (double speed = maxSpeed; speed >= minSpeed; speed -= speedStep) {
 		speeds.push_back(speed);
@@ -224,7 +224,7 @@ void BasicController::updateDataCollection(float dt) {
 			} else {
 				// Store the steering angle instead... (that way, rangeMul can change and our algorithm will work still)
 				double steerAngle = turns[currentTurn] * mCar->getRangeMul() * mCar->getMaxAngle();
-				dataFile << mCar->getSpeedMPS() << " " << steerAngle << " " << cts->getAverageRadius()
+				dataFile << mCar->getSpeed() << " " << steerAngle << " " << cts->getAverageRadius()
 						 << std::endl;
 			}
 			currentTurn++;
@@ -240,6 +240,8 @@ void BasicController::updateDataCollection(float dt) {
 
 					changeState(new ConstantState(myInterface, speeds[currentSpeed], 0));
 					testStage = WAIT_SPEED; timeElapsed = 0;
+
+					mCar->reset();
 				}
 			} else {
 				std::cout << "COMP TURN: " << turns[currentTurn-1] << std::endl;

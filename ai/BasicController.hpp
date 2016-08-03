@@ -80,8 +80,6 @@ private:
 	float timeElapsed;
 };
 
-//TODO Need to delete only BasicStates after being replaced; maybe write a helper?
-
 // Interface that exposes BasicController methods to its states
 class ControllerInterface {
 	friend class BasicController;

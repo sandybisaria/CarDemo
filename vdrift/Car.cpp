@@ -12,7 +12,7 @@
 
 #define toString(s) Ogre::StringConverter::toString(s)
 
-Car::Car(int id)
+Car::Car(unsigned int id)
 	: mId(id), mSceneMgr(0), mainNode(0),
 	  dyn(0), rangeMul(0.81 * 0.7),
 	  carColor(1, 1, 1) {
@@ -43,8 +43,10 @@ void Car::setup(std::string carName, Ogre::SceneManager* sceneMgr, CollisionWorl
 	resGrpIdStr = mCarName + "_" + toString(mId);
 	carPath = "../data/cars/" + mCarName;
 
+	cw = &world;
+
 	dyn = new CarDynamics();
-	if (!loadFromConfig(world)) { return; }
+	if (!loadFromConfig(*cw)) { return; }
 
 	dyn->shiftGear(1); // The car starts off in first gear
 
@@ -66,6 +68,10 @@ double Car::getSpeedMPS() {
 	return dyn->getSpeedMPS();
 }
 
+double Car::getSpeed() {
+	return dyn->getSpeed();
+}
+
 double Car::getMaxAngle() const {
 	return dyn->getMaxAngle();
 }
@@ -76,6 +82,14 @@ MathVector<double, 3> Car::getDownVector() {
 
 MathVector<double, 3> Car::getForwardVector() {
 	return dyn->getForwardVector();
+}
+
+void Car::reset() {
+	delete dyn;
+
+	dyn = new CarDynamics();
+	loadFromConfig(*cw);
+	dyn->shiftGear(1);
 }
 
 /* The format of the inputs vector is as follows:
@@ -175,14 +189,13 @@ bool Car::loadFromConfig(CollisionWorld& world) {
 	}
 
 	//TODO Load starting position/rotation from the scene, or receive from setup()
-	MathVector<double, 3> pos(0, mId * 10, 1); // mId * 10 is a cheap way to spread out multiple cars
-	Quaternion<double> rot;
+	initPos = MathVector<double, 3>(0, mId * 10, 1); // mId * 10 is a cheap way to spread out multiple cars
 
 	float stOfsY = 0.f;
 	cf.getParam("collision.start-offsetY", stOfsY);
-	pos[2] += stOfsY - 0.4 + dyn->comOfsH;
+	initPos[2] += stOfsY - 0.4 + dyn->comOfsH;
 
-	dyn->init(pos, rot, world);
+	dyn->init(initPos, initRot, world);
 
 	return true;
 }

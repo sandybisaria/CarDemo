@@ -13,7 +13,7 @@
 // Each instance is responsible for both its Ogre model and its dynamics sim
 class Car : public sh::MaterialInstanceListener {
 public:
-	Car(int id);
+	Car(unsigned int id);
 	~Car();
 
 	void setup(std::string carName, Ogre::SceneManager* sceneMgr,
@@ -23,14 +23,17 @@ public:
 	void handleInputs(const std::vector<double>& inputs);
 
 //---- Interface methods
-	double getSpeedDir();
+	double getSpeedDir(); // Speed in dir the car's facing
 	double getSpeedMPS(); // Speed as "measured" internally by the car
+	double getSpeed(); // The "actual" speed
 	double getMaxAngle() const;
 	double getRangeMul() const { return rangeMul; }
 	Ogre::Vector3 getPosition() { return mainNode->getPosition(); }
 	Ogre::Quaternion getOrientation() { return mainNode->getOrientation(); }
 	MathVector<double, 3> getDownVector();
 	MathVector<double, 3> getForwardVector();
+
+	void reset();
 
 //---- MaterialInstanceListener methods
 	virtual void requestedConfiguration(sh::MaterialInstance* m,
@@ -62,6 +65,10 @@ private:
 	std::string mtrNames[numMaterials];
 
 	class CarDynamics* dyn;
+	class CollisionWorld* cw;
+
+	MathVector<double, 3> initPos;
+	Quaternion<double> initRot;
 
 	const double rangeMul;
 

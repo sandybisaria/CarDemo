@@ -23,5 +23,5 @@ MathVector<double, 2> ControllerInterface::getCarDirection() {
 }
 
 double ControllerInterface::getCarSpeed() {
-	return mController->mCar->getSpeedMPS();
+	return mController->mCar->getSpeed();
 }
