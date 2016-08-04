@@ -14,7 +14,7 @@ BasicController::BasicController(Car* car)
 	dirAlreadyUpdated = false;
 
 	myInterface = new ControllerInterface(this);
-	currentState = new ConstantState(myInterface, 0, 0);
+	currentState = new StopSignState(myInterface, 0, 0);
 }
 
 BasicController::~BasicController() {
@@ -38,6 +38,7 @@ void BasicController::reset() {
 	reachedAngle = false;
 }
 
+//---- Internal control methods
 void BasicController::changeState(BaseState *newState) {
 	if (currentState != NULL) { delete currentState; }
 	currentState = newState;
@@ -69,7 +70,7 @@ void BasicController::goToPoint(MathVector<double, 2> waypoint, double radius) {
 }
 
 void BasicController::setSpeed(double speed) {
-	changeState(new ConstantState(myInterface, speed, targetAngle));
+	changeState(new StopSignState(myInterface, speed, targetAngle));
 }
 
 void BasicController::setAngle(double angle) {
@@ -186,8 +187,8 @@ MathVector<double, 2> BasicController::toFlatVector(MathVector<double, 3> vec, b
 
 //---- Debug data collection methods
 void BasicController::setupDataCollection() {
-	double minSpeed = 1, maxSpeed = 35, speedStep = 0.25;
-	double minTurn = 0.50, maxTurn = 1.00, turnStep = 0.01;
+	double minSpeed = 10, maxSpeed = 25.5, speedStep = 0.50;
+	double minTurn = 0.10, maxTurn = 1, turnStep = 0.01;
 
 	for (double speed = maxSpeed; speed >= minSpeed; speed -= speedStep) {
 		speeds.push_back(speed);

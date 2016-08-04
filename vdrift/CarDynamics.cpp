@@ -6,10 +6,8 @@ void CarDynamics::alignWithGround() {
 }
 
 double CarDynamics::getSpeedDir() const {
-	MathVector<double, 3> v(1, 0, 0);
-	getBodyOrientation().rotateVector(v);
-
-	double vel = body.getVelocity().dot(v); // Car body vel in local car dir
+	// Car body vel in local car dir?
+	double vel = body.getVelocity().dot(getForwardVector());
 	return fabs(vel);
 }
 

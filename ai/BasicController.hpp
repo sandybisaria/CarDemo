@@ -87,13 +87,17 @@ class ControllerInterface {
 public:
 //---- Setter methods
 	void setTargetSpeed(double newSpeed) { mController->setTargetSpeed(newSpeed); }
-	void setTargetAngle(double newAngle, bool resetDir = true) { mController->setTargetAngle(newAngle, resetDir); }
+	void setTargetAngle(double newAngle, bool resetDir = true) {
+		mController->setTargetAngle(newAngle, resetDir);
+	}
 	void setSteering(double steering); // -1 (full left) to 1 (full right); overrides the Controller's updateDirection
 
 //---- Getter methods
 	MathVector<double, 2> getCarPosition();
 	MathVector<double, 2> getCarDirection(); // Direction is normalized
 	double getCarSpeed();
+
+	std::list<std::string> getNearbySceneObjects();
 
 //---- Utility methods
 	static double getAngle(MathVector<double, 2> fromDir, MathVector<double, 2> toDir) {

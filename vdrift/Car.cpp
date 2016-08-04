@@ -233,36 +233,6 @@ void Car::update() {
 	dyn->update();
 	updateModel();
 	updateLightMap();
-
-	Ogre::AxisAlignedBox searchBox;
-
-	Ogre::Vector3 nearRight = mainNode->getPosition(),
-				  forward = Axes::vectorToOgre(getForwardVector()),
-				  right = Axes::vectorToOgre(getDownVector()).crossProduct(forward);
-	nearRight += forward * dyn->collPosLFront;
-	nearRight += right * (6 * dyn->collW);
-
-	Ogre::Vector3 farLeft = nearRight;
-	//TODO The 1 is supposed to represent the surface coeff of friction
-	farLeft += 2 * ((getSpeed() * getSpeed()) / (2 * 1 * 9.81)) * forward;
-	farLeft += right * (-12 * dyn->collW);
-
-	searchBox.setMinimum(std::min(nearRight.x, farLeft.x),
-						 std::min(nearRight.y, farLeft.y),
-						 std::min(nearRight.z, farLeft.z));
-	searchBox.setMaximum(std::max(nearRight.x, farLeft.x),
-						 std::max(nearRight.y, farLeft.y),
-						 std::max(nearRight.z, farLeft.z));
-
-	Ogre::list<Ogre::SceneNode*>::type foundNodes;
-	((Ogre::OctreeSceneManager*) mSceneMgr)->findNodesIn(searchBox, foundNodes);
-
-	for (Ogre::list<Ogre::SceneNode*>::type::iterator i = foundNodes.begin();
-		 i != foundNodes.end(); i++) {
-		if ((*i)->getName().compare(0, 2, "SO") == 0) {
-			std::cout << "Found " + (*i)->getName().substr(3) << std::endl;
-		}
-	}
 }
 
 void Car::updateModel() {
@@ -326,7 +296,7 @@ void Car::updateLightMap() {
 	// Refer to Stuntrally's CarModel::UpdateLightMap
 }
 
-
+//---- Interface methods
 double Car::getSpeedDir() {
 	return dyn->getSpeedDir();
 }
@@ -336,7 +306,9 @@ double Car::getSpeedMPS() {
 }
 
 double Car::getSpeed() {
-	return dyn->getSpeed();
+	const double speed = dyn->getSpeed();
+	// Car::getSpeed() is negative when the car is in reverse! How novel...
+	return dyn->getVelocity().dot(dyn->getForwardVector()) < 0 ? -speed : speed;
 }
 
 double Car::getMaxAngle() const {
@@ -350,6 +322,43 @@ MathVector<double, 3> Car::getDownVector() {
 MathVector<double, 3> Car::getForwardVector() {
 	return dyn->getForwardVector();
 }
+
+std::list<std::string> Car::getNearbySceneObjects() {
+	Ogre::AxisAlignedBox searchBox;
+
+	Ogre::Vector3 nearRight = mainNode->getPosition(),
+		forward = Axes::vectorToOgre(getForwardVector()),
+		right = Axes::vectorToOgre(getDownVector()).crossProduct(forward);
+	nearRight += forward * dyn->collPosLFront;
+	nearRight += right * (6 * dyn->collW);
+
+	Ogre::Vector3 farLeft = nearRight;
+	//TODO The 1 is supposed to represent the surface coeff of friction
+	farLeft += 2 * ((getSpeed() * getSpeed()) / (2 * 1 * 9.81)) * forward;
+	farLeft += right * (-12 * dyn->collW);
+
+	searchBox.setMinimum(std::min(nearRight.x, farLeft.x),
+						 std::min(nearRight.y, farLeft.y),
+						 std::min(nearRight.z, farLeft.z));
+	searchBox.setMaximum(std::max(nearRight.x, farLeft.x),
+						 std::max(nearRight.y, farLeft.y),
+						 std::max(nearRight.z, farLeft.z));
+
+	Ogre::list<Ogre::SceneNode*>::type foundNodes;
+	((Ogre::OctreeSceneManager*) mSceneMgr)->findNodesIn(searchBox, foundNodes);
+
+	std::list<std::string> foundNodeNames;
+
+	for (Ogre::list<Ogre::SceneNode*>::type::iterator i = foundNodes.begin();
+		 i != foundNodes.end(); i++) {
+		if ((*i)->getName().compare(0, 2, "SO") == 0) {
+			foundNodeNames.push_back((*i)->getName().substr(3));
+		}
+	}
+
+	return foundNodeNames;
+}
+
 
 void Car::reset() {
 	// Rather than create a reset method, simply creating a new instance was

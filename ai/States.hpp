@@ -95,3 +95,20 @@ private:
 };
 
 //---- Environment-aware states
+// Essentially a ConstantState that stops at stop signs
+class StopSignState : public BaseState {
+public:
+	StopSignState(ControllerInterface* interface, double speed, double angle);
+	virtual ~StopSignState() { }
+
+	virtual BaseState* update(float dt);
+
+private:
+	double initSpeed, initAngle;
+
+	BaseState* currState;
+
+	enum { ST_DRIVE, ST_BRAKE, ST_WAIT } stage;
+	std::string lastStopSign;
+	double countdown;
+};

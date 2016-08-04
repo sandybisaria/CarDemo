@@ -28,10 +28,13 @@ public:
 	double getSpeed(); // The "actual" speed
 	double getMaxAngle() const;
 	double getRangeMul() const { return rangeMul; }
+
 	Ogre::Vector3 getPosition() { return mainNode->getPosition(); }
 	Ogre::Quaternion getOrientation() { return mainNode->getOrientation(); }
 	MathVector<double, 3> getDownVector();
 	MathVector<double, 3> getForwardVector();
+
+	std::list<std::string> getNearbySceneObjects();
 
 	void reset();
 

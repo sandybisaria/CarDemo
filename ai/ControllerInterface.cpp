@@ -25,3 +25,7 @@ MathVector<double, 2> ControllerInterface::getCarDirection() {
 double ControllerInterface::getCarSpeed() {
 	return mController->mCar->getSpeed();
 }
+
+std::list<std::string> ControllerInterface::getNearbySceneObjects() {
+	return mController->mCar->getNearbySceneObjects();
+}

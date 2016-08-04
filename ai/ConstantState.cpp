@@ -1,6 +1,7 @@
 #include "States.hpp"
 
-ConstantState::ConstantState(ControllerInterface* interface, double speed, double angle)
+ConstantState::ConstantState(ControllerInterface* interface, double speed,
+							 double angle)
 	: BaseState(interface), mSpeed(speed), mAngle(angle) {
 	mInterface->setTargetSpeed(mSpeed);
 	mInterface->setTargetAngle(mAngle);

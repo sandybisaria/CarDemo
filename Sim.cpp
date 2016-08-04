@@ -36,7 +36,7 @@ void Sim::setup(Ogre::SceneManager* sceneMgr) {
 
 	numCars = 1;
 	idCarToWatch = 0;
-	idCarToControl = 0;
+	idCarToControl = -1;
 
 	for (unsigned int i = 0; i < numCars; i++) {
 		Car* newCar = new Car(i);
@@ -52,7 +52,7 @@ void Sim::setup(Ogre::SceneManager* sceneMgr) {
 		bc->setSpeed(10);
 
 		// For testing only (uncomment when needed)
-		bc->setupDataCollection();
+//		bc->setupDataCollection();
 	}
 
 	carInput = new CInput();
