@@ -8,6 +8,8 @@
 
 #include "../vdrift/CollisionWorld.hpp"
 
+#include <OgreEntity.h>
+
 Scene::Scene(Ogre::SceneManager* sceneMgr)
 	: mSim(0), mSceneMgr(sceneMgr), sun(0),
 	  mTerrainGlobals(0), mTerrainGroup(0) {
@@ -26,11 +28,11 @@ Scene::~Scene() {
 	mRoads.clear();
 }
 
-void Scene::setupTerrain(Sim* sim) {
+void Scene::setup(Sim* sim) {
 	mSim = sim;
 	mSim->scene = this;
 
-//---- Lighting and sky
+	// Lighting and sky
 	mSceneMgr->setAmbientLight(Ogre::ColourValue(0.4, 0.4, 0.4));
 
 	Ogre::Vector3 lightDir(0.55, -0.3f, 0.75);
@@ -44,7 +46,7 @@ void Scene::setupTerrain(Sim* sim) {
 
 	mSceneMgr->setSkyDome(true, "CloudySky");
 
-//---- Terrain
+	// Terrain
 	mTerrainGlobals = OGRE_NEW Ogre::TerrainGlobalOptions();
 	mTerrainGroup = OGRE_NEW Ogre::TerrainGroup(mSceneMgr, Ogre::Terrain::ALIGN_X_Z,
 												terrSize, worldSize);
@@ -62,10 +64,14 @@ void Scene::setupTerrain(Sim* sim) {
 
 	createBulletTerrain();
 
-//---- Road
-	setupRoad();
+	// Road
+//	setupRoad();
+
+	// Objects
+	setupObjects();
 }
 
+//---- Terrain methods
 void Scene::configureTerrainDefaults() {
 	mTerrainGlobals->setMaxPixelError(8);
 	mTerrainGlobals->setCompositeMapDistance(3000);
@@ -144,6 +150,7 @@ void Scene::createBulletTerrain() {
 	}
 }
 
+//---- Road methods
 void Scene::setupRoad() {
 	Ogre::Terrain* baseTerrain = mTerrainGroup->getTerrain(0, 0);
 
@@ -176,6 +183,16 @@ void Scene::setupRoad() {
 	}
 }
 
+//---- Objects methods
+void Scene::setupObjects() {
+	Ogre::SceneNode* stopSign = mSceneMgr->getRootSceneNode()->
+		createChildSceneNode("StopSign");
+	stopSign->attachObject(mSceneMgr->createEntity("StopSign.mesh"));
+
+	stopSign->setPosition(0, 0, 0);
+}
+
+//---- Update methods
 void Scene::update() {
 	std::vector<Road*>::const_iterator i;
 	for (i = mRoads.begin(); i != mRoads.end(); i++) {

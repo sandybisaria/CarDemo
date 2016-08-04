@@ -187,7 +187,7 @@ void App::setupScene() {
 	if (!loadSurfaces()) { return; }
 
 	mScene = new Scene(mSceneMgr);
-	mScene->setupTerrain(mSim);
+	mScene->setup(mSim);
 }
 
 bool App::loadSurfaces() {

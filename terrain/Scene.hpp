@@ -14,7 +14,7 @@ public:
 	Scene(Ogre::SceneManager* sceneMgr);
 	~Scene();
 
-	void setupTerrain(class Sim* sim);
+	void setup(class Sim* sim);
 
 	void update();
 
@@ -37,4 +37,7 @@ private:
 
 	void setupRoad();
 	std::vector<class Road*> mRoads;
+
+	void setupObjects();
+	const Ogre::String sceneResGrp = "SceneObjects";
 };

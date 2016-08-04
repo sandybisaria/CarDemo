@@ -34,13 +34,14 @@ void Sim::setup(Ogre::SceneManager* sceneMgr) {
 
 	world = new CollisionWorld(this);
 
-	numCars = 2;
-	idCarToWatch = 1;
-	idCarToControl = 1;
+	numCars = 1;
+	idCarToWatch = 0;
+	idCarToControl = 0;
 
-	for (int i = 0; i < numCars; i++) {
+	for (unsigned int i = 0; i < numCars; i++) {
 		Car* newCar = new Car(i);
-		newCar->setup((i == idCarToControl ? "CAD" : "360"), mSceneMgr, *world); // A Cadillac driving with Ferrari's...
+		// A Cadillac driving with Ferrari's...
+		newCar->setup((i == idCarToControl ? "CAD" : "360"), mSceneMgr, *world);
 
 		cars.push_back(newCar);
 
@@ -51,7 +52,7 @@ void Sim::setup(Ogre::SceneManager* sceneMgr) {
 		bc->setSpeed(10);
 
 		// For testing only (uncomment when needed)
-//		bc->setupDataCollection();
+		bc->setupDataCollection();
 	}
 
 	carInput = new CInput();
@@ -59,7 +60,7 @@ void Sim::setup(Ogre::SceneManager* sceneMgr) {
 	// Debug drawing
 	debugDraw = new BtOgre::DebugDrawer(mSceneMgr->getRootSceneNode(), world->getDynamicsWorld());
 	world->getDynamicsWorld()->setDebugDrawer(debugDraw);
-	world->getDynamicsWorld()->getDebugDrawer()->setDebugMode(1);
+	world->getDynamicsWorld()->getDebugDrawer()->setDebugMode(0);
 }
 
 void Sim::update(float dt) {
