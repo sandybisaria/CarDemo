@@ -7,6 +7,8 @@
 
 #include "../terrain/RenderConst.hpp"
 
+#include <OGRE/Plugins/OctreeSceneManager/OgreOctreeSceneManager.h>
+
 #include <OgreRoot.h>
 #include <OgreEntity.h>
 
@@ -38,6 +40,7 @@ Car::~Car() {
 	delete dyn;
 }
 
+//---- Setup methods
 void Car::setup(std::string carName, Ogre::SceneManager* sceneMgr, CollisionWorld& world) {
 	mCarName = carName;
 	resGrpIdStr = mCarName + "_" + toString(mId);
@@ -52,89 +55,6 @@ void Car::setup(std::string carName, Ogre::SceneManager* sceneMgr, CollisionWorl
 
 	mSceneMgr = sceneMgr;
 	loadModel();
-}
-
-void Car::update() {
-	dyn->update();
-	updateModel();
-	updateLightMap();
-}
-
-double Car::getSpeedDir() {
-	return dyn->getSpeedDir();
-}
-
-double Car::getSpeedMPS() {
-	return dyn->getSpeedMPS();
-}
-
-double Car::getSpeed() {
-	return dyn->getSpeed();
-}
-
-double Car::getMaxAngle() const {
-	return dyn->getMaxAngle();
-}
-
-MathVector<double, 3> Car::getDownVector() {
-	return dyn->getDownVector();
-}
-
-MathVector<double, 3> Car::getForwardVector() {
-	return dyn->getForwardVector();
-}
-
-void Car::reset() {
-	delete dyn;
-
-	dyn = new CarDynamics();
-	loadFromConfig(*cw);
-	dyn->shiftGear(1);
-}
-
-/* The format of the inputs vector is as follows:
- * 0 -> 1 (disengaged -> fully-engaged) = BRAKE, THROTTLE, HANDBRAKE, CLUTCH, STEER_RIGHT, STEER_LEFT
- * 0 or 1 (on or off) = SHIFT_UP/DOWN
- *
- * Note that SHIFT_DOWN takes "higher precedence" than SHIFT_UP (in case both are engaged)
- * Note that the steering value with greater magnitude takes precedence (0.7L vs 0.5R -> steer left)
- */
-void Car::handleInputs(const std::vector<double>& inputs) {
-	assert(inputs.size() == CarInput::ALL);
-
-	int curGear = dyn->getTransmission().getGear();
-
-	// Note that this in effect "inverts" the controls when in reverse, since the brake key acts like a throttle.
-	// While not necessarily "realistic" it makes keyboard control more intuitive.
-	bool rear = curGear == -1; // Is car currently in reverse?
-
-	// We assume that we use -1 when trying to drive in reverse
-	double brake = !rear ? inputs[CarInput::BRAKE] : inputs[CarInput::THROTTLE];
-	dyn->setBrake(brake);
-
-	dyn->setHandBrake(inputs[CarInput::HANDBRAKE]);
-
-	double steerValue = inputs[CarInput::STEER_RIGHT];
-	if (std::abs(inputs[CarInput::STEER_LEFT]) > std::abs(inputs[CarInput::STEER_RIGHT]))
-		steerValue = -inputs[CarInput::STEER_LEFT];
-	dyn->setSteering(steerValue, rangeMul);
-
-	int gearChange = 0;
-	if (inputs[CarInput::SHIFT_UP]   == 1.0) gearChange =  1;
-	if (inputs[CarInput::SHIFT_DOWN] == 1.0) gearChange = -1;
-	int newGear = curGear + gearChange;
-	dyn->shiftGear(newGear);
-
-	double throttle = !rear ? inputs[CarInput::THROTTLE] : inputs[CarInput::BRAKE];
-	dyn->setThrottle(throttle);
-
-	double clutch = 1 - inputs[CarInput::CLUTCH];
-	dyn->setClutch(clutch);
-}
-
-void Car::createdConfiguration(sh::MaterialInstance* m, const std::string& configuration) {
-	changeColor();
-	updateLightMap();
 }
 
 bool Car::loadFromConfig(CollisionWorld& world) {
@@ -308,38 +228,41 @@ Ogre::Entity* Car::loadPart(std::string partType, int partId) {
 	return entity;
 }
 
-void Car::setNumWheels(int nw) {
-	numWheels = nw;
-	wheelNodes.resize((unsigned int) numWheels);
-//	brakeNodes.resize(numWheels);
-}
+//---- Update methods
+void Car::update() {
+	dyn->update();
+	updateModel();
+	updateLightMap();
 
-void Car::changeColor() {
-//	int i = iColor;
-//	float c_h = pSet->gui.car_hue[i], c_s = pSet->gui.car_sat[i],
-//		  c_v = pSet->gui.car_val[i], gloss = pSet->gui.car_gloss[i], refl = pSet->gui.car_refl[i];
-//	carColor.setHSB(1-c_h, c_s, c_v);  //set, mini pos clr
-	//TODO Hard-coded color, glossiness, and reflectiveness; will need to add setting later
+	Ogre::AxisAlignedBox searchBox;
 
-	Ogre::MaterialPtr mtr = Ogre::MaterialManager::getSingleton().getByName(mtrNames[mtrCarBody]);
-	if (!mtr.isNull()) {
-		Ogre::Material::TechniqueIterator techIt = mtr->getTechniqueIterator();
-		while (techIt.hasMoreElements()) {
-			Ogre::Technique* tech = techIt.getNext();
-			Ogre::Technique::PassIterator passIt = tech->getPassIterator();
-			while (passIt.hasMoreElements()) {
-				Ogre::Pass* pass = passIt.getNext();
-				if (pass->hasFragmentProgram()) {
-					Ogre::GpuProgramParametersSharedPtr params = pass->getFragmentProgramParameters();
-					params->setNamedConstant("carColour", carColor);
-					params->setNamedConstant("glossiness", Ogre::Real(1 - 0.5));
-					params->setNamedConstant("reflectiveness", Ogre::Real(0.5));
-				}
-			}
+	Ogre::Vector3 nearRight = mainNode->getPosition(),
+				  forward = Axes::vectorToOgre(getForwardVector()),
+				  right = Axes::vectorToOgre(getDownVector()).crossProduct(forward);
+	nearRight += forward * dyn->collPosLFront;
+	nearRight += right * (6 * dyn->collW);
+
+	Ogre::Vector3 farLeft = nearRight;
+	//TODO The 1 is supposed to represent the surface coeff of friction
+	farLeft += 2 * ((getSpeed() * getSpeed()) / (2 * 1 * 9.81)) * forward;
+	farLeft += right * (-12 * dyn->collW);
+
+	searchBox.setMinimum(std::min(nearRight.x, farLeft.x),
+						 std::min(nearRight.y, farLeft.y),
+						 std::min(nearRight.z, farLeft.z));
+	searchBox.setMaximum(std::max(nearRight.x, farLeft.x),
+						 std::max(nearRight.y, farLeft.y),
+						 std::max(nearRight.z, farLeft.z));
+
+	Ogre::list<Ogre::SceneNode*>::type foundNodes;
+	((Ogre::OctreeSceneManager*) mSceneMgr)->findNodesIn(searchBox, foundNodes);
+
+	for (Ogre::list<Ogre::SceneNode*>::type::iterator i = foundNodes.begin();
+		 i != foundNodes.end(); i++) {
+		if ((*i)->getName().compare(0, 2, "SO") == 0) {
+			std::cout << "Found " + (*i)->getName().substr(3) << std::endl;
 		}
 	}
-
-	// Refer to Stuntrally's CarModel::ChangeClr
 }
 
 void Car::updateModel() {
@@ -401,4 +324,118 @@ void Car::updateLightMap() {
 	}
 
 	// Refer to Stuntrally's CarModel::UpdateLightMap
+}
+
+
+double Car::getSpeedDir() {
+	return dyn->getSpeedDir();
+}
+
+double Car::getSpeedMPS() {
+	return dyn->getSpeedMPS();
+}
+
+double Car::getSpeed() {
+	return dyn->getSpeed();
+}
+
+double Car::getMaxAngle() const {
+	return dyn->getMaxAngle();
+}
+
+MathVector<double, 3> Car::getDownVector() {
+	return dyn->getDownVector();
+}
+
+MathVector<double, 3> Car::getForwardVector() {
+	return dyn->getForwardVector();
+}
+
+void Car::reset() {
+	// Rather than create a reset method, simply creating a new instance was
+	// easier and still achieved the right effect (sorry for the inefficiency)
+	delete dyn;
+
+	dyn = new CarDynamics();
+	loadFromConfig(*cw);
+	dyn->shiftGear(1);
+}
+
+/* The format of the inputs vector is as follows:
+ * 0 -> 1 (disengaged -> fully-engaged) = BRAKE, THROTTLE, HANDBRAKE, CLUTCH, STEER_RIGHT, STEER_LEFT
+ * 0 or 1 (on or off) = SHIFT_UP/DOWN
+ *
+ * Note that SHIFT_DOWN takes "higher precedence" than SHIFT_UP (in case both are engaged)
+ * Note that the steering value with greater magnitude takes precedence (0.7L vs 0.5R -> steer left)
+ */
+void Car::handleInputs(const std::vector<double>& inputs) {
+	assert(inputs.size() == CarInput::ALL);
+
+	int curGear = dyn->getTransmission().getGear();
+
+	// Note that this in effect "inverts" the controls when in reverse, since the brake key acts like a throttle.
+	// While not necessarily "realistic" it makes keyboard control more intuitive.
+	bool rear = curGear == -1; // Is car currently in reverse?
+
+	// We assume that we use -1 when trying to drive in reverse
+	double brake = !rear ? inputs[CarInput::BRAKE] : inputs[CarInput::THROTTLE];
+	dyn->setBrake(brake);
+
+	dyn->setHandBrake(inputs[CarInput::HANDBRAKE]);
+
+	double steerValue = inputs[CarInput::STEER_RIGHT];
+	if (std::abs(inputs[CarInput::STEER_LEFT]) > std::abs(inputs[CarInput::STEER_RIGHT]))
+		steerValue = -inputs[CarInput::STEER_LEFT];
+	dyn->setSteering(steerValue, rangeMul);
+
+	int gearChange = 0;
+	if (inputs[CarInput::SHIFT_UP]   == 1.0) { gearChange =  1; }
+	if (inputs[CarInput::SHIFT_DOWN] == 1.0) { gearChange = -1; }
+	int newGear = curGear + gearChange;
+	dyn->shiftGear(newGear);
+
+	double throttle = !rear ? inputs[CarInput::THROTTLE] : inputs[CarInput::BRAKE];
+	dyn->setThrottle(throttle);
+
+	double clutch = 1 - inputs[CarInput::CLUTCH];
+	dyn->setClutch(clutch);
+}
+
+void Car::createdConfiguration(sh::MaterialInstance* m, const std::string& configuration) {
+	changeColor();
+	updateLightMap();
+}
+
+void Car::setNumWheels(int nw) {
+	numWheels = nw;
+	wheelNodes.resize((unsigned int) numWheels);
+//	brakeNodes.resize(numWheels);
+}
+
+void Car::changeColor() {
+//	int i = iColor;
+//	float c_h = pSet->gui.car_hue[i], c_s = pSet->gui.car_sat[i],
+//		  c_v = pSet->gui.car_val[i], gloss = pSet->gui.car_gloss[i], refl = pSet->gui.car_refl[i];
+//	carColor.setHSB(1-c_h, c_s, c_v);  //set, mini pos clr
+	//TODO Hard-coded color, glossiness, and reflectiveness; will need to add setting later
+
+	Ogre::MaterialPtr mtr = Ogre::MaterialManager::getSingleton().getByName(mtrNames[mtrCarBody]);
+	if (!mtr.isNull()) {
+		Ogre::Material::TechniqueIterator techIt = mtr->getTechniqueIterator();
+		while (techIt.hasMoreElements()) {
+			Ogre::Technique* tech = techIt.getNext();
+			Ogre::Technique::PassIterator passIt = tech->getPassIterator();
+			while (passIt.hasMoreElements()) {
+				Ogre::Pass* pass = passIt.getNext();
+				if (pass->hasFragmentProgram()) {
+					Ogre::GpuProgramParametersSharedPtr params = pass->getFragmentProgramParameters();
+					params->setNamedConstant("carColour", carColor);
+					params->setNamedConstant("glossiness", Ogre::Real(1 - 0.5));
+					params->setNamedConstant("reflectiveness", Ogre::Real(0.5));
+				}
+			}
+		}
+	}
+
+	// Refer to Stuntrally's CarModel::ChangeClr
 }

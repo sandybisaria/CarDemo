@@ -186,10 +186,11 @@ void Scene::setupRoad() {
 //---- Objects methods
 void Scene::setupObjects() {
 	Ogre::SceneNode* stopSign = mSceneMgr->getRootSceneNode()->
-		createChildSceneNode("StopSign");
+		createChildSceneNode("SO_StopSign_01");
 	stopSign->attachObject(mSceneMgr->createEntity("StopSign.mesh"));
 
-	stopSign->setPosition(0, 0, 0);
+	stopSign->setPosition(100, 0, 0);
+	stopSign->yaw(Ogre::Radian(M_PI));
 }
 
 //---- Update methods
