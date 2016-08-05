@@ -26,6 +26,6 @@ double ControllerInterface::getCarSpeed() {
 	return mController->mCar->getSpeed();
 }
 
-std::list<std::string> ControllerInterface::getNearbySceneObjects() {
+std::list<class SceneObject*> ControllerInterface::getNearbySceneObjects() {
 	return mController->mCar->getNearbySceneObjects();
 }

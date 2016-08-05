@@ -6,6 +6,7 @@
 #include "../shiny/Main/Factory.hpp"
 
 #include "../terrain/RenderConst.hpp"
+#include "../terrain/SceneObject.hpp"
 
 #include <OGRE/Plugins/OctreeSceneManager/OgreOctreeSceneManager.h>
 
@@ -323,7 +324,7 @@ MathVector<double, 3> Car::getForwardVector() {
 	return dyn->getForwardVector();
 }
 
-std::list<std::string> Car::getNearbySceneObjects() {
+std::list<SceneObject*> Car::getNearbySceneObjects() {
 	Ogre::AxisAlignedBox searchBox;
 
 	Ogre::Vector3 nearRight = mainNode->getPosition(),
@@ -347,12 +348,13 @@ std::list<std::string> Car::getNearbySceneObjects() {
 	Ogre::list<Ogre::SceneNode*>::type foundNodes;
 	((Ogre::OctreeSceneManager*) mSceneMgr)->findNodesIn(searchBox, foundNodes);
 
-	std::list<std::string> foundNodeNames;
+	std::list<SceneObject*> foundNodeNames;
 
 	for (Ogre::list<Ogre::SceneNode*>::type::iterator i = foundNodes.begin();
 		 i != foundNodes.end(); i++) {
-		if ((*i)->getName().compare(0, 2, "SO") == 0) {
-			foundNodeNames.push_back((*i)->getName().substr(3));
+		Ogre::Any any = (*i)->getUserObjectBindings().getUserAny();
+		if (!any.isEmpty()) {
+			foundNodeNames.push_back(Ogre::any_cast<SceneObject*>(any));
 		}
 	}
 

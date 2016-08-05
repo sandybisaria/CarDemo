@@ -34,7 +34,7 @@ public:
 	MathVector<double, 3> getDownVector();
 	MathVector<double, 3> getForwardVector();
 
-	std::list<std::string> getNearbySceneObjects();
+	std::list<class SceneObject*> getNearbySceneObjects();
 
 	void reset();
 

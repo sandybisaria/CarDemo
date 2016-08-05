@@ -97,7 +97,7 @@ public:
 	MathVector<double, 2> getCarDirection(); // Direction is normalized
 	double getCarSpeed();
 
-	std::list<std::string> getNearbySceneObjects();
+	std::list<class SceneObject*> getNearbySceneObjects();
 
 //---- Utility methods
 	static double getAngle(MathVector<double, 2> fromDir, MathVector<double, 2> toDir) {

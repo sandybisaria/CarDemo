@@ -1,5 +1,7 @@
 #include "States.hpp"
 
+#include "../terrain/SceneObject.hpp"
+
 StopSignState::StopSignState(ControllerInterface *interface, double speed,
 							 double angle)
 	: BaseState(interface), initSpeed(speed), initAngle(angle) {
@@ -9,11 +11,12 @@ StopSignState::StopSignState(ControllerInterface *interface, double speed,
 
 BaseState* StopSignState::update(float dt) {
 	if (stage == ST_DRIVE) {
-		std::list<std::string> sceneObjs = mInterface->getNearbySceneObjects();
+		std::list<SceneObject*> sceneObjs = mInterface->getNearbySceneObjects();
 		if (sceneObjs.size() == 1) {
-			std::string stopSign = sceneObjs.back();
-			if (stopSign != lastStopSign) {
-				lastStopSign = stopSign;
+			SceneObject* object = sceneObjs.back();
+			if ((object->getType() == "StopSign") &&
+				(object->getName() != lastStopSign)) {
+				lastStopSign = object->getName();
 				stage = ST_BRAKE;
 
 				delete currState;

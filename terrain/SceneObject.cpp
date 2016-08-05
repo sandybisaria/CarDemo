@@ -13,6 +13,8 @@ SceneObject::SceneObject(Ogre::SceneManager *sceneMgr, Ogre::Vector3 pos,
 	mainNode->attachObject(mSceneMgr->createEntity(meshFile));
 
 	mainNode->setPosition(mPos); mainNode->setOrientation(mRot);
+
+	mainNode->getUserObjectBindings().setUserAny(Ogre::Any(this));
 }
 
 SceneObject::~SceneObject() {
