@@ -1,14 +1,11 @@
 #include "SceneObject.hpp"
 
-#include <OgreSceneManager.h>
 #include <OgreEntity.h>
 
-// Shared across all SceneObject subclasses
+//---- Shared across all SceneObject subclasses
 const std::string SceneObject::PREFIX = "SO_";
 
-// Unique to each subclass
-const std::string SceneObject::TYPE = "Generic_";
-
+//---- SceneObject definitions
 SceneObject::SceneObject(Ogre::SceneManager *sceneMgr, Ogre::Vector3 pos,
 						 Ogre::Quaternion rot, int id, std::string meshFile)
 	: mSceneMgr(sceneMgr), mPos(pos), mRot(rot), mId(id), pMeshFile(meshFile) {
@@ -23,5 +20,11 @@ SceneObject::~SceneObject() {
 }
 
 std::string SceneObject::getName() {
-	return PREFIX + TYPE + Ogre::StringConverter::toString(mId);
+	return PREFIX + getType() + "_" + Ogre::StringConverter::toString(mId);
+}
+
+//---- StopSign definitions
+StopSign::StopSign(Ogre::SceneManager *sceneMgr, Ogre::Vector3 pos,
+				   Ogre::Quaternion rot, int id)
+	: SceneObject(sceneMgr, pos, rot, id, "StopSign.mesh") {
 }

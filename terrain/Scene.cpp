@@ -187,8 +187,7 @@ void Scene::setupRoad() {
 void Scene::setupObjects() {
 	Ogre::Vector3 pos(100, 0, 0);
 	Ogre::Quaternion rot(Ogre::Radian(M_PI), Ogre::Vector3::UNIT_Y);
-	SceneObject* stopSign = new SceneObject(mSceneMgr, pos, rot, 0,
-											"StopSign.mesh");
+	StopSign* stopSign = new StopSign(mSceneMgr, pos, rot, 0);
 	mObjs.push_back(stopSign);
 }
 

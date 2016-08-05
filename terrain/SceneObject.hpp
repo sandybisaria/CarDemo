@@ -1,7 +1,9 @@
 #pragma once
 
 #include <OgreSceneNode.h>
+#include <OgreSceneManager.h>
 
+// Generic SceneObject class
 class SceneObject {
 public:
 	SceneObject(Ogre::SceneManager* sceneMgr, Ogre::Vector3 pos,
@@ -10,11 +12,8 @@ public:
 
 	virtual void update(float dt) { }
 
-//---- Getter methods
 	std::string getName();
-	std::string getType() {
-		return TYPE.size() > 0 ? TYPE.substr(0, TYPE.size() - 1) : "";
-	}
+	virtual std::string getType() { return "GENERIC"; }
 
 protected:
 	const static std::string PREFIX;
@@ -27,7 +26,13 @@ protected:
 	Ogre::SceneNode* mainNode;
 	Ogre::Vector3 mPos;
 	Ogre::Quaternion mRot;
+};
 
-private:
-	const static std::string TYPE;
+// Stop sign
+class StopSign : public SceneObject {
+public:
+	StopSign(Ogre::SceneManager* sceneMgr, Ogre::Vector3 pos,
+			 Ogre::Quaternion rot, int id);
+
+	virtual std::string getType() { return "StopSign"; }
 };
