@@ -1,5 +1,6 @@
 #pragma once
 
+#include "SceneObject.hpp"
 #include "ShapeData.hpp"
 
 #include <BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h>
@@ -16,7 +17,7 @@ public:
 
 	void setup(class Sim* sim);
 
-	void update();
+	void update(float dt);
 
 	int terrSize;
 	float worldSize;
@@ -39,5 +40,5 @@ private:
 	std::vector<class Road*> mRoads;
 
 	void setupObjects();
-	const Ogre::String sceneResGrp = "SceneObjects";
+	std::vector<SceneObject* > mObjs;
 };

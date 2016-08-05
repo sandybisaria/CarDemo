@@ -187,7 +187,7 @@ MathVector<double, 2> BasicController::toFlatVector(MathVector<double, 3> vec, b
 
 //---- Debug data collection methods
 void BasicController::setupDataCollection() {
-	double minSpeed = 10, maxSpeed = 25.5, speedStep = 0.50;
+	double minSpeed = 10, maxSpeed = 18, speedStep = 0.50;
 	double minTurn = 0.10, maxTurn = 1, turnStep = 0.01;
 
 	for (double speed = maxSpeed; speed >= minSpeed; speed -= speedStep) {

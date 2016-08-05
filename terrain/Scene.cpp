@@ -185,18 +185,22 @@ void Scene::setupRoad() {
 
 //---- Objects methods
 void Scene::setupObjects() {
-	Ogre::SceneNode* stopSign = mSceneMgr->getRootSceneNode()->
-		createChildSceneNode("SO_StopSign_01");
-	stopSign->attachObject(mSceneMgr->createEntity("StopSign.mesh"));
-
-	stopSign->setPosition(100, 0, 0);
-	stopSign->yaw(Ogre::Radian(M_PI));
+	Ogre::Vector3 pos(100, 0, 0);
+	Ogre::Quaternion rot(Ogre::Radian(M_PI), Ogre::Vector3::UNIT_Y);
+	SceneObject* stopSign = new SceneObject(mSceneMgr, pos, rot, 0,
+											"StopSign.mesh");
+	mObjs.push_back(stopSign);
 }
 
 //---- Update methods
-void Scene::update() {
+void Scene::update(float dt) {
 	std::vector<Road*>::const_iterator i;
 	for (i = mRoads.begin(); i != mRoads.end(); i++) {
 		(*i)->update();
+	}
+
+	std::vector<SceneObject*>::const_iterator j;
+	for (j = mObjs.begin(); j != mObjs.end(); j++) {
+		(*j)->update(dt);
 	}
 }

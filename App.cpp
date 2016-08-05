@@ -310,7 +310,7 @@ bool App::frameRenderingQueued(const Ogre::FrameEvent& evt) {
 	updateCamera(evt);
 
 	mSim->update(evt.timeSinceLastFrame);
-	mScene->update();
+	mScene->update(evt.timeSinceLastFrame);
 
 	return true;
 }
