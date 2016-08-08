@@ -14,7 +14,7 @@ BasicController::BasicController(Car* car)
 	dirAlreadyUpdated = false;
 
 	myInterface = new ControllerInterface(this);
-	currentState = new StopSignState(myInterface, 0, 0);
+	currentState = new StopSignState(myInterface, 0);
 }
 
 BasicController::~BasicController() {
@@ -107,7 +107,8 @@ void BasicController::updateSpeed(float dt) {
 	double thrBrkVal = 0;
 	thrBrkVal += eSpeed * kPSpeed; // Proportional term
 
-	if (fabs(eSpeed) < targetSpeed / 4) { // If error is too high, skip; don't want high integral accumulation
+	// If error is too high, skip; don't want high integral accumulation
+	if (fabs(eSpeed) < targetSpeed / 4) {
 		thrBrkVal += kISpeed * iSpeedAcc; // Integral term
 		iSpeedAcc += eSpeed * dt;
 	}
@@ -126,14 +127,15 @@ void BasicController::updateSpeed(float dt) {
 
 	if (dt != 0) {
 		double acc = (speed - lastSpeed) / dt;
-		if (fabs(acc) < 0.01 && fabs(dLastESpeed) < 5 && !reachedSpeed && fabs(eSpeed) < 0.1) { reachedSpeed = true; }
+		if (fabs(acc) < 0.01 && fabs(dLastESpeed) < 5 && !reachedSpeed &&
+			fabs(eSpeed) < 0.1) { reachedSpeed = true; }
 	}
 	lastSpeed = speed;
 }
 
 void BasicController::updateDirection(float dt) {
 	const double angle = getAngle(toFlatVector(mCar->getForwardVector()), toFlatVector(initDir));
-	if (isnan(angle)) return; // Abandon ship (maybe should find out where a nan might occur...)
+	if (isnan(angle)) return; // Maybe should find out when a nan might occur...
 
 	const double eAngle = targetAngle - angle;
 
@@ -187,7 +189,7 @@ MathVector<double, 2> BasicController::toFlatVector(MathVector<double, 3> vec, b
 
 //---- Debug data collection methods
 void BasicController::setupDataCollection() {
-	double minSpeed = 10, maxSpeed = 17, speedStep = 0.50;
+	double minSpeed = 1, maxSpeed = 3, speedStep = 0.50;
 	double minTurn = 0.10, maxTurn = 1, turnStep = 0.01;
 
 	for (double speed = maxSpeed; speed >= minSpeed; speed -= speedStep) {

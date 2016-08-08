@@ -187,12 +187,18 @@ void Scene::setupRoad() {
 void Scene::setupObjects() {
 	Ogre::Vector3 pos(100, 0, 0);
 	Ogre::Quaternion rot(Ogre::Radian(M_PI), Ogre::Vector3::UNIT_Y);
-	StopSign* stopSign = new StopSign(mSceneMgr, pos, rot, 0);
-	mObjs.push_back(stopSign);
+//	StopSign* stopSign = new StopSign(mSceneMgr, pos, rot, 0);
+//	mObjs.push_back(stopSign);
+//
+//	pos = Ogre::Vector3(200, 0, 0);
+//	stopSign = new StopSign(mSceneMgr, pos, rot, 1);
+//	mObjs.push_back(stopSign);
 
-	pos = Ogre::Vector3(200, 0, 0);
-	stopSign = new StopSign(mSceneMgr, pos, rot, 1);
-	mObjs.push_back(stopSign);
+	pos = Ogre::Vector3(100, 0, 0);
+	rot = Ogre::Quaternion(Ogre::Radian(M_PI_2), Ogre::Vector3::UNIT_Y);
+	SceneObject* trafficLight = new SceneObject(mSceneMgr, pos, rot,
+												2, "TrafficLight.mesh");
+	mObjs.push_back(trafficLight);
 }
 
 //---- Update methods

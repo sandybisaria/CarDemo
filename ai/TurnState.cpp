@@ -40,7 +40,7 @@ BaseState* TurnState::update(float dt) {
 				  << mInterface->getAngle(finalDir,mInterface->getCarDirection())
 				  << std::endl;
 
-		return new ConstantState(mInterface, startSpeed, 0);
+		return new ConstantState(mInterface, startSpeed);
 	}
 	else if (currDist > lastDist) {
 		// May want to more intelligently handle an imperfect turn
@@ -49,7 +49,7 @@ BaseState* TurnState::update(float dt) {
 				  << std::endl;
 
 		// If following a road, just go to the next waypoint...
-		return new ConstantState(mInterface, startSpeed, 0);
+		return new ConstantState(mInterface, startSpeed);
 	}
 	else {
 		mInterface->setSteering(turn);
@@ -62,7 +62,8 @@ BaseState* TurnState::update(float dt) {
 }
 
 //---- ConstantTurnState methods
-ConstantTurnState::ConstantTurnState(ControllerInterface *interface, double turn, double startSpeed)
+ConstantTurnState::ConstantTurnState(ControllerInterface *interface, double turn,
+									 double startSpeed)
 	: BaseState(interface) {
 	this->turn = turn;
 	this->startSpeed = (startSpeed == 0 ? mInterface->getCarSpeed() : startSpeed);

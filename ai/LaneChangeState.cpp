@@ -30,6 +30,7 @@ BaseState* LaneChangeState::update(float dt) {
 			MathVector<double, 2> lateralVec = startToEnd - longitudinalVec;
 			std::cout << "Actual lateral distance traveled was " << lateralVec.magnitude() << std::endl;
 
+			// At the least, make sure our car drives in the right angle...
 			return new ConstantState(mInterface, startSpeed, angleOff);
 		}
 	} else {

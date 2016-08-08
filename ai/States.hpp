@@ -21,7 +21,7 @@ protected:
 // Maintain a given velocity and direction
 class ConstantState : public BaseState {
 public:
-	ConstantState(ControllerInterface* interface, double speed, double angle);
+	ConstantState(ControllerInterface* interface, double speed, double angle = 0);
 	virtual ~ConstantState() { }
 
 	virtual BaseState* update(float dt);
@@ -34,8 +34,10 @@ private:
 // Drive to the specified waypoint
 class WaypointState : public BaseState {
 public:
-	// Ground waypoint (using Bullet's XY plane); radius defines how close the car must be within the waypoint
-	WaypointState(ControllerInterface* interface, MathVector<double, 2> waypoint, double radius);
+	// Ground waypoint (using Bullet's XY plane)
+	// Radius defines how close the car must be within the waypoint
+	WaypointState(ControllerInterface* interface, MathVector<double, 2> waypoint,
+				  double radius);
 	virtual ~WaypointState() { }
 
 	virtual BaseState* update(float dt);
@@ -49,7 +51,8 @@ private:
 class TurnState : public BaseState {
 public:
 	// Angle passed in as degrees
-	TurnState(ControllerInterface* interface, bool isLeftTurn, double turnRadius, double angle = 90);
+	TurnState(ControllerInterface* interface, bool isLeftTurn, double turnRadius,
+			  double angle = 90);
 	virtual ~TurnState() { }
 
 	virtual BaseState* update(float dt);
@@ -63,7 +66,8 @@ private:
 // Debug state used for setting a constant steering input
 class ConstantTurnState : public BaseState {
 public:
-	ConstantTurnState(ControllerInterface* interface, double turn, double startSpeed = 0);
+	ConstantTurnState(ControllerInterface* interface, double turn,
+					  double startSpeed = 0);
 	virtual ~ConstantTurnState() { }
 
 	virtual BaseState* update(float dt);
@@ -98,7 +102,7 @@ private:
 // Essentially a ConstantState that stops at stop signs
 class StopSignState : public BaseState {
 public:
-	StopSignState(ControllerInterface* interface, double speed, double angle);
+	StopSignState(ControllerInterface* interface, double speed, double angle = 0);
 	virtual ~StopSignState() { }
 
 	virtual BaseState* update(float dt);
