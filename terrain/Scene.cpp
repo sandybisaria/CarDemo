@@ -196,8 +196,7 @@ void Scene::setupObjects() {
 
 	pos = Ogre::Vector3(100, 0, 0);
 	rot = Ogre::Quaternion(Ogre::Radian(M_PI_2), Ogre::Vector3::UNIT_Y);
-	SceneObject* trafficLight = new SceneObject(mSceneMgr, pos, rot,
-												2, "TrafficLight.mesh");
+	TrafficLight* trafficLight = new TrafficLight(mSceneMgr, pos, rot, 2);
 	mObjs.push_back(trafficLight);
 }
 

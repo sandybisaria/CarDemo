@@ -36,3 +36,16 @@ public:
 
 	virtual std::string getType() { return "StopSign"; }
 };
+
+// Traffic light
+class TrafficLight : public SceneObject {
+public:
+	TrafficLight(Ogre::SceneManager* sceneMgr, Ogre::Vector3 pos,
+				 Ogre::Quaternion rot, int id);
+//	virtual ~TrafficLight();
+
+	virtual std::string getType() { return "TrafficLight"; }
+
+private:
+//	Ogre::SceneNode* redLightNode;
+};
