@@ -125,21 +125,152 @@ material TrafficLight_Front
             }
             texture_unit 
             {
-                texture TrafficLight.jpg
-                tex_address_mode wrap
-                scale 1.0 1.0
-                colour_op modulate
-            }
-            texture_unit 
-            {
-                texture TrafficLight.jpg
-                tex_address_mode wrap
-                scale 1.0 1.0
-                colour_op modulate
-            }
-            texture_unit 
-            {
                 texture TrafficLight_Emissive.jpg
+                tex_address_mode wrap
+                scale 1.0 1.0
+                colour_op modulate
+            }
+        }
+    }
+}
+
+//---- Alternate traffic light materials
+material TrafficLight_Front_Red 
+{
+    receive_shadows on 
+
+    technique
+    {
+        pass TrafficLight_Front_Red
+        {
+            ambient 0.5 0.5 0.5 1.0
+            diffuse 0.4000000059604645 0.4000000059604645 0.4000000059604645 1.0
+            specular 0.0 0.0 0.0 1.0 12.25
+            emissive 0.0 0.0 0.0 1.0
+
+            alpha_to_coverage off
+            colour_write on
+            cull_hardware clockwise
+            depth_check on
+            depth_func less_equal
+            depth_write on
+            illumination_stage 
+            light_clip_planes off
+            light_scissor off
+            lighting on
+            normalise_normals off
+            polygon_mode solid
+            scene_blend one zero
+            scene_blend_op add
+            shading gouraud
+            transparent_sorting on
+
+            texture_unit 
+            {
+                texture TrafficLight_Red.jpg
+                tex_address_mode wrap
+                scale 1.0 1.0
+                colour_op modulate
+            }
+            texture_unit 
+            {
+                texture TrafficLight_Emissive_Red.jpg
+                tex_address_mode wrap
+                scale 1.0 1.0
+                colour_op modulate
+            }
+        }
+    }
+}
+
+material TrafficLight_Front_Yellow 
+{
+    receive_shadows on 
+
+    technique
+    {
+        pass TrafficLight_Front_Yellow
+        {
+            ambient 0.5 0.5 0.5 1.0
+            diffuse 0.4000000059604645 0.4000000059604645 0.4000000059604645 1.0
+            specular 0.0 0.0 0.0 1.0 12.25
+            emissive 0.0 0.0 0.0 1.0
+
+            alpha_to_coverage off
+            colour_write on
+            cull_hardware clockwise
+            depth_check on
+            depth_func less_equal
+            depth_write on
+            illumination_stage 
+            light_clip_planes off
+            light_scissor off
+            lighting on
+            normalise_normals off
+            polygon_mode solid
+            scene_blend one zero
+            scene_blend_op add
+            shading gouraud
+            transparent_sorting on
+
+            texture_unit 
+            {
+                texture TrafficLight_Yellow.jpg
+                tex_address_mode wrap
+                scale 1.0 1.0
+                colour_op modulate
+            }
+            texture_unit 
+            {
+                texture TrafficLight_Emissive_Yellow.jpg
+                tex_address_mode wrap
+                scale 1.0 1.0
+                colour_op modulate
+            }
+        }
+    }
+}
+
+material TrafficLight_Front_Green 
+{
+    receive_shadows on 
+
+    technique
+    {
+        pass TrafficLight_Front_Green
+        {
+            ambient 0.5 0.5 0.5 1.0
+            diffuse 0.4000000059604645 0.4000000059604645 0.4000000059604645 1.0
+            specular 0.0 0.0 0.0 1.0 12.25
+            emissive 0.0 0.0 0.0 1.0
+
+            alpha_to_coverage off
+            colour_write on
+            cull_hardware clockwise
+            depth_check on
+            depth_func less_equal
+            depth_write on
+            illumination_stage 
+            light_clip_planes off
+            light_scissor off
+            lighting on
+            normalise_normals off
+            polygon_mode solid
+            scene_blend one zero
+            scene_blend_op add
+            shading gouraud
+            transparent_sorting on
+
+            texture_unit 
+            {
+                texture TrafficLight_Green.jpg
+                tex_address_mode wrap
+                scale 1.0 1.0
+                colour_op modulate
+            }
+            texture_unit 
+            {
+                texture TrafficLight_Emissive_Green.jpg
                 tex_address_mode wrap
                 scale 1.0 1.0
                 colour_op modulate

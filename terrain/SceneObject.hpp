@@ -3,7 +3,7 @@
 #include <OgreSceneNode.h>
 #include <OgreSceneManager.h>
 
-// Generic SceneObject class
+//---- Generic SceneObject class
 class SceneObject {
 public:
 	SceneObject(Ogre::SceneManager* sceneMgr, Ogre::Vector3 pos,
@@ -28,7 +28,7 @@ protected:
 	Ogre::Quaternion mRot;
 };
 
-// Stop sign
+//---- Stop sign
 class StopSign : public SceneObject {
 public:
 	StopSign(Ogre::SceneManager* sceneMgr, Ogre::Vector3 pos,
@@ -37,15 +37,25 @@ public:
 	virtual std::string getType() { return "StopSign"; }
 };
 
-// Traffic light
+//---- Traffic light
+enum TrafficLightState { TL_GREEN = 0, TL_YELLOW, TL_RED };
+
 class TrafficLight : public SceneObject {
 public:
 	TrafficLight(Ogre::SceneManager* sceneMgr, Ogre::Vector3 pos,
 				 Ogre::Quaternion rot, int id);
-//	virtual ~TrafficLight();
+
+	virtual void update(float dt);
 
 	virtual std::string getType() { return "TrafficLight"; }
+	TrafficLightState getState() const { return tlState; }
 
 private:
-//	Ogre::SceneNode* redLightNode;
+	Ogre::Entity* trafficLightEntity;
+
+	TrafficLightState tlState;
+	void changeState();
+
+	double waitTimes[3];
+	double timeWaiting;
 };

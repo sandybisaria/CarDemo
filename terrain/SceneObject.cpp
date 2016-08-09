@@ -1,6 +1,7 @@
 #include "SceneObject.hpp"
 
 #include <OgreEntity.h>
+#include <OgreSubEntity.h>
 
 //---- Shared across all SceneObject subclasses
 const std::string SceneObject::PREFIX = "SO_";
@@ -35,19 +36,42 @@ StopSign::StopSign(Ogre::SceneManager *sceneMgr, Ogre::Vector3 pos,
 TrafficLight::TrafficLight(Ogre::SceneManager *sceneMgr, Ogre::Vector3 pos,
 						   Ogre::Quaternion rot, int id)
 	: SceneObject(sceneMgr, pos, rot, id, "TrafficLight.mesh") {
-//	Ogre::Light* redLight = mSceneMgr->createLight(getName() + "_LIGHT_RED");
-//	redLight->setType(Ogre::Light::LT_SPOTLIGHT);
-//	redLight->setDiffuseColour(Ogre::ColourValue::Red);
-//	redLight->setSpecularColour(1.f, 0.5f, 0.f);
-//
-//	redLight->setPosition(0, 0, 10);
-//	std::cout << redLight->getPosition() << std::endl;
+	trafficLightEntity = ((Ogre::Entity*) mainNode->getAttachedObject(0));
 
-//	redLightNode = mainNode->createChildSceneNode(getName() + "_NODE_RED");
-//	redLightNode->attachObject(redLight);
+	// Initial state is green (though could be configurable?)
+	tlState = TL_RED;
+	changeState();
+
+	//TODO Replace with more realistic times (25 - 3 - 32)?
+	waitTimes[TL_GREEN] = 5;
+	waitTimes[TL_YELLOW] = 3;
+	waitTimes[TL_RED] = 12;
 }
 
-//TrafficLight::~TrafficLight() {
-//	mSceneMgr->destroySceneNode(mainNode);
-//	mSceneMgr->destroySceneNode(redLightNode);
-//}
+void TrafficLight::update(float dt) {
+	timeWaiting += dt;
+	if (timeWaiting >= waitTimes[tlState]) { changeState(); }
+}
+
+void TrafficLight::changeState() {
+	std::string nextMaterial = "TrafficLight_Front_";
+	switch (tlState) {
+	case TL_GREEN:
+		tlState = TL_YELLOW;
+		nextMaterial += "Yellow";
+		break;
+	case TL_YELLOW:
+		tlState = TL_RED;
+		nextMaterial += "Red";
+		break;
+	case TL_RED:
+		tlState = TL_GREEN;
+		nextMaterial += "Green";
+		break;
+	}
+
+	//Note: SubEntity idx hard-coded based on the current mesh!
+	trafficLightEntity->getSubEntity(2)->setMaterialName(nextMaterial);
+
+	timeWaiting = 0;
+}
