@@ -38,7 +38,7 @@ public:
 };
 
 //---- Traffic light
-enum TrafficLightState { TL_GREEN = 0, TL_YELLOW, TL_RED };
+enum TrafficLightStatus { TL_GREEN = 0, TL_YELLOW, TL_RED };
 
 class TrafficLight : public SceneObject {
 public:
@@ -48,12 +48,12 @@ public:
 	virtual void update(float dt);
 
 	virtual std::string getType() { return "TrafficLight"; }
-	TrafficLightState getState() const { return tlState; }
+	TrafficLightStatus getStatus() const { return tlStatus; }
 
 private:
 	Ogre::Entity* trafficLightEntity;
 
-	TrafficLightState tlState;
+	TrafficLightStatus tlStatus;
 	void changeState();
 
 	double waitTimes[3];

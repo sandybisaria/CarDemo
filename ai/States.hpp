@@ -3,6 +3,7 @@
 #include "BasicController.hpp"
 
 #include "../vdrift/MathVector.hpp"
+#include "../terrain/SceneObject.hpp"
 
 #include <queue>
 
@@ -115,4 +116,23 @@ private:
 	enum { ST_DRIVE, ST_BRAKE, ST_WAIT } stage;
 	std::string lastStopSign;
 	double countdown;
+};
+
+// ConstantState that obeys traffic lights
+class TrafficLightState : public BaseState {
+public:
+	TrafficLightState(ControllerInterface* interface, double speed, double angle = 0);
+	virtual ~TrafficLightState() { }
+
+	virtual BaseState* update(float dt);
+
+private:
+	double initSpeed, initAngle;
+
+	BaseState* currState;
+
+	TrafficLight* lastLight;
+	TrafficLightStatus lastStatus;
+
+	void checkLight();
 };

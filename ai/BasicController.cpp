@@ -14,7 +14,7 @@ BasicController::BasicController(Car* car)
 	dirAlreadyUpdated = false;
 
 	myInterface = new ControllerInterface(this);
-	currentState = new StopSignState(myInterface, 0);
+	currentState = new TrafficLightState(myInterface, 0);
 }
 
 BasicController::~BasicController() {
@@ -70,7 +70,7 @@ void BasicController::goToPoint(MathVector<double, 2> waypoint, double radius) {
 }
 
 void BasicController::setSpeed(double speed) {
-	changeState(new StopSignState(myInterface, speed, targetAngle));
+	changeState(new TrafficLightState(myInterface, speed, targetAngle));
 }
 
 void BasicController::setAngle(double angle) {

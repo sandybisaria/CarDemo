@@ -335,7 +335,9 @@ std::list<SceneObject*> Car::getNearbySceneObjects() {
 
 	Ogre::Vector3 farLeft = nearRight;
 	//TODO The 1 is supposed to represent the surface coeff of friction
-	farLeft += 2 * ((getSpeed() * getSpeed()) / (2 * 1 * 9.81)) * forward;
+	double farCoeff = 2 * ((getSpeed() * getSpeed()) / (2 * 1 * 9.81));
+//	if (farCoeff < 5) { farCoeff = 5; } //TODO This is supposed to be a min distance; how to determine an appropriate one?
+	farLeft += farCoeff * forward;
 	farLeft += right * (-12 * dyn->collW);
 
 	searchBox.setMinimum(std::min(nearRight.x, farLeft.x),

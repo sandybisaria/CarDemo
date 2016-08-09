@@ -39,7 +39,7 @@ TrafficLight::TrafficLight(Ogre::SceneManager *sceneMgr, Ogre::Vector3 pos,
 	trafficLightEntity = ((Ogre::Entity*) mainNode->getAttachedObject(0));
 
 	// Initial state is green (though could be configurable?)
-	tlState = TL_RED;
+	tlStatus = TL_RED;
 	changeState();
 
 	//TODO Replace with more realistic times (25 - 3 - 32)?
@@ -50,22 +50,22 @@ TrafficLight::TrafficLight(Ogre::SceneManager *sceneMgr, Ogre::Vector3 pos,
 
 void TrafficLight::update(float dt) {
 	timeWaiting += dt;
-	if (timeWaiting >= waitTimes[tlState]) { changeState(); }
+	if (timeWaiting >= waitTimes[tlStatus]) { changeState(); }
 }
 
 void TrafficLight::changeState() {
 	std::string nextMaterial = "TrafficLight_Front_";
-	switch (tlState) {
+	switch (tlStatus) {
 	case TL_GREEN:
-		tlState = TL_YELLOW;
+		tlStatus = TL_YELLOW;
 		nextMaterial += "Yellow";
 		break;
 	case TL_YELLOW:
-		tlState = TL_RED;
+		tlStatus = TL_RED;
 		nextMaterial += "Red";
 		break;
 	case TL_RED:
-		tlState = TL_GREEN;
+		tlStatus = TL_GREEN;
 		nextMaterial += "Green";
 		break;
 	}

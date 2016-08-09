@@ -194,9 +194,14 @@ void Scene::setupObjects() {
 //	stopSign = new StopSign(mSceneMgr, pos, rot, 1);
 //	mObjs.push_back(stopSign);
 
-	pos = Ogre::Vector3(100, 0, 0);
+	pos = Ogre::Vector3(150, 0, 0);
 	rot = Ogre::Quaternion(Ogre::Radian(M_PI_2), Ogre::Vector3::UNIT_Y);
 	TrafficLight* trafficLight = new TrafficLight(mSceneMgr, pos, rot, 2);
+	mObjs.push_back(trafficLight);
+
+	pos = Ogre::Vector3(250, 0, 0);
+	rot = Ogre::Quaternion(Ogre::Radian(M_PI_2), Ogre::Vector3::UNIT_Y);
+	trafficLight = new TrafficLight(mSceneMgr, pos, rot, 3);
 	mObjs.push_back(trafficLight);
 }
 

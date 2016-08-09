@@ -1,11 +1,9 @@
 #include "States.hpp"
 
-#include "../terrain/SceneObject.hpp"
-
 StopSignState::StopSignState(ControllerInterface *interface, double speed,
 							 double angle)
 	: BaseState(interface), initSpeed(speed), initAngle(angle) {
-	currState = new ConstantState(interface, initSpeed, initAngle);
+	currState = new ConstantState(mInterface, initSpeed, initAngle);
 	stage = ST_DRIVE; lastStopSign = "";
 }
 
