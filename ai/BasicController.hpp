@@ -96,6 +96,7 @@ public:
 	MathVector<double, 2> getCarPosition();
 	MathVector<double, 2> getCarDirection(); // Direction is normalized
 	double getCarSpeed();
+	double getCarMaxActualSteerAngle();
 
 	std::list<class SceneObject*> getNearbySceneObjects();
 

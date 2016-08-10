@@ -26,6 +26,10 @@ double ControllerInterface::getCarSpeed() {
 	return mController->mCar->getSpeed();
 }
 
+double ControllerInterface::getCarMaxActualSteerAngle() {
+	return mController->mCar->getRangeMul() * mController->mCar->getMaxAngle();
+}
+
 std::list<class SceneObject*> ControllerInterface::getNearbySceneObjects() {
 	return mController->mCar->getNearbySceneObjects();
 }

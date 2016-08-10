@@ -13,6 +13,7 @@ TurnState::TurnState(ControllerInterface *interface, bool isLeftTurn, double tur
 
 	// Using the predictSteering method (developed using neural networks!..)
 	turn = predictSteering(inputs) * (isLeftTurn ? -1.0 : 1.0); // Left (CCW) is negative for turning
+	turn /= mInterface->getCarMaxActualSteerAngle(); // Convert steering angle to turn value
 	turn = clamp(turn, -1.0, 1.0); // Maybe give an error or something when attempting an impossible turn
 
 	angle = fabs(angle); // Ignore the angle sign; only listen to isLeftTurn

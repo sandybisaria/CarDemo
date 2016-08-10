@@ -36,6 +36,8 @@ StopSign::StopSign(Ogre::SceneManager *sceneMgr, Ogre::Vector3 pos,
 TrafficLight::TrafficLight(Ogre::SceneManager *sceneMgr, Ogre::Vector3 pos,
 						   Ogre::Quaternion rot, int id)
 	: SceneObject(sceneMgr, pos, rot, id, "TrafficLight.mesh") {
+	preloadTextures();
+
 	trafficLightEntity = ((Ogre::Entity*) mainNode->getAttachedObject(0));
 
 	// Initial state is green (though could be configurable?)
@@ -74,4 +76,17 @@ void TrafficLight::changeState() {
 	trafficLightEntity->getSubEntity(2)->setMaterialName(nextMaterial);
 
 	timeWaiting = 0;
+}
+
+bool TrafficLight::mLoaded = false;
+void TrafficLight::preloadTextures() {
+	if (mLoaded) return;
+	mLoaded = true;
+
+	Ogre::MaterialManager::getSingleton().load("TrafficLight_Front_Red",
+											   Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+	Ogre::MaterialManager::getSingleton().load("TrafficLight_Front_Yellow",
+											   Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+	Ogre::MaterialManager::getSingleton().load("TrafficLight_Front_Green",
+											   Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 }

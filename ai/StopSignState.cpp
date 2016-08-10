@@ -24,7 +24,7 @@ BaseState* StopSignState::update(float dt) {
 		}
 	} else if (stage == ST_BRAKE) {
 		if (fabs(mInterface->getCarSpeed()) < 0.1) {
-			stage = ST_WAIT; countdown = 2;
+			stage = ST_WAIT; countdown = 3; //TODO Should be a const member? Or should the StopSign itself tell how long to wait?
 		}
 	} else if (stage == ST_WAIT) {
 		countdown -= dt;

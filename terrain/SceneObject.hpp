@@ -58,4 +58,7 @@ private:
 
 	double waitTimes[3];
 	double timeWaiting;
+
+	static bool mLoaded;
+	static void preloadTextures();
 };

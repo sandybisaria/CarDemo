@@ -23,7 +23,7 @@ BaseState* LaneChangeState::update(float dt) {
 			return NULL;
 		} else {
 			double angleOff = mInterface->getAngle(finalDir, mInterface->getCarDirection());
-			std::cout << "I've changed lanes, but my angle error is (was) " << angleOff << std::endl;
+			std::cout << "I've changed lanes, but my angle error was " << angleOff << std::endl;
 
 			MathVector<double, 2> startToEnd = mInterface->getCarPosition() - startPos;
 			MathVector<double, 2> longitudinalVec = finalDir * startToEnd.dot(finalDir);
