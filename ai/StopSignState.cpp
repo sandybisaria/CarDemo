@@ -19,6 +19,7 @@ BaseState* StopSignState::update(float dt) {
 
 				delete currState;
 				currState = new ConstantState(mInterface, 0, initAngle);
+				mActive = true; // Override other state behavior
 			}
 		}
 	} else if (stage == ST_BRAKE) {
@@ -30,6 +31,7 @@ BaseState* StopSignState::update(float dt) {
 		if (countdown <= 0) {
 			stage = ST_DRIVE;
 			currState = new ConstantState(mInterface, initSpeed, initAngle);
+			mActive = false;
 		}
 	}
 

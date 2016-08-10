@@ -10,12 +10,15 @@
 // Base class for all states
 class BaseState {
 public:
-	BaseState(ControllerInterface* interface) : mInterface(interface) { };
+	BaseState(ControllerInterface* interface)
+		: mInterface(interface), mActive(false) { };
 	virtual ~BaseState() { };
 	virtual BaseState* update(float dt) { return NULL; };
+	bool isActive() const { return mActive; }
 
 protected:
 	ControllerInterface* mInterface;
+	bool mActive;
 };
 
 //---- Environment-agnostic states
@@ -135,4 +138,20 @@ private:
 	TrafficLightStatus lastStatus;
 
 	void checkLight();
+};
+
+//---- Composite states
+// ConstantState that obeys all signage (ideally)
+class CompositeState : public BaseState {
+public:
+	CompositeState(ControllerInterface* interface, double speed, double angle = 0);
+	virtual ~CompositeState() { }
+
+	virtual BaseState* update(float dt);
+
+private:
+	double initSpeed, initAngle;
+
+	StopSignState* ssState;
+	TrafficLightState* tlState;
 };

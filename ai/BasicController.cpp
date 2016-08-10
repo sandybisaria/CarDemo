@@ -14,7 +14,7 @@ BasicController::BasicController(Car* car)
 	dirAlreadyUpdated = false;
 
 	myInterface = new ControllerInterface(this);
-	currentState = new TrafficLightState(myInterface, 0);
+	currentState = new CompositeState(myInterface, 0);
 }
 
 BasicController::~BasicController() {
@@ -70,7 +70,7 @@ void BasicController::goToPoint(MathVector<double, 2> waypoint, double radius) {
 }
 
 void BasicController::setSpeed(double speed) {
-	changeState(new TrafficLightState(myInterface, speed, targetAngle));
+	changeState(new CompositeState(myInterface, speed, targetAngle));
 }
 
 void BasicController::setAngle(double angle) {
@@ -189,8 +189,8 @@ MathVector<double, 2> BasicController::toFlatVector(MathVector<double, 3> vec, b
 
 //---- Debug data collection methods
 void BasicController::setupDataCollection() {
-	double minSpeed = 1.5, maxSpeed = 1.5, speedStep = 0.50;
-	double minTurn = 0.10, maxTurn = 0.51, turnStep = 0.01;
+	double minSpeed = 1, maxSpeed = 34.75, speedStep = 0.50;
+	double minTurn = 0.10, maxTurn = 1.00, turnStep = 0.01;
 
 	for (double speed = maxSpeed; speed >= minSpeed; speed -= speedStep) {
 		speeds.push_back(speed);
